@@ -106,3 +106,8 @@ the build machine; `package.ps1` makes the release zip.
 | `src\Xlsx.cpp`, `src\XlsxRead.cpp` | the workbook writer and reader (no libraries) |
 | `src\Paths.*`, `src\Estimate.*` | the NCI walk and the live estimate formula |
 | `src\Coolant.*` | X-style coolant: codes, machine labels, write-back |
+
+## Licence
+
+MIT - see [LICENSE](LICENSE). Not affiliated with or endorsed by CNC Software; Mastercam is
+their trademark. Building needs their Mastercam 2026 SDK, which is not included here.

@@ -35,6 +35,7 @@ New-Item -ItemType Directory -Force -Path $sub | Out-Null
 
 Copy-Item -LiteralPath $dll -Destination (Join-Path $sub "ParamTable.dll")
 Copy-Item -LiteralPath (Join-Path $Root "ParamTable.ft") -Destination $out
+Copy-Item -LiteralPath (Join-Path $Root "LICENSE") -Destination (Join-Path $sub "LICENSE.txt")
 
 # ---- Build info: the commit, whether the tree was clean, and what it was built with.
 $commit = (& git -C $Root rev-parse --short HEAD 2>$null)
