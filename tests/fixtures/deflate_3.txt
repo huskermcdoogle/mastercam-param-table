@@ -1,0 +1,491 @@
+10BAR0.008stock_xfeedspeed
+speed10BARop_idnfeed
+per revfeedspeedstock_xstock_xspeedper revspeed
+stock_xfeedop_idnspeedper revop_idnfeedop_idnop_idnstock_xfeedper revfeed
+0.008coolantstock_x0.008
+speedop_idncoolant
+0.008speedop_idnop_idnper rev10BARspeed
+speedop_idnfeedop_idnper rev<c r="A1" t="s"><v>12</v></c>
+stock_x10BAR<c r="A1" t="s"><v>12</v></c>op_idn<c r="A1" t="s"><v>12</v></c>10BARcoolantper rev0.008per revspeedop_idncoolant
+<c r="A1" t="s"><v>12</v></c>10BAR<c r="A1" t="s"><v>12</v></c>coolantop_idnspeedspeed
+stock_x0.00810BAR0.008<c r="A1" t="s"><v>12</v></c>stock_xfeedspeed
+op_idn10BAR10BAR10BARop_idn<c r="A1" t="s"><v>12</v></c>op_idn<c r="A1" t="s"><v>12</v></c>speedspeedcoolant<c r="A1" t="s"><v>12</v></c>speedfeedcoolantop_idn<c r="A1" t="s"><v>12</v></c>coolantstock_x10BARfeed<c r="A1" t="s"><v>12</v></c>10BAR0.008op_idnspeed<c r="A1" t="s"><v>12</v></c>feedper revcoolant0.008per revstock_xstock_x<c r="A1" t="s"><v>12</v></c>speed0.008<c r="A1" t="s"><v>12</v></c>stock_x
+coolant0.008stock_x
+coolantstock_x10BARstock_xper rev0.008speed0.0080.008per revper revfeed<c r="A1" t="s"><v>12</v></c>op_idn0.008coolantcoolantfeed0.008stock_x
+10BARop_idnop_idn10BAR0.008
+op_idnfeed<c r="A1" t="s"><v>12</v></c>
+stock_xstock_xstock_xstock_xspeed<c r="A1" t="s"><v>12</v></c>stock_xfeedper revspeedper rev<c r="A1" t="s"><v>12</v></c>0.008speed10BARop_idnfeedspeedfeedop_idn0.008
+speed10BARop_idnfeedspeedper revop_idnstock_x0.008coolant10BARop_idn10BAR<c r="A1" t="s"><v>12</v></c>speedspeed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>coolantspeed0.008speed10BARcoolant<c r="A1" t="s"><v>12</v></c>0.008
+feedper rev
+10BAR0.008
+feed
+coolantspeedcoolant
+10BAR0.00810BARper rev
+
+
+10BARper revop_idnper revper revstock_xper revper rev
+<c r="A1" t="s"><v>12</v></c>10BARfeedfeedcoolant<c r="A1" t="s"><v>12</v></c>coolantper revop_idn10BAR<c r="A1" t="s"><v>12</v></c>10BAR10BARspeedper revspeedper rev<c r="A1" t="s"><v>12</v></c>per rev10BARper rev<c r="A1" t="s"><v>12</v></c>op_idnop_idnfeed<c r="A1" t="s"><v>12</v></c>10BARspeedspeedstock_xper rev<c r="A1" t="s"><v>12</v></c>0.008stock_x10BARspeedstock_x<c r="A1" t="s"><v>12</v></c>stock_xspeed0.0080.0080.008feed0.008op_idn<c r="A1" t="s"><v>12</v></c>0.008op_idnop_idn<c r="A1" t="s"><v>12</v></c>10BAR0.008
+
+0.008feedfeedspeed
+0.008stock_xper revper revfeedcoolantper revcoolant
+per revop_idn10BARcoolant
+stock_x0.008feed10BAR<c r="A1" t="s"><v>12</v></c>op_idn
+stock_x
+0.008
+0.008
+
+feed<c r="A1" t="s"><v>12</v></c>0.008op_idnfeed0.0080.0080.008<c r="A1" t="s"><v>12</v></c>op_idnspeed
+feed10BAR
+
+
+<c r="A1" t="s"><v>12</v></c>speed
+feedper revper revcoolantfeedspeed
+<c r="A1" t="s"><v>12</v></c>
+feedspeed<c r="A1" t="s"><v>12</v></c>10BARop_idn
+op_idn
+per revcoolant<c r="A1" t="s"><v>12</v></c>
+
+<c r="A1" t="s"><v>12</v></c>
+per rev
+coolant
+per rev<c r="A1" t="s"><v>12</v></c>0.008stock_xspeedstock_x<c r="A1" t="s"><v>12</v></c>10BARspeedper revstock_xspeedper revcoolantspeed0.00810BAR0.008coolant0.008<c r="A1" t="s"><v>12</v></c>per revspeedstock_x<c r="A1" t="s"><v>12</v></c>0.008per rev0.008stock_x
+stock_x10BARstock_xper rev10BAR10BARspeed10BARfeed10BAR
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>feedstock_x10BAR
+op_idncoolant
+speedspeedper revspeedspeedcoolantcoolantfeed0.008coolant0.008stock_xcoolantstock_x0.008
+
+op_idn<c r="A1" t="s"><v>12</v></c>10BARspeedcoolantfeed0.008stock_xspeedcoolantfeedspeedcoolantspeedop_idnper revspeedcoolantspeed<c r="A1" t="s"><v>12</v></c>feed10BAR
+stock_xcoolantop_idn0.008feed
+per revspeed0.008coolantfeed0.008per revcoolantcoolant
+per revcoolant<c r="A1" t="s"><v>12</v></c>
+0.008coolant10BARfeedcoolantfeedfeedfeed
+
+per rev
+<c r="A1" t="s"><v>12</v></c>per rev<c r="A1" t="s"><v>12</v></c>speedstock_x<c r="A1" t="s"><v>12</v></c>
+stock_x
+coolantper revper rev10BARper rev0.008stock_x10BARfeed0.008feedspeedcoolantstock_x0.008feedspeedstock_x
+coolantop_idnper revcoolantfeed<c r="A1" t="s"><v>12</v></c>0.0080.008coolant<c r="A1" t="s"><v>12</v></c>feedcoolant10BAR10BAR
+10BARper revfeedcoolantper rev10BAR0.008feed10BARstock_xspeed<c r="A1" t="s"><v>12</v></c>coolant
+per revper rev
+feedspeedcoolantspeed0.008stock_xop_idnfeedstock_xfeedcoolantcoolantper revspeedop_idn
+0.008op_idnstock_x10BAR<c r="A1" t="s"><v>12</v></c>0.008coolantop_idn0.008feed
+stock_x
+0.008
+
+op_idnfeedop_idnper revspeedfeedfeed0.00810BARspeedstock_x<c r="A1" t="s"><v>12</v></c>
+feedfeed
+per rev<c r="A1" t="s"><v>12</v></c>coolantfeed<c r="A1" t="s"><v>12</v></c>speed
+
+speed
+speed<c r="A1" t="s"><v>12</v></c>coolantspeedcoolantper revper revper rev<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>stock_xspeed<c r="A1" t="s"><v>12</v></c>coolantfeedop_idnper revspeedop_idn0.00810BARcoolantcoolantop_idnop_idn0.008feed<c r="A1" t="s"><v>12</v></c>feed<c r="A1" t="s"><v>12</v></c>coolantspeedper rev<c r="A1" t="s"><v>12</v></c>coolant
+coolant<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>speed
+per revcoolantspeed<c r="A1" t="s"><v>12</v></c>feedcoolant<c r="A1" t="s"><v>12</v></c>speed
+<c r="A1" t="s"><v>12</v></c>coolantstock_xper revper revspeedop_idnspeed0.008
+coolant10BAR0.008op_idn
+coolantspeed10BARper rev<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>stock_xfeed0.008feed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>stock_xcoolant0.008stock_x10BARstock_x10BARspeed10BARfeed10BAR10BARstock_xspeedper revfeedcoolantcoolant10BARspeedstock_xstock_xop_idnspeed10BARstock_xcoolantfeedcoolantspeedfeedcoolant0.008per revcoolantstock_x
+10BARper rev10BARstock_xfeedstock_x
+
+per revspeedfeedstock_x<c r="A1" t="s"><v>12</v></c>op_idn0.008coolant<c r="A1" t="s"><v>12</v></c>feed
+0.0080.008<c r="A1" t="s"><v>12</v></c>stock_x10BARcoolantcoolantcoolantcoolantstock_xper revcoolant<c r="A1" t="s"><v>12</v></c>
+stock_xspeed0.0080.008speedper rev
+<c r="A1" t="s"><v>12</v></c>
+per rev<c r="A1" t="s"><v>12</v></c>10BAR<c r="A1" t="s"><v>12</v></c>stock_x0.008
+per revper revspeed0.00810BAR
+speed10BARper rev10BARcoolantop_idnper revfeedstock_xstock_xstock_x
+per revstock_xcoolant10BARfeed<c r="A1" t="s"><v>12</v></c>coolantop_idn10BAR0.008
+
+per revspeedcoolantper revstock_xstock_x<c r="A1" t="s"><v>12</v></c>stock_xcoolantfeed0.008feedstock_x<c r="A1" t="s"><v>12</v></c>op_idn<c r="A1" t="s"><v>12</v></c>feedspeedstock_x
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per revspeedper rev0.0080.008
+speed<c r="A1" t="s"><v>12</v></c>speed
+feedfeed0.008per revop_idnfeedcoolant0.008coolant
+stock_xspeedspeedspeedcoolant
+op_idnper revstock_xcoolantper revop_idnfeedfeed
+coolant<c r="A1" t="s"><v>12</v></c>coolant10BARper rev<c r="A1" t="s"><v>12</v></c>
+per rev
+per revfeedstock_xcoolantfeedfeedper rev<c r="A1" t="s"><v>12</v></c>stock_xspeedcoolantper revstock_x10BARper rev<c r="A1" t="s"><v>12</v></c>feed10BARstock_x10BARstock_xper revfeedcoolant
+speedper rev<c r="A1" t="s"><v>12</v></c>per revcoolantper revper rev<c r="A1" t="s"><v>12</v></c>per revcoolantcoolantspeedop_idn<c r="A1" t="s"><v>12</v></c>op_idn0.008per rev<c r="A1" t="s"><v>12</v></c>stock_xfeedop_idn0.008stock_xfeedper revfeedop_idn0.008stock_xfeedfeed0.008stock_x<c r="A1" t="s"><v>12</v></c>10BARspeedspeed0.00810BARper rev0.008
+<c r="A1" t="s"><v>12</v></c>feedcoolantstock_x10BAR10BAR<c r="A1" t="s"><v>12</v></c>0.008speedfeedspeedcoolantspeed10BARstock_xspeed
+per revstock_x10BARcoolantstock_xspeedfeed<c r="A1" t="s"><v>12</v></c>per rev10BAR
+<c r="A1" t="s"><v>12</v></c>per rev10BAR10BAR<c r="A1" t="s"><v>12</v></c>feedstock_xper revstock_xfeedstock_xfeed<c r="A1" t="s"><v>12</v></c>speedfeedcoolantper revspeedop_idn10BAR10BARcoolant10BARop_idnfeedcoolant10BARcoolantcoolantfeedop_idnspeedfeedper revspeed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>stock_xcoolantstock_x<c r="A1" t="s"><v>12</v></c>0.008<c r="A1" t="s"><v>12</v></c>0.008feedcoolant0.008op_idnper rev10BAR10BAR<c r="A1" t="s"><v>12</v></c>10BARop_idnspeed
+per revstock_x0.008per revstock_xspeedfeed<c r="A1" t="s"><v>12</v></c>
+
+10BAR0.008stock_xspeedspeedcoolantop_idnspeedper revspeedstock_x<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>0.008per rev0.008stock_x<c r="A1" t="s"><v>12</v></c>op_idnper rev
+speedcoolantcoolantcoolantop_idncoolant10BARcoolantcoolantper rev<c r="A1" t="s"><v>12</v></c>per rev0.008per revper rev0.008coolantop_idnper rev10BARspeedstock_xcoolantper rev
+
+per revspeed<c r="A1" t="s"><v>12</v></c>feedspeedfeed<c r="A1" t="s"><v>12</v></c>per rev<c r="A1" t="s"><v>12</v></c>10BARfeedcoolantper revspeedfeedper revop_idnop_idnper revspeed10BAR
+0.008<c r="A1" t="s"><v>12</v></c>op_idncoolantfeedspeedop_idnop_idn10BARper revfeed10BAR10BAR0.008feedper revcoolantfeedop_idnper revfeed10BARstock_x10BAR0.008op_idncoolantspeedper revfeed<c r="A1" t="s"><v>12</v></c>
+<c r="A1" t="s"><v>12</v></c>speedstock_xspeedstock_x
+0.008
+speed0.008stock_xcoolantstock_xcoolantcoolantstock_xfeedcoolantop_idn10BARstock_xstock_xfeed10BARper revstock_xstock_xper revfeedstock_x0.008stock_xspeedspeedstock_xop_idn10BAR<c r="A1" t="s"><v>12</v></c>0.0080.008feedfeed
+0.008stock_xspeedop_idnop_idn10BAR
+0.0080.00810BARcoolant0.008
+0.008speedspeedstock_x<c r="A1" t="s"><v>12</v></c>per revcoolant0.008feed<c r="A1" t="s"><v>12</v></c>10BARfeedop_idnstock_xspeedop_idn0.008per revop_idnstock_xop_idnper rev<c r="A1" t="s"><v>12</v></c>0.008op_idnper revfeedstock_x
+0.008stock_x10BARspeed0.008per revper revfeed
+feed10BARspeedstock_xop_idn<c r="A1" t="s"><v>12</v></c>
+coolantstock_xcoolantop_idnper revstock_xstock_x10BAR<c r="A1" t="s"><v>12</v></c>
+<c r="A1" t="s"><v>12</v></c>0.008feedfeedop_idn<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per rev<c r="A1" t="s"><v>12</v></c>op_idn<c r="A1" t="s"><v>12</v></c>0.008<c r="A1" t="s"><v>12</v></c>stock_xspeedspeed0.00810BARstock_x10BARspeed<c r="A1" t="s"><v>12</v></c>
+
+feedfeed0.008speed10BAR
+speedfeed
+stock_x0.008feedspeedop_idnspeedper rev0.008<c r="A1" t="s"><v>12</v></c>coolant0.008per revspeed10BARop_idncoolant0.00810BARop_idncoolant<c r="A1" t="s"><v>12</v></c>0.008coolant
+<c r="A1" t="s"><v>12</v></c>per revop_idncoolantop_idn
+per rev10BAR10BARfeedper rev0.008stock_x0.008coolant10BARstock_x0.008coolantspeed
+feed10BAR<c r="A1" t="s"><v>12</v></c>
+
+op_idnspeedcoolant
+stock_x10BARcoolantstock_x10BARop_idn0.00810BAR10BARspeed<c r="A1" t="s"><v>12</v></c>per rev0.008op_idnfeedcoolant
+coolantcoolantop_idn10BARfeedfeedper rev0.008coolantop_idnstock_xstock_x
+10BARfeed0.008<c r="A1" t="s"><v>12</v></c>per revop_idnfeedfeedfeedfeedop_idn10BARcoolantspeed
+10BAR
+per revstock_xop_idncoolantop_idn0.008per rev10BARop_idn<c r="A1" t="s"><v>12</v></c>0.0080.008feedper rev0.008<c r="A1" t="s"><v>12</v></c>speedspeed0.008coolantstock_xcoolantfeedfeed
+10BARop_idnop_idn<c r="A1" t="s"><v>12</v></c>op_idn
+<c r="A1" t="s"><v>12</v></c>per rev0.008feedfeedfeed
+feedstock_x0.008per rev0.008feedspeedfeedop_idn
+per rev0.008stock_xper rev
+op_idn
+stock_xop_idn0.008
+coolantspeedcoolantfeed<c r="A1" t="s"><v>12</v></c>
+feedstock_xstock_x<c r="A1" t="s"><v>12</v></c>speed<c r="A1" t="s"><v>12</v></c>0.008per revspeedcoolantper revfeedspeed10BARcoolantfeedcoolant
+stock_x
+coolantcoolantper revspeed
+feed0.008coolantper revper rev0.00810BARper revstock_x10BARop_idnper revstock_x
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>
+feedfeedstock_xper revop_idncoolantper revstock_xop_idnop_idnspeedop_idn0.0080.008feedfeedspeedspeedop_idn0.00810BAR0.008feedfeedfeed0.008feedspeedfeedspeedop_idn10BARper rev
+speedstock_xspeedper revper revper revspeedfeedfeedspeedcoolant<c r="A1" t="s"><v>12</v></c>speed0.008speedper revcoolant10BAR10BARstock_xcoolantfeed10BARcoolantcoolantfeed10BAR10BARop_idn
+<c r="A1" t="s"><v>12</v></c>coolantop_idnfeedstock_xfeedstock_x
+speed10BAR<c r="A1" t="s"><v>12</v></c>feed
+op_idnper revspeedop_idncoolant0.008stock_xfeed
+per revcoolantfeedfeed10BAR<c r="A1" t="s"><v>12</v></c>speed<c r="A1" t="s"><v>12</v></c>0.008<c r="A1" t="s"><v>12</v></c>op_idn10BAR
+coolantop_idn0.008coolantper revper rev<c r="A1" t="s"><v>12</v></c>0.008speedspeed<c r="A1" t="s"><v>12</v></c>
+speed10BAR10BARspeedstock_xstock_xspeedstock_xfeed10BARper revcoolantcoolantstock_x
+
+0.008stock_xper rev<c r="A1" t="s"><v>12</v></c>0.008
+op_idnop_idnfeed10BARop_idn10BAR
+0.008<c r="A1" t="s"><v>12</v></c>
+10BAR0.008<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>coolantop_idnper rev0.00810BAR<c r="A1" t="s"><v>12</v></c>per rev
+per revcoolantcoolantop_idn0.0080.008per rev10BARop_idn
+10BAR0.008per rev10BARper revcoolantspeed0.008speedper revstock_x0.0080.008coolantcoolantstock_xcoolantper revspeedspeedcoolantper revstock_x<c r="A1" t="s"><v>12</v></c>feedfeedstock_xstock_xper rev
+coolant<c r="A1" t="s"><v>12</v></c>feed0.008coolantop_idnstock_xfeedper revstock_xop_idnop_idnstock_xper revop_idnper rev0.008speed<c r="A1" t="s"><v>12</v></c>stock_x10BARcoolantspeedstock_xper revstock_x0.008coolantstock_x<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>feedop_idnstock_x
+0.00810BARfeedstock_x<c r="A1" t="s"><v>12</v></c>speedfeedcoolant
+per rev0.008per rev
+10BARspeedop_idn<c r="A1" t="s"><v>12</v></c>
+per rev<c r="A1" t="s"><v>12</v></c>
+feed10BAR
+10BARstock_x<c r="A1" t="s"><v>12</v></c>per rev0.008stock_x
+speedop_idn10BARfeedcoolantcoolantstock_xstock_xfeedfeedspeedstock_xstock_x10BARop_idncoolantspeedper revcoolantstock_x
+per revstock_x<c r="A1" t="s"><v>12</v></c>per rev0.0080.008speedper rev<c r="A1" t="s"><v>12</v></c>
+per rev0.00810BARstock_x<c r="A1" t="s"><v>12</v></c>coolant
+0.008<c r="A1" t="s"><v>12</v></c>10BARper revcoolantstock_xcoolantstock_x0.008<c r="A1" t="s"><v>12</v></c>feedcoolant10BARper revcoolant10BAR<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>stock_xop_idnspeed10BAR0.008coolantstock_xfeedspeedop_idn10BAR0.008
+10BARop_idnfeedfeedper revspeedcoolantcoolantop_idnspeedop_idn0.008per rev0.008<c r="A1" t="s"><v>12</v></c>10BAR0.008per revstock_x
+0.008op_idnop_idnspeed
+coolantper rev<c r="A1" t="s"><v>12</v></c>per rev
+speed<c r="A1" t="s"><v>12</v></c>speed
+speedcoolantstock_xper rev0.008<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>
+feed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>0.008<c r="A1" t="s"><v>12</v></c>per rev<c r="A1" t="s"><v>12</v></c>0.008
+op_idnfeed0.00810BAR<c r="A1" t="s"><v>12</v></c>op_idn<c r="A1" t="s"><v>12</v></c>coolant<c r="A1" t="s"><v>12</v></c>10BARstock_xstock_xspeed0.00810BARfeedfeedop_idnfeed10BARspeed
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>0.008feedper revstock_x0.00810BARspeed10BAR10BAR<c r="A1" t="s"><v>12</v></c>
+
+per revcoolantstock_x10BARstock_xcoolant
+feedcoolantcoolant10BAR<c r="A1" t="s"><v>12</v></c>stock_x10BAR
+coolant
+10BARper rev<c r="A1" t="s"><v>12</v></c>speed10BARper rev10BARcoolant0.008op_idnspeedfeedstock_x
+stock_x
+op_idnfeedstock_xcoolantspeedfeedfeedper rev<c r="A1" t="s"><v>12</v></c>op_idnfeed
+
+op_idnstock_xop_idn0.008op_idnspeedper revfeed<c r="A1" t="s"><v>12</v></c>0.008speed0.008feedstock_xspeedfeed10BAR0.008coolant
+coolantcoolant0.008stock_xfeed10BARfeedstock_xop_idnop_idnfeed<c r="A1" t="s"><v>12</v></c>op_idn
+feedspeedstock_xop_idnstock_x<c r="A1" t="s"><v>12</v></c>speedfeedstock_xop_idnop_idn0.008<c r="A1" t="s"><v>12</v></c>stock_x
+speedspeed<c r="A1" t="s"><v>12</v></c>per rev0.008feedstock_xfeedfeedspeedspeedper revspeed0.008<c r="A1" t="s"><v>12</v></c>feedcoolantop_idnper rev<c r="A1" t="s"><v>12</v></c>0.008feed10BAR0.008speedcoolant
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>coolantfeedfeedfeedfeedfeedop_idnspeedstock_xcoolantcoolantop_idn0.008<c r="A1" t="s"><v>12</v></c>op_idnfeed10BAR10BARop_idn<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>0.0080.008speed10BAR0.008stock_x<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>coolantop_idn10BARcoolantcoolantfeedop_idnop_idn10BARop_idnfeed0.008op_idncoolantop_idnstock_xper revstock_xstock_xstock_xop_idnper rev<c r="A1" t="s"><v>12</v></c>coolantfeed10BARcoolantcoolantstock_x0.008op_idnfeedcoolant0.008op_idn0.008coolant
+<c r="A1" t="s"><v>12</v></c>10BAR
+speed
+
+<c r="A1" t="s"><v>12</v></c>stock_xper revper revcoolantop_idnfeedstock_x<c r="A1" t="s"><v>12</v></c>per revcoolantop_idnfeedstock_x<c r="A1" t="s"><v>12</v></c>
+speed
+10BARspeedper revstock_xop_idn
+coolant
+10BAR<c r="A1" t="s"><v>12</v></c>
+op_idnper revper revper revper revspeed0.008coolant10BARop_idnop_idn10BARstock_x
+0.008per revfeed<c r="A1" t="s"><v>12</v></c>10BARspeed10BAR<c r="A1" t="s"><v>12</v></c>speed0.00810BARop_idnfeed10BARcoolant
+op_idnfeedspeedfeedper revop_idn<c r="A1" t="s"><v>12</v></c>op_idnop_idnper revcoolantcoolantstock_xspeed<c r="A1" t="s"><v>12</v></c>op_idnop_idn0.008coolantfeed10BARper rev0.008stock_xspeedfeedfeedfeed
+10BAR<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>speedop_idnstock_xspeedspeedcoolant10BARop_idnper revspeed
+stock_x0.008<c r="A1" t="s"><v>12</v></c>0.00810BARper revper rev0.008feedcoolant10BARfeed
+feedfeedcoolant
+<c r="A1" t="s"><v>12</v></c>feedspeed0.00810BARfeedper revcoolantop_idnop_idn<c r="A1" t="s"><v>12</v></c>speed<c r="A1" t="s"><v>12</v></c>10BAR10BARcoolantstock_xspeed10BAR<c r="A1" t="s"><v>12</v></c>stock_x0.008<c r="A1" t="s"><v>12</v></c>per rev0.008feed<c r="A1" t="s"><v>12</v></c>per revfeed0.008per revspeedop_idn10BAR0.008<c r="A1" t="s"><v>12</v></c>speedstock_xfeedspeed<c r="A1" t="s"><v>12</v></c>10BAR10BARper rev<c r="A1" t="s"><v>12</v></c>speed10BAR0.00810BARper revfeed0.008<c r="A1" t="s"><v>12</v></c>
+0.008<c r="A1" t="s"><v>12</v></c>0.008coolantstock_xstock_xper rev0.008feedcoolantop_idncoolant10BAR0.008coolant<c r="A1" t="s"><v>12</v></c>speed10BAR<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>speed0.008
+feedper rev
+<c r="A1" t="s"><v>12</v></c>coolantspeedcoolantper rev10BARstock_xcoolantper revper revspeedstock_xcoolantstock_x0.008feedcoolant0.008feed<c r="A1" t="s"><v>12</v></c>
+10BAR
+0.008<c r="A1" t="s"><v>12</v></c>feed
+coolant0.00810BARstock_xfeedstock_xper revcoolantop_idn0.0080.0080.008
+per rev0.008per revop_idnspeedspeedop_idn<c r="A1" t="s"><v>12</v></c>coolant0.008per rev0.008op_idnper revop_idncoolantper revfeedspeed
+stock_xfeed
+10BAR10BARcoolant<c r="A1" t="s"><v>12</v></c>speedfeedstock_x<c r="A1" t="s"><v>12</v></c>0.008coolantper rev0.008op_idn10BARfeed0.00810BARop_idnop_idnfeed10BAR
+<c r="A1" t="s"><v>12</v></c>
+speedspeed10BARper rev10BARstock_xop_idnfeedcoolantspeed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>
+feed
+
+0.008feedper revspeedper revop_idn0.0080.008speedcoolantcoolant
+feedfeedspeedper revcoolantfeedop_idnop_idn<c r="A1" t="s"><v>12</v></c>
+per rev<c r="A1" t="s"><v>12</v></c>speed10BARspeed0.008feedcoolantspeed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>op_idn
+coolantspeedspeedspeedstock_x0.008
+op_idnper revper rev0.008op_idn<c r="A1" t="s"><v>12</v></c>stock_x0.008feedstock_xstock_xop_idnop_idn
+feedstock_xfeed10BAR10BARstock_xper rev10BARstock_xop_idn10BARstock_x
+feed10BAR
+0.00810BARper revstock_xfeed10BARspeed
+0.008speed10BARstock_xper rev
+feedper rev0.008stock_xstock_x<c r="A1" t="s"><v>12</v></c>feedfeedfeedop_idncoolantop_idncoolant
+feedop_idnspeedcoolantspeed
+feedstock_xper revfeedcoolantspeedcoolant10BAR0.008speedfeedop_idn
+coolantspeed<c r="A1" t="s"><v>12</v></c>op_idn
+0.008<c r="A1" t="s"><v>12</v></c>speed
+0.008coolantstock_xop_idncoolantcoolantper revspeed
+coolant<c r="A1" t="s"><v>12</v></c>op_idnop_idnper revstock_xper rev
+10BAR<c r="A1" t="s"><v>12</v></c>
+coolantop_idn<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>coolantfeedper rev10BARper revper rev
+
+stock_xop_idnstock_xfeed10BAR0.008per rev10BAR
+10BAR<c r="A1" t="s"><v>12</v></c>coolantcoolantper revcoolantfeedfeed0.008
+speedop_idn10BAR<c r="A1" t="s"><v>12</v></c>feed
+stock_x<c r="A1" t="s"><v>12</v></c>10BARspeed
+per rev0.008stock_x10BAR10BAR0.008per revop_idnop_idncoolant
+speed<c r="A1" t="s"><v>12</v></c>coolant0.008stock_xspeedfeedstock_x
+op_idnspeed<c r="A1" t="s"><v>12</v></c>stock_xop_idn0.008stock_xcoolantop_idnop_idnspeedstock_x<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>coolant10BARcoolant10BARstock_x
+
+op_idnstock_x10BARfeed<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>coolant0.008
+coolant0.008stock_xop_idnstock_xop_idnper revspeed10BAR10BARop_idnper rev10BARper revstock_xfeedfeedfeedcoolantop_idn<c r="A1" t="s"><v>12</v></c>coolant
+coolant
+op_idnstock_x
+
+stock_xstock_x<c r="A1" t="s"><v>12</v></c>10BARfeedop_idn10BAR<c r="A1" t="s"><v>12</v></c>feedspeed
+per revspeedstock_x10BAR
+stock_x
+op_idn0.008per revstock_x<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>op_idnop_idn10BAR
+speed0.00810BAR10BAR10BARspeedcoolant
+0.008speedcoolant10BAR
+stock_x0.008
+coolant
+per rev
+per revstock_x0.008feedop_idnop_idnspeed10BARop_idnfeedstock_xfeedfeedcoolant
+feedcoolantstock_xspeedop_idnfeedfeedper rev0.008<c r="A1" t="s"><v>12</v></c>
+op_idncoolant
+
+0.008op_idnper revstock_xop_idnspeed0.0080.008
+
+speedfeedspeedspeed0.008
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>op_idnstock_xfeedfeedop_idn10BAR0.008per rev10BARcoolant0.008feedcoolantspeedop_idnspeed10BARper rev<c r="A1" t="s"><v>12</v></c>op_idnstock_xfeedfeedper revstock_xop_idnfeed<c r="A1" t="s"><v>12</v></c>feedop_idnper revper revper revfeed0.008op_idn0.00810BARfeed<c r="A1" t="s"><v>12</v></c>coolantstock_xop_idncoolant<c r="A1" t="s"><v>12</v></c>speedper revstock_xop_idnper revstock_xcoolantstock_x<c r="A1" t="s"><v>12</v></c>feedper revspeed0.0080.00810BARstock_x0.008feedcoolantstock_x
+10BARspeed10BAR
+stock_x10BARstock_xspeedspeedstock_x10BAR
+per revstock_xper rev<c r="A1" t="s"><v>12</v></c>coolant10BARper revstock_xfeedcoolantfeed10BAR0.008per rev0.008speedper revcoolant
+0.008
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per rev0.00810BAR10BARper revstock_xstock_xop_idnper revcoolant<c r="A1" t="s"><v>12</v></c>
+per revper rev<c r="A1" t="s"><v>12</v></c>0.008coolantop_idn<c r="A1" t="s"><v>12</v></c>op_idn10BAR
+per revstock_xop_idn
+per rev0.008speed
+speed
+coolantstock_xfeedop_idn0.008coolantfeedstock_xspeed0.008per rev10BARper revspeedspeed
+10BAR
+coolantper revspeedcoolantspeedper revcoolant0.008stock_xcoolant10BARstock_x<c r="A1" t="s"><v>12</v></c>0.008coolant0.008feed10BAR10BARstock_xfeed<c r="A1" t="s"><v>12</v></c>per revstock_x10BARspeed0.008coolantspeedcoolantop_idnper revfeedstock_xfeedop_idn0.008stock_xper revcoolant0.008stock_xfeed
+coolant0.008op_idnper revop_idn<c r="A1" t="s"><v>12</v></c>
+coolantstock_xop_idn10BARfeedspeedcoolantfeedop_idnop_idnfeedper revspeedfeed10BARper rev10BARspeedstock_xstock_xop_idnper revcoolant
+speed10BARstock_x<c r="A1" t="s"><v>12</v></c>10BAR
+<c r="A1" t="s"><v>12</v></c>
+feedper revstock_x
+0.008<c r="A1" t="s"><v>12</v></c>per revfeed
+coolant0.008
+0.008per rev
+coolantper revfeed0.00810BAR10BARstock_xspeedper revcoolant0.0080.008<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per revper revfeed
+<c r="A1" t="s"><v>12</v></c>0.00810BARcoolant0.0080.008op_idnop_idnper rev10BARspeed
+stock_x0.0080.008op_idn<c r="A1" t="s"><v>12</v></c>stock_xper revspeedcoolantfeed10BAR<c r="A1" t="s"><v>12</v></c>per revfeedfeedcoolantcoolantper revspeedcoolant<c r="A1" t="s"><v>12</v></c>speed0.00810BAR<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>op_idn10BARcoolant0.008
+speedfeedfeed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>speed10BARop_idncoolantspeed<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>per rev
+10BARfeed10BARspeedcoolantop_idncoolantper revspeed0.008feedfeedstock_x0.008coolant10BAR0.008
+0.008speedcoolantop_idn10BARstock_x0.00810BAR10BARper rev10BAR0.008
+10BARcoolantper revfeedfeedspeedop_idnstock_xfeedper rev<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>0.008coolantop_idnop_idnspeed0.008per rev0.0080.008<c r="A1" t="s"><v>12</v></c>stock_xspeedfeed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per revper rev10BARfeedfeedop_idn
+stock_x0.008coolantspeedfeed
+stock_x10BARspeed<c r="A1" t="s"><v>12</v></c>feed0.0080.008stock_xcoolantfeed<c r="A1" t="s"><v>12</v></c>op_idn10BARop_idnper rev<c r="A1" t="s"><v>12</v></c>speed
+10BAR
+<c r="A1" t="s"><v>12</v></c>stock_x
+0.008stock_xop_idnop_idnspeedfeed10BARop_idncoolantop_idnop_idnstock_x10BAR<c r="A1" t="s"><v>12</v></c>0.008coolant10BAR
+feedper revper rev<c r="A1" t="s"><v>12</v></c>speed0.008op_idn10BAR
+op_idnstock_x10BAR
+per revop_idn<c r="A1" t="s"><v>12</v></c>stock_xcoolantspeedper rev0.008per rev
+speedper revcoolantspeedper rev
+coolant<c r="A1" t="s"><v>12</v></c>per rev
+<c r="A1" t="s"><v>12</v></c>per rev
+op_idnspeed
+op_idnop_idnspeedstock_xspeed<c r="A1" t="s"><v>12</v></c>0.008
+
+
+speed
+speed<c r="A1" t="s"><v>12</v></c>stock_x
+0.008per revop_idn<c r="A1" t="s"><v>12</v></c>speed0.00810BARop_idnfeedstock_xper revfeed10BARfeedfeedop_idnper rev<c r="A1" t="s"><v>12</v></c>coolantspeed0.008stock_xspeedop_idnper revop_idnspeed10BAR0.00810BAR10BARfeedcoolantspeedper rev10BAR
+
+10BAR<c r="A1" t="s"><v>12</v></c>feedop_idn10BARspeed10BAR
+10BARop_idnspeedfeedper revcoolant10BARper rev<c r="A1" t="s"><v>12</v></c>feedop_idn<c r="A1" t="s"><v>12</v></c>speedfeed<c r="A1" t="s"><v>12</v></c>speedspeedcoolant0.0080.008
+coolantstock_x0.008op_idncoolant
+coolant<c r="A1" t="s"><v>12</v></c>feedfeed10BAR0.008<c r="A1" t="s"><v>12</v></c>
+<c r="A1" t="s"><v>12</v></c>feedfeedspeed0.008op_idnop_idnstock_x<c r="A1" t="s"><v>12</v></c>0.008<c r="A1" t="s"><v>12</v></c>stock_xper revop_idn
+speed10BAR10BAR
+per revcoolant0.008op_idnop_idnfeedper rev0.00810BAR<c r="A1" t="s"><v>12</v></c>10BARop_idn<c r="A1" t="s"><v>12</v></c>stock_x10BAR10BARfeed10BARop_idn<c r="A1" t="s"><v>12</v></c>10BARper revfeedper rev<c r="A1" t="s"><v>12</v></c>op_idnfeed0.0080.008coolantstock_xcoolantspeed
+coolant10BARop_idnop_idn
+op_idn0.008feed
+speedper revstock_xop_idnspeed10BARcoolantper rev0.008speedcoolant10BAR10BAR
+per rev10BAR
+stock_x10BARfeed10BAR10BAR<c r="A1" t="s"><v>12</v></c>
+10BARper revper rev10BAR0.0080.008per revfeed<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>stock_xop_idncoolant0.008op_idnspeed0.008coolantcoolantcoolantop_idn
+10BARspeedper revop_idnspeedop_idn0.008coolantop_idn10BAR<c r="A1" t="s"><v>12</v></c>10BARstock_xspeed<c r="A1" t="s"><v>12</v></c>10BAR0.008coolantcoolant
+feed0.008coolantper revfeedper revfeedstock_x<c r="A1" t="s"><v>12</v></c>per revop_idncoolant
+speedper revper revfeed0.008op_idnfeedspeedspeedop_idn10BAR0.008feedper revcoolant
+feed10BARfeedper rev10BAR10BARfeed<c r="A1" t="s"><v>12</v></c>stock_xop_idn10BAR0.008feedstock_xfeedspeedop_idn10BAR<c r="A1" t="s"><v>12</v></c>op_idnstock_xcoolant<c r="A1" t="s"><v>12</v></c>feedfeed10BARop_idn10BARfeedstock_xop_idn10BAR0.008speedfeed0.008per rev0.008
+speed10BAR10BARstock_x10BAR
+op_idn
+0.008op_idnop_idn10BARper revop_idncoolant<c r="A1" t="s"><v>12</v></c>feedcoolant
+<c r="A1" t="s"><v>12</v></c>
+coolant10BAR
+
+coolant0.008coolantfeed
+<c r="A1" t="s"><v>12</v></c>speed10BAR0.008per revstock_xspeedfeedop_idn0.008speedfeed
+
+per rev
+0.008coolantop_idn10BAR0.0080.0080.008
+feed10BARper rev<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per rev10BARstock_x<c r="A1" t="s"><v>12</v></c>per rev10BARfeedspeedfeedspeedstock_x10BARfeedper revop_idnstock_xstock_xstock_xper revfeedcoolantfeedcoolantstock_xper revper rev10BARper rev10BARstock_xcoolantcoolant<c r="A1" t="s"><v>12</v></c>per revop_idn0.008<c r="A1" t="s"><v>12</v></c>coolant0.008coolantcoolantspeed10BARfeed<c r="A1" t="s"><v>12</v></c>per rev0.00810BARop_idnop_idn<c r="A1" t="s"><v>12</v></c>per revop_idnfeedper rev10BARfeed<c r="A1" t="s"><v>12</v></c>0.008stock_x0.008coolantfeedspeed0.008feed0.008coolant0.008
+10BARspeed0.008<c r="A1" t="s"><v>12</v></c>stock_xspeedstock_x10BARstock_x10BARfeedop_idnper revper revfeedfeed0.008
+op_idnper revop_idnstock_xspeedfeedfeed10BARspeedspeedspeed<c r="A1" t="s"><v>12</v></c>0.008
+stock_xfeed0.008per rev
+0.008
+
+speed
+10BAR<c r="A1" t="s"><v>12</v></c>speed10BARper revper revspeedcoolant0.008feedcoolantcoolantspeedfeedper rev
+feedstock_x
+10BARcoolantfeed10BARfeed<c r="A1" t="s"><v>12</v></c>
+coolant
+10BARstock_xcoolantstock_xstock_x10BAR
+stock_xstock_x0.008stock_xstock_xstock_x0.008feedper revop_idn
+coolantop_idnstock_xper revper revspeedspeedop_idnfeedfeedstock_x
+10BAR<c r="A1" t="s"><v>12</v></c>
+10BAR<c r="A1" t="s"><v>12</v></c>op_idnfeed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>
+10BARop_idn
+stock_xper revstock_x10BARspeedstock_x
+coolantop_idn10BARspeed
+per revop_idncoolantcoolant<c r="A1" t="s"><v>12</v></c>10BAR
+op_idn<c r="A1" t="s"><v>12</v></c>op_idnper rev0.008speed
+10BAR
+per rev
+0.00810BARper rev0.0080.008<c r="A1" t="s"><v>12</v></c>0.008feed10BARstock_x10BARstock_xspeedstock_x0.008coolantstock_xspeed10BAR10BAR
+
+coolant<c r="A1" t="s"><v>12</v></c>speedcoolantstock_xcoolant<c r="A1" t="s"><v>12</v></c>speed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>0.008
+0.008feed0.00810BAR<c r="A1" t="s"><v>12</v></c>
+per revop_idn10BAR
+10BARstock_xcoolantfeed
+per revfeedop_idncoolantfeedop_idn0.008coolant
+coolant10BARcoolantper revcoolant<c r="A1" t="s"><v>12</v></c>speed
+<c r="A1" t="s"><v>12</v></c>speedper rev0.008stock_xcoolantop_idn10BARfeed<c r="A1" t="s"><v>12</v></c>stock_x10BARfeedcoolantstock_xstock_xop_idncoolant10BARper revstock_xop_idn0.008op_idnper revop_idn10BARspeedper rev10BARspeedspeed<c r="A1" t="s"><v>12</v></c>stock_xstock_x
+stock_x<c r="A1" t="s"><v>12</v></c>feedspeedop_idnop_idn<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>stock_xstock_x<c r="A1" t="s"><v>12</v></c>0.008speed<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>0.008
+feedper revper revstock_x
+feedcoolant
+10BARstock_x<c r="A1" t="s"><v>12</v></c>speedspeedper revspeedop_idnfeedspeed<c r="A1" t="s"><v>12</v></c>speedper revop_idn<c r="A1" t="s"><v>12</v></c>feedper rev10BAR<c r="A1" t="s"><v>12</v></c>feed
+stock_xop_idn0.008stock_xfeed0.00810BAR10BARper rev
+feed0.008
+coolant
+coolantspeed10BARstock_xcoolantcoolant
+stock_x
+stock_xfeedcoolantcoolantper revstock_xstock_x
+coolantcoolantper rev0.008feedper rev
+10BAR<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>op_idn0.00810BAR10BARper rev<c r="A1" t="s"><v>12</v></c>
+feed10BARfeed
+speedstock_xop_idn10BARfeedcoolantper rev<c r="A1" t="s"><v>12</v></c>coolantper revper revop_idnop_idn<c r="A1" t="s"><v>12</v></c>stock_x<c r="A1" t="s"><v>12</v></c>per revper revfeed0.008stock_xspeedfeed0.008speedop_idn<c r="A1" t="s"><v>12</v></c>0.008feed
+0.008<c r="A1" t="s"><v>12</v></c>per revcoolantper rev
+0.0080.008per rev
+speed<c r="A1" t="s"><v>12</v></c>speedper revspeedfeedstock_xper revcoolant<c r="A1" t="s"><v>12</v></c>stock_x0.008feed0.008feed0.008<c r="A1" t="s"><v>12</v></c>coolantper revop_idn10BAR
+0.008coolantcoolant10BAR
+per rev0.008per revstock_xfeed10BARstock_x0.008coolantper rev
+speedper rev<c r="A1" t="s"><v>12</v></c>0.0080.008stock_x10BARstock_xspeedfeed10BARspeedper rev
+
+speedcoolant<c r="A1" t="s"><v>12</v></c>10BARfeed<c r="A1" t="s"><v>12</v></c>speedper rev<c r="A1" t="s"><v>12</v></c>coolantcoolantop_idnop_idn
+speedper rev0.008<c r="A1" t="s"><v>12</v></c>coolantper revop_idncoolantfeedop_idnop_idnspeedfeed10BARper rev0.008coolantfeed0.00810BAR10BAR<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per rev10BAR10BAR0.008speedcoolantspeed
+<c r="A1" t="s"><v>12</v></c>speed
+speed0.008op_idnstock_x<c r="A1" t="s"><v>12</v></c>feedfeedfeed
+op_idnspeedstock_x0.008stock_xop_idn10BARspeed10BAR0.00810BAR0.008speed10BARfeed<c r="A1" t="s"><v>12</v></c>coolant0.008coolantspeedspeedper revspeed0.008<c r="A1" t="s"><v>12</v></c>coolant
+
+speed10BAR<c r="A1" t="s"><v>12</v></c>per rev0.008op_idn
+feed
+coolant10BARper revcoolantstock_x
+per rev0.008per rev
+
+per revspeedfeedspeedfeed<c r="A1" t="s"><v>12</v></c>op_idnper revper revspeed0.0080.008coolantfeedstock_xstock_xop_idn
+speedcoolantop_idnspeedspeedop_idnper revper revper revop_idn
+feedper revspeedop_idn10BARspeedfeedper revop_idn0.008coolant10BARspeed<c r="A1" t="s"><v>12</v></c>op_idn0.008feed10BARstock_xstock_xfeedspeedper rev0.008
+0.0080.00810BAR0.008per revper revper rev10BARspeedfeed<c r="A1" t="s"><v>12</v></c>feed<c r="A1" t="s"><v>12</v></c>
+10BARspeedop_idnspeedper revfeed10BARstock_xspeed10BARop_idn0.008<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>0.008coolantcoolantfeed<c r="A1" t="s"><v>12</v></c>op_idn0.008stock_xstock_x
+coolantop_idn
+speedspeedcoolantper revper revper revop_idn<c r="A1" t="s"><v>12</v></c>
+per rev<c r="A1" t="s"><v>12</v></c>op_idnfeedstock_xstock_x10BARstock_xstock_xspeedper rev10BARop_idnstock_xcoolantfeedcoolant<c r="A1" t="s"><v>12</v></c>op_idnfeedspeed<c r="A1" t="s"><v>12</v></c>stock_xstock_xop_idncoolant<c r="A1" t="s"><v>12</v></c>0.00810BAR
+per revspeed10BARstock_x<c r="A1" t="s"><v>12</v></c>op_idnfeedcoolant10BARspeedcoolant0.008<c r="A1" t="s"><v>12</v></c>stock_x
+per revspeedper revfeedstock_x0.008stock_xcoolant10BAR0.00810BAR0.008per rev10BARop_idnstock_xcoolant<c r="A1" t="s"><v>12</v></c>10BAR
+op_idnper rev0.008stock_x
+feedfeed0.008speedper rev<c r="A1" t="s"><v>12</v></c>op_idncoolant10BARspeed
+
+stock_x0.008coolantstock_xspeed
+op_idn10BAR<c r="A1" t="s"><v>12</v></c>coolantcoolant10BARcoolantstock_x
+feed<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>10BARfeedfeedspeed
+stock_x<c r="A1" t="s"><v>12</v></c>coolant
+0.008op_idn<c r="A1" t="s"><v>12</v></c>feed10BAR<c r="A1" t="s"><v>12</v></c>0.008feedcoolant0.008per revop_idnop_idn
+feedstock_x0.008op_idncoolantper revcoolant
+feedstock_x
+stock_xspeedstock_x<c r="A1" t="s"><v>12</v></c>10BARcoolant10BAR0.008op_idn<c r="A1" t="s"><v>12</v></c>feed
+10BAR0.008per rev
+feed0.008coolant
+0.008coolantfeedop_idncoolantstock_x10BAR0.008coolantcoolant<c r="A1" t="s"><v>12</v></c>per revop_idn10BAR<c r="A1" t="s"><v>12</v></c>stock_xspeedcoolant10BARstock_x10BARstock_x<c r="A1" t="s"><v>12</v></c>coolantspeedper revop_idn<c r="A1" t="s"><v>12</v></c>
+stock_x0.00810BARfeed0.008coolant
+<c r="A1" t="s"><v>12</v></c>
+stock_xspeedcoolantstock_x10BARstock_x
+coolantspeedcoolant<c r="A1" t="s"><v>12</v></c>feedfeed
+op_idncoolant10BARop_idn10BARcoolantper revspeed
+speedop_idnstock_xspeedcoolant0.0080.008speedstock_xstock_x10BARstock_xstock_x<c r="A1" t="s"><v>12</v></c>10BAR10BAR0.0080.008
+
+stock_xcoolant0.008per rev10BARspeedstock_xspeed
+feedop_idnper revop_idnstock_xstock_xper revop_idncoolant0.0080.008per revper rev
+speedcoolantfeedstock_xcoolant0.008stock_xop_idncoolantspeedop_idnop_idn
+coolantop_idnper revper revcoolantspeed10BARop_idnspeed10BARfeed
+speedspeed10BARper revfeed<c r="A1" t="s"><v>12</v></c>0.008<c r="A1" t="s"><v>12</v></c>coolant
+feed<c r="A1" t="s"><v>12</v></c>op_idn
+op_idnfeedfeed
+<c r="A1" t="s"><v>12</v></c>speed<c r="A1" t="s"><v>12</v></c>per revcoolant10BAR10BAR
+op_idnper revper rev
+per revcoolantop_idn
+feedper rev0.008feed
+coolantstock_x10BARspeedcoolantspeedop_idnspeedstock_xstock_x
+op_idnstock_xper revfeed10BAR
+10BARcoolantspeed<c r="A1" t="s"><v>12</v></c>op_idn0.008stock_x<c r="A1" t="s"><v>12</v></c>op_idn<c r="A1" t="s"><v>12</v></c>per rev10BARop_idnper revspeedstock_x0.008coolantper revspeed
+feed<c r="A1" t="s"><v>12</v></c>per revper revcoolantper rev
+coolantfeedop_idnfeedspeed10BARper revstock_xfeed
+coolant
+10BAR0.008op_idn10BAR10BARcoolantspeedfeed0.00810BARstock_xfeed<c r="A1" t="s"><v>12</v></c>speed10BARspeed0.00810BAR<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>speed10BAR10BAR<c r="A1" t="s"><v>12</v></c>0.008speed
+op_idncoolant
+stock_xper rev10BARcoolantfeedper revcoolant
+stock_xstock_x0.008stock_x0.0080.008feedspeedper revop_idn
+stock_xfeedfeedspeed<c r="A1" t="s"><v>12</v></c>feedper revop_idn
+speed10BAR10BARop_idn
+<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>per revfeedper revper rev10BARstock_xspeedspeedop_idn0.008per rev<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>op_idnop_idn<c r="A1" t="s"><v>12</v></c>speedop_idnfeed<c r="A1" t="s"><v>12</v></c>0.008stock_xper rev<c r="A1" t="s"><v>12</v></c><c r="A1" t="s"><v>12</v></c>op_idn0.008speed<c r="A1" t="s"><v>12</v></c>op_idnstock_xspeedper revper revfeedstock_xop_idnper revfeedper revspeedper revfeedfeed<c r="A1" t="s"><v>12</v></c>feedstock_xper revper revfeed
+op_idnstock_xcoolantfeed0.008<c r="A1" t="s"><v>12</v></c>feed<c r="A1" t="s"><v>12</v></c>speedspeed0.0080.008
+0.008op_idn
+10BARspeed
+stock_xfeedspeedfeed
+speed
+
+op_idnop_idnop_idn
+speedfeed
+op_idncoolant<c r="A1" t="s"><v>12</v></c>stock_xfeed
+per revfeed0.008
+<c r="A1" t="s"><v>12</v></c>per revspeedper revstock_xspeedop_idnspeed
+
+10BARspeedspeedper revspeedspeed10BARcoolantcoolantcoolantcoolant0.008<c r="A1" t="s"><v>12</v></c>op_idnop_idn10BARper revfeedspeedspeedfeedspeedop_idnper rev
+stock_x<c r="A1" t="s"><v>12</v></c>stock_xop_idnop_idnper revspeedfeedfeedfeed0.008stock_xfeed0.008op_idncoolant<c r="A1" t="s"><v>12</v></c>coolant0.008coolantcoolant10BARfeed10BARstock_xspeed0.008<c r="A1" t="s"><v>12</v></c>0.008<c r="A1" t="s"><v>12</v></c>op_idn10BARcoolantper revfeedstock_x
+feed10BARper rev
+10BAR10BARfeedper rev10BARspeed
+0.008speedfeed10BARstock_x10BAR10BARspeed
+speed<c r="A1" t="s"><v>12</v></c>0.008per rev
+feed
+per revstock_x
+speedper revper revcoolantfeedcoolantstock_xspeed0.008op_idn<c r="A1" t="s"><v>12</v></c>op_idn0.008coolantstock_xper rev10BARcoolantfeedspeedper revcoolantop_idnop_idn0.008speedop_idnspeedstock_xcoolantspeedspeedspeed
+feed

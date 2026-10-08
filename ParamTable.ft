@@ -1,0 +1,27 @@
+# -------------------------------------------
+# Mastercam C++ Add-In Function Table File
+#
+# ParamTable.FT
+# -------------------------------------------
+
+APPLICATION "_ParamTableAddIn_"
+
+FUNC_DLL "ParamTable\ParamTable.dll"
+RES_DLL  "ParamTable\ParamTable.dll"
+
+CATEGORY "Parameter Table Tool"
+
+# Two entry points, no UI: dump the lathe parameters to CSV, and load the
+# edited CSVs back. Each is its own FUNCTION block so each gets its own
+# Customize entry and can be put on a ribbon or the Quick Access Toolbar.
+FUNCTION CPP "LatheParamsDumpEntry"
+  TIP  1
+  SPNG 18001
+  LPNG 18002
+END_FUNCTION
+
+FUNCTION CPP "LatheParamsLoadEntry"
+  TIP  2
+  SPNG 18001
+  LPNG 18002
+END_FUNCTION

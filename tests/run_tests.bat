@@ -1,0 +1,86 @@
+@echo off
+setlocal
+
+rem Compiles and runs the SDK-free unit tests - no Mastercam, no part.
+
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+if not exist "%VSWHERE%" (
+    echo ERROR: vswhere.exe not found - is Visual Studio installed?
+    exit /b 1
+)
+
+for /f "usebackq delims=" %%I in (`"%VSWHERE%" -latest -property installationPath`) do set "VSDIR=%%I"
+if not defined VSDIR (
+    echo ERROR: Visual Studio not found.
+    exit /b 1
+)
+
+call "%VSDIR%\VC\Auxiliary\Build\vcvars64.bat" >nul
+if errorlevel 1 (
+    echo ERROR: vcvars64 failed.
+    exit /b 1
+)
+
+rem Build output OUTSIDE Dropbox: Dropbox locks a just-written .obj while it
+rem syncs it, and the next compile that writes the same file then fails.
+set "OUT=%TEMP%\ParamTableTests"
+if not exist "%OUT%" md "%OUT%"
+
+set FAILED=0
+
+echo === csv_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\csv_test.exe" ^
+    "%~dp0csv_test.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\csv_test.exe"
+    if errorlevel 1 set FAILED=1
+)
+
+echo === plan_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\plan_test.exe" ^
+    "%~dp0plan_test.cpp" "%~dp0..\src\Csv.cpp" "%~dp0..\src\Plan.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\plan_test.exe"
+    if errorlevel 1 set FAILED=1
+)
+
+echo === xlsx_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\xlsx_test.exe" ^
+    "%~dp0xlsx_test.cpp" "%~dp0..\src\Xlsx.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\xlsx_test.exe" "%OUT%\sample.xlsx"
+    if errorlevel 1 set FAILED=1
+)
+
+echo === xlsx_read_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\xlsx_read_test.exe" ^
+    "%~dp0xlsx_read_test.cpp" "%~dp0..\src\Xlsx.cpp" "%~dp0..\src\XlsxRead.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\xlsx_read_test.exe" "%~dp0fixtures"
+    if errorlevel 1 set FAILED=1
+)
+
+echo === estimate_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\estimate_test.exe" ^
+    "%~dp0estimate_test.cpp" "%~dp0..\src\Estimate.cpp" "%~dp0..\src\Xlsx.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\estimate_test.exe" "%OUT%"
+    if errorlevel 1 set FAILED=1
+)
+
+echo === filerules_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\filerules_test.exe" ^
+    "%~dp0filerules_test.cpp" "%~dp0..\src\FileRules.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\filerules_test.exe" "%OUT%"
+    if errorlevel 1 set FAILED=1
+)
+
+if %FAILED%==1 (
+    echo.
+    echo TESTS FAILED
+    exit /b 1
+)
+echo.
+echo all tests passed
+exit /b 0

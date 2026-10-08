@@ -1,0 +1,54 @@
+// ParamTable.rc - resources for the Parameter Table Tool C++ Add-In.
+
+#include "resource.h"
+#include "afxres.h"
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,1,0,0
+ PRODUCTVERSION 0,1,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "Parameter Table Tool\0"
+            VALUE "FileVersion", "0.1.0.0\0"
+            VALUE "InternalName", "ParamTable.DLL\0"
+            VALUE "OriginalFilename", "ParamTable.DLL\0"
+            VALUE "ProductName", "Mastercam 2026 C++ Add-In\0"
+            VALUE "ProductVersion", "0.1.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+IDB_FT_SMALL     PNG        "..\\res\\Resources\\ft_small.png"
+IDB_FT_LARGE     PNG        "..\\res\\Resources\\ft_large.png"
+
+STRINGTABLE
+BEGIN
+    // TWO-STRING TIP FORMAT: the SECOND string is what appears in Mastercam's
+    // File-Options command list, and the "top" line of the on-screen tip. So the
+    // second is the short command name, and the first is the add-in's own name.
+    // (Function-Table-file.pdf, "Resource Definition".)
+    IDS_FT_DUMP     "Parameter Table Tool\nLathe params - dump to Excel"
+    IDS_FT_LOAD     "Parameter Table Tool\nLathe params - load"
+END
+
+#endif

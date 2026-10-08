@@ -1,0 +1,32 @@
+# Build output. The intermediates live OUTSIDE the repo (see the vcxproj) because
+# this tree is inside Dropbox, which holds sections open on MSBuild's .tlog files.
+build/
+x64/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.tlog
+
+# Test harness output
+tests/out/
+
+# Local machine state
+*.user
+*.suo
+.vs/
+
+# Dumps and logs produced by running the tool against a part
+*.csv
+ParamTable.log
+build-gen/
+dist/
+
+# Real parts and their dumps used for testing - never published
+tests/*.mcam
+tests/*.xlsx
+tests/*.xlsm
+!tests/fixtures/*.xlsx
+tests/~$*
+res/*POST*/
