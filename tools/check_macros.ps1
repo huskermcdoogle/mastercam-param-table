@@ -66,6 +66,20 @@ try {
     Check ($ws.Range("G3").Value2 -eq 0.01 -and $ws.Range("I4").Value2 -eq 300) "revert puts values back ($back cells)"
     Check ($ws.Range("E3").Value2 -eq 0 -and $ws.Range("E4").Value2 -eq 0) "and the change counts return to 0"
 
+    # Coolant: Set selected on coolant cells - several at once, each row's own machine.
+    $r = $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O3:O4"), "Flood + Mist")
+    Check ($r -eq "2 0" -and $ws.Range("O3").Text -eq "Flood + Mist" -and $ws.Range("O4").Text -eq "Flood + Mist") "coolant 'Flood + Mist' set on both rows ($r)"
+    $r = $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O3:O4"), "Thru-tool")
+    Check ($r -eq "1 1" -and $ws.Range("O3").Text -eq "Thru-tool" -and $ws.Range("O4").Text -eq "Flood + Mist") "Thru-tool set where the machine has it, refused where not ($r)"
+
+    # The manual-text editor (no window): counter, limit, line breaks as CR LF.
+    $t = $xl.Run("ParamTable.EditorSelfTest", "G4 X1.`r`nM01")
+    Check ($t -eq "11 / 3,111 characters,  2 lines|True|11") "editor counts '$t'"
+    $t = $xl.Run("ParamTable.EditorSelfTest", "a`nb")
+    Check ($t -like "*|True|4") "a bare line feed becomes CR LF ('$t')"
+    $t = $xl.Run("ParamTable.EditorSelfTest", ("x" * 4000))
+    Check ($t -like "*over the limit by 889*|False|4000") "4000 characters: over the limit, OK off ('$t')"
+
     # Calculators.
     $rpm = $xl.Run("ParamTable.RpmFromSurface", 14, 200, $false)
     Check ([math]::Abs($rpm - 54.567) -lt 0.01) "200 SFM at 14 dia = 54.57 RPM (got $rpm)"

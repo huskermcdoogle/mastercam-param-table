@@ -31,6 +31,8 @@
         <group id="ptPick" label="Pick">
           <button id="ptCoolant" label="Coolants" size="large" imageMso="SmartArtAddShape" onAction="RbCoolant"
                   supertip="Pick several coolants for one timing - click a coolant_before / with / after cell first."/>
+          <button id="ptText" label="Manual text" size="large" imageMso="EditDocument" onAction="RbText"
+                  supertip="A big editor for a manual entry's text, with a live character count - click a manual_text cell first (or double-click it)."/>
         </group>
       </tab>
     </tabs>

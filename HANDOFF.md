@@ -20,8 +20,10 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
 - **Macro layer (2026-10-08):** `vba\ParamTable.bas` + `vba\Sheet1.cls` + `vba\ribbon.xml`,
   compiled by `tools\build_vba.ps1` into `res\vbaProject.bin` (embedded as RCDATA). Dump window
   "Include macros" -> `.xlsm` (code names ThisWorkbook / Sheet1 are written by the writer).
-  `tools\check_macros.ps1`: 16 checks pass in real Excel. NOT yet run from Mastercam.
-  Not done: a bigger editor for manual text (InputBox caps at 255 chars).
+  `tools\check_macros.ps1`: 21 checks pass in real Excel. Manual-text editor is a UserForm
+  (`vba\TextEditor.vb`, controls made by build_vba.ps1); Set selected is coolant-aware. The
+  form's MSForms reference embeds C:\Users\<name>\...\MSForms.exd - `tools\scrub_vba.py`
+  (run by build_vba.ps1, needs python) overwrites the name in place.
 - **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`).
 - Real parts used for testing live in `tests\` locally and are NOT tracked (gitignored).
 

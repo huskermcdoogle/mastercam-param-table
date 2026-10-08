@@ -42,6 +42,19 @@ try {
         throw "the VBA project has '$($names -join ', ')', expected Sheet1 and ThisWorkbook"
     }
     [void] $vbp.VBComponents.Import($bas)
+    # The manual-text editor: a UserForm with five named controls; its look and
+    # behaviour are all in vba\TextEditor.vb.
+    $frm = $vbp.VBComponents.Add(3)                      # vbext_ct_MSForm
+    $frm.Name = "TextEditor"
+    foreach ($c in @(@("Forms.TextBox.1", "txt"), @("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblCount"),
+                     @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))) {
+        [void] $frm.Designer.Controls.Add($c[0], $c[1], $true)
+    }
+    $formCode = (Get-Content -LiteralPath (Join-Path $Root "vba\TextEditor.vb") -Raw) -replace "`r?`n", "`r`n"
+    $fm = $frm.CodeModule
+    if ($fm.CountOfLines -gt 0) { $fm.DeleteLines(1, $fm.CountOfLines) }
+    $fm.AddFromString($formCode)
+
     $cm = $vbp.VBComponents.Item("Sheet1").CodeModule
     if ($cm.CountOfLines -gt 0) { $cm.DeleteLines(1, $cm.CountOfLines) }
     $cm.AddFromString($sheetCode)
@@ -63,5 +76,9 @@ try {
     $fs = [IO.File]::Create($out)
     try { $in.CopyTo($fs) } finally { $fs.Close(); $in.Close() }
 } finally { $zip.Dispose() }
+
+# The UserForm's MSForms reference records C:\Users\<you>\...\MSForms.exd - take the name out.
+python (Join-Path $Root "tools\scrub_vba.py") $out $env:USERNAME
+if ($LASTEXITCODE) { throw "scrub_vba failed" }
 
 "compiled -> res\vbaProject.bin ({0:N0} bytes)" -f (Get-Item -LiteralPath $out).Length

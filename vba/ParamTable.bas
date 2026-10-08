@@ -130,12 +130,18 @@ End Sub
 
 ' ============================================================ bulk edits
 
-' Set every selected cell to one value.
+' Set every selected cell to one value. Coolant cells get the coolant picker instead -
+' several coolants at once, each row checked against its own machine's coolants.
 Public Sub SetSelected()
-    Dim cells As Range, v As Variant
+    Dim cells As Range, v As Variant, names As String
     If Not OnMain() Then Exit Sub
     Set cells = DataCells(Selection)
     If cells Is Nothing Then Exit Sub
+    If AllCoolant(cells) Then
+        names = AskCoolants(cells.Cells(1, 1), cells.Count & " selected coolant cell(s)")
+        If names <> "" Then ReportPair "set", SetCoolantCells(cells, names)
+        Exit Sub
+    End If
     v = Application.InputBox("Value for the " & cells.Count & " selected cell(s):", TITLE & " - set selected")
     If VarType(v) = vbBoolean Then Exit Sub
     ReportPair "set", SetCells(cells, v)
@@ -345,37 +351,146 @@ End Sub
 
 ' ============================================================ pickers
 
-' Several coolants at one timing (a dropdown takes one).
-Public Sub PickCoolant()
-    Dim c As Range, hdr As String, list As String, opts() As String, i As Long, s As Variant
-    Dim pick() As String, out As String, k As Long
-    If Not OnMain() Then Exit Sub
-    Set c = ActiveCell
-    hdr = CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)
-    If Left$(hdr, 8) <> "coolant_" Or c.Row < FIRST_ROW Then
-        MsgBox "Click a cell in coolant_before, coolant_with or coolant_after first.", vbInformation, TITLE
-        Exit Sub
-    End If
+Private Function IsCoolantHeader(ByVal hdr As String) As Boolean
+    IsCoolantHeader = (hdr = "coolant_before" Or hdr = "coolant_with" Or hdr = "coolant_after")
+End Function
+
+Private Function AllCoolant(ByVal cells As Range) As Boolean
+    Dim c As Range
+    For Each c In cells.Cells
+        If Not IsCoolantHeader(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) Then Exit Function
+    Next
+    AllCoolant = True
+End Function
+
+' A coolant cell's choices: its dropdown list ("none" first), or an empty array.
+Private Function CoolantChoices(ByVal c As Range) As Variant
+    Dim list As String
     On Error Resume Next
     list = c.Validation.Formula1
     On Error GoTo 0
     list = Replace(list, """", "")
-    If list = "" Then MsgBox "This operation has no coolant choices.", vbInformation, TITLE: Exit Sub
-    opts = Split(list, ",")
+    If list = "" Or UCase$(list) = "FALSE" Or UCase$(list) = "=FALSE" Then
+        CoolantChoices = Array()
+    Else
+        CoolantChoices = Split(list, ",")
+    End If
+End Function
+
+' Ask for coolants by number ("1+3"); the names joined by " + ", "none", or "" if cancelled.
+Public Function AskCoolants(ByVal c As Range, ByVal what As String) As String
+    Dim opts As Variant, i As Long, s As Variant, pick() As String, out As String, k As Long, list As String
+    opts = CoolantChoices(c)
+    If UBound(opts) < 1 Then
+        MsgBox "No coolant choices here - is this a row with coolant?", vbInformation, TITLE
+        Exit Function
+    End If
     For i = 1 To UBound(opts)             ' 0 is "none"
-        s = s & i & "  " & opts(i) & vbCrLf
+        list = list & i & "  " & opts(i) & vbCrLf
     Next
-    s = Application.InputBox("Coolants for " & hdr & " - numbers joined by +, e.g.  1+3" & vbCrLf & _
-                             "(0 = none)" & vbCrLf & vbCrLf & s, TITLE & " - coolant")
-    If VarType(s) = vbBoolean Then Exit Sub
+    s = Application.InputBox("Coolants for " & what & " - numbers joined by +, e.g.  1+3" & vbCrLf & _
+                             "(0 = none)" & vbCrLf & vbCrLf & list, TITLE & " - coolant")
+    If VarType(s) = vbBoolean Then Exit Function
     pick = Split(Replace(CStr(s), " ", ""), "+")
     For i = 0 To UBound(pick)
         k = Val(pick(i))
         If k >= 1 And k <= UBound(opts) Then out = out & IIf(out = "", "", " + ") & opts(k)
     Next
     If out = "" Then out = "none"
-    c.Value = out          ' two coolants are not a dropdown choice; the load reads "A + B"
+    AskCoolants = out
+End Function
+
+' Coolant names into cells, each row checked against ITS OWN choices (machines differ).
+' "A + B" is not a dropdown choice but is what the load reads - so the check is by name.
+Public Function SetCoolantCells(ByVal cells As Range, ByVal names As String) As String
+    Dim c As Range, ok As Long, bad As Long, opts As Variant, want() As String, i As Long, j As Long, found As Boolean, good As Boolean
+    want = Split(names, " + ")
+    For Each c In cells.Cells
+        opts = CoolantChoices(c)
+        good = UBound(opts) >= 0
+        For i = 0 To UBound(want)
+            found = False
+            For j = 0 To UBound(opts)
+                If LCase$(Trim$(opts(j))) = LCase$(Trim$(want(i))) Then found = True
+            Next
+            If Not found Then good = False
+        Next
+        If good Then
+            c.Value = names
+            ok = ok + 1
+        Else
+            bad = bad + 1
+        End If
+    Next
+    SetCoolantCells = ok & " " & bad
+End Function
+
+' Several coolants at one timing, for the active cell.
+Public Sub PickCoolant()
+    Dim c As Range, names As String
+    If Not OnMain() Then Exit Sub
+    Set c = ActiveCell
+    If Not IsCoolantHeader(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) Or c.Row < FIRST_ROW Then
+        MsgBox "Click a cell in coolant_before, coolant_with or coolant_after first.", vbInformation, TITLE
+        Exit Sub
+    End If
+    names = AskCoolants(c, CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value))
+    If names <> "" Then SetCoolantCells c, names
 End Sub
+
+' ============================================================ manual entry text
+
+' Whether a cell takes input at all (read-only and does-not-apply cells refuse everything).
+Private Function TakesInput(ByVal c As Range) As Boolean
+    Dim f As String
+    TakesInput = True
+    On Error Resume Next
+    f = UCase$(Replace(c.Validation.Formula1, "=", ""))
+    On Error GoTo 0
+    If f = "FALSE" Then TakesInput = False
+End Function
+
+Public Sub EditManualText()
+    Dim c As Range
+    If Not OnMain() Then Exit Sub
+    Set c = ActiveCell
+    If CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value) <> "manual_text" Or c.Row < FIRST_ROW Then
+        MsgBox "Click a manual_text cell first.", vbInformation, TITLE
+        Exit Sub
+    End If
+    EditText c
+End Sub
+
+' The editor window on one manual_text cell. True when the text was changed.
+Public Function EditText(ByVal c As Range) As Boolean
+    Dim f As TextEditor, info As String, g As Variant
+    If Not TakesInput(c) Then
+        MsgBox "This row is not a manual entry.", vbInformation, TITLE
+        Exit Function
+    End If
+    g = ValueAt(c.Row, "manual_gcode")
+    info = "op " & MainSheet.Cells(c.Row, 1).Value
+    If CStr(g) = "1006" Then info = info & "  -  output as CODE" Else If CStr(g) = "1005" Then info = info & "  -  output as a COMMENT"
+    Set f = New TextEditor
+    f.LoadText CStr(c.Value), info
+    f.Show
+    If f.Accepted Then
+        If f.EditedText() <> CStr(c.Value) Then
+            c.Value = f.EditedText()
+            EditText = True
+        End If
+    End If
+    Unload f
+End Function
+
+' For the checks (no window): the counter and the limit, on given text.
+Public Function EditorSelfTest(ByVal text As String) As String
+    Dim f As TextEditor
+    Set f = New TextEditor
+    f.LoadText text, "test"
+    EditorSelfTest = f.CountText() & "|" & f.CanAccept() & "|" & Len(f.EditedText())
+    Unload f
+End Function
 
 ' ============================================================ as cells change
 
@@ -454,3 +569,4 @@ Public Sub RbChanges(control As IRibbonControl): ShowChanges: End Sub
 Public Sub RbSpeed(control As IRibbonControl): CalcSpeed: End Sub
 Public Sub RbFeed(control As IRibbonControl): CalcFeed: End Sub
 Public Sub RbCoolant(control As IRibbonControl): PickCoolant: End Sub
+Public Sub RbText(control As IRibbonControl): EditManualText: End Sub

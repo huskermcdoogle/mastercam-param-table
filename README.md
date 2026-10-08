@@ -33,7 +33,10 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
 - **Optional macros** (an `.xlsm`, off unless ticked): a *Parameter Table* ribbon tab -
   set / scale / copy across selected cells (each cell's limits still apply), revert cells,
   rows or everything to the dump, a Changes sheet listing every edit, SFM/RPM and
-  per-rev/per-min calculators, a multi-coolant picker - and, as you type, linked amount /
+  per-rev/per-min calculators, a multi-coolant picker (Set selected takes coolant cells too,
+  each row checked against its own machine's list), a big resizable editor for manual-entry
+  text with a live count against the 3,111-character limit (double-click the cell) - and, as
+  you type, linked amount /
   percent pairs kept in step and gentle warnings in the status bar (CSS with no max RPM, a
   per-minute feed that looks like a per-rev one). The sheet loads back the same without them.
 - Never overwrites a file - a name that is taken gets ` (2)`.
