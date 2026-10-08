@@ -143,13 +143,16 @@ namespace
 			st.time = Hms (t);
 			st.timeRaw = Csv::Tidy (t);
 			}
-		const std::shared_ptr<OpExtentsData> ext = GetOperationExtents (pOp);
-		if (ext && ext->DataValid && ext->TravelValid)
+		// Travel from our own walk of the NCI. NOT GetOperationExtents: it runs
+		// the setup-sheet tool report, which on a part with two different tools
+		// sharing a number asks about it - once per operation dumped.
+		if (st.path.ok && st.path.moves > 0)
 			{
-			st.xMin = Csv::Tidy (ext->TPlaneMin[0]);
-			st.xMax = Csv::Tidy (ext->TPlaneMax[0]);
-			st.zMin = Csv::Tidy (ext->TPlaneMin[2]);
-			st.zMax = Csv::Tidy (ext->TPlaneMax[2]);
+			auto tidy = [] (double v) { return Csv::Tidy (std::round (v * 10000.0) / 10000.0); };
+			st.xMin = tidy (st.path.min[0]);
+			st.xMax = tidy (st.path.max[0]);
+			st.zMin = tidy (st.path.min[2]);
+			st.zMax = tidy (st.path.max[2]);
 			}
 		return st;
 		}
@@ -961,6 +964,28 @@ namespace Dump
 		for (const Column &c : columns)
 			head.push_back (c.name);
 		out.push_back (head);
+
+		// Two different tools sharing a number: Mastercam asks about it when it
+		// works out times and reports. Say which, so the part can be fixed.
+		{
+		std::map<long, std::map<long, std::vector<long>>> slotsOf;	// tool no -> slot -> ops
+		for (const Found &f : rows)
+			if (HasTool (*f.t))
+				slotsOf[f.op->tl.tlno][f.op->tl.slot].push_back (f.op->op_idn);
+		for (const auto &no : slotsOf)
+			if (no.second.size () > 1)
+				{
+				std::wstring line = L"tool number " + std::to_wstring (no.first) + L" is more than one tool:";
+				for (const auto &sl : no.second)
+					{
+					line += L"  slot " + std::to_wstring (sl.first) + L" (op";
+					for (long id : sl.second)
+						line += L" " + std::to_wstring (id);
+					line += L")";
+					}
+				Util::Log (part, line);
+				}
+		}
 
 		int radiusHow[3] = { 0, 0, 0 };		// Radius::Corner, HalfDia, Guess
 		std::vector<Stats> rowStats;

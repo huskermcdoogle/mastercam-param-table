@@ -162,6 +162,13 @@ namespace Paths
 					t.feedSeconds += MoveSeconds (sp, len, r, feed);
 					bucketOf[{ feed, t.sections, 0 }].push_back ({ len, r });
 					}
+				// The hole's bottom is part of where the tool goes (a mill hole: Z down
+				// from where the tool stands to the depth - Mastercam's extents agree).
+				if (!lathe && fromPlanes > 0 && have)
+					{
+					const double p[3] = { at[0], at[1], bottom };
+					visit (p);
+					}
 				continue;
 				}
 			if (g != NCI_RAPID && g != NCI_LINEAR && g != NCI_ARC_CW && g != NCI_ARC_CCW)
