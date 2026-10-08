@@ -30,6 +30,12 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
   walks the toolpath (lines and arcs, CSS turned to RPM at each diameter, the max-RPM cap, each
   section's own spindle setting) and reproduces Mastercam's cycle time to within seconds.
 - **A Tools sheet** with each lathe tool's picture, linked from the `tool` column.
+- **Optional macros** (an `.xlsm`, off unless ticked): a *Parameter Table* ribbon tab -
+  set / scale / copy across selected cells (each cell's limits still apply), revert cells,
+  rows or everything to the dump, a Changes sheet listing every edit, SFM/RPM and
+  per-rev/per-min calculators, a multi-coolant picker - and, as you type, linked amount /
+  percent pairs kept in step and gentle warnings in the status bar (CSS with no max RPM, a
+  per-minute feed that looks like a per-rev one). The sheet loads back the same without them.
 - Never overwrites a file - a name that is taken gets ` (2)`.
 
 **Load** - pick the edited, saved workbook (or a CSV). A preview window lists every change
@@ -93,7 +99,11 @@ tests\run_tests.bat
 
 `tests\run_tests.bat` builds and runs the SDK-free tests (CSV, load rules, workbook writer and
 reader - including its own DEFLATE - file naming, and the estimate formula);
-`tools\check_estimate.ps1` checks the estimate formula in real Excel. `deploy.ps1` installs on
+`tools\check_estimate.ps1` checks the estimate formula in real Excel.
+
+The macros are plain text in `vba\`; `tools\build_vba.ps1` compiles them with Excel into
+`res\vbaProject.bin` (needs *Trust access to the VBA project object model*), which the add-in
+embeds. `tools\check_macros.ps1` drives them in real Excel. `deploy.ps1` installs on
 the build machine; `package.ps1` makes the release zip.
 
 ## Layout
@@ -106,6 +116,7 @@ the build machine; `package.ps1` makes the release zip.
 | `src\Xlsx.cpp`, `src\XlsxRead.cpp` | the workbook writer and reader (no libraries) |
 | `src\Paths.*`, `src\Estimate.*` | the NCI walk and the live estimate formula |
 | `src\Coolant.*` | X-style coolant: codes, machine labels, write-back |
+| `vba\` | the workbook macros (module, sheet events, ribbon XML) |
 
 ## Licence
 

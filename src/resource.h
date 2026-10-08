@@ -5,6 +5,8 @@
 #define IDS_FT_LOAD                     2
 #define IDB_FT_SMALL                    18001
 #define IDB_FT_LARGE                    18002
+#define IDR_VBAPROJECT                  18010
+#define IDR_RIBBON                      18011
 
 // Next default values for new objects
 //

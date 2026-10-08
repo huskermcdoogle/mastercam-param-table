@@ -336,7 +336,9 @@ namespace Xlsx
 		sd += "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
 			  "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">";
 		// Outline +/- buttons over a group's FIRST column (the one left showing).
-		sd += "<sheetPr><outlinePr summaryBelow=\"0\" summaryRight=\"0\"/></sheetPr>";
+		const bool macros = !s.vbaProject.empty ();
+		sd += std::string ("<sheetPr") + (macros ? " codeName=\"Sheet1\"" : "")
+			  + "><outlinePr summaryBelow=\"0\" summaryRight=\"0\"/></sheetPr>";
 
 		// ---- Column outline: each outlined group keeps its first column at
 		// level 0 (the handle) and puts the rest at level 1, so neighbouring
@@ -722,7 +724,10 @@ namespace Xlsx
 			"<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
 			"<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
 			"<Default Extension=\"png\" ContentType=\"image/png\"/>"
-			"<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
+			+ std::string (macros ? "<Default Extension=\"bin\" ContentType=\"application/vnd.ms-office.vbaProject\"/>" : "") +
+			"<Override PartName=\"/xl/workbook.xml\" ContentType=\""
+			+ std::string (macros ? "application/vnd.ms-excel.sheet.macroEnabled.main+xml"
+								  : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml") + "\"/>"
 			"<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
 			+ std::string (track ? "<Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (toolsPage ? "<Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
@@ -732,10 +737,14 @@ namespace Xlsx
 		parts.push_back ({ "_rels/.rels", decl +
 			"<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
 			"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"
-			"</Relationships>" });
+			+ std::string (macros && !s.ribbonXml.empty ()
+							   ? "<Relationship Id=\"rId2\" Type=\"http://schemas.microsoft.com/office/2007/relationships/ui/extensibility\" Target=\"customUI/customUI14.xml\"/>"
+							   : "")
+			+ "</Relationships>" });
 		parts.push_back ({ "xl/workbook.xml", decl +
 			"<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
 			"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+			+ std::string (macros ? "<workbookPr codeName=\"ThisWorkbook\"/>" : "") +
 			"<sheets><sheet name=\"Lathe params\" sheetId=\"1\" r:id=\"rId1\"/>"
 			+ std::string (toolsPage ? "<sheet name=\"Tools\" sheetId=\"3\" r:id=\"rId4\"/>" : "")
 			+ std::string (track ? "<sheet name=\"Dumped\" sheetId=\"2\" state=\"hidden\" r:id=\"rId3\"/>" : "")
@@ -752,11 +761,18 @@ namespace Xlsx
 			"<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
 			+ std::string (track ? "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet2.xml\"/>" : "")
 			+ std::string (toolsPage ? "<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet3.xml\"/>" : "")
+			+ std::string (macros ? "<Relationship Id=\"rId5\" Type=\"http://schemas.microsoft.com/office/2006/relationships/vbaProject\" Target=\"vbaProject.bin\"/>" : "")
 			+ "</Relationships>" });
 		parts.push_back ({ "xl/styles.xml", st.Xml () });
 		parts.push_back ({ "xl/worksheets/sheet1.xml", sd });
 		if (track)
 			parts.push_back ({ "xl/worksheets/sheet2.xml", dumped });
+		if (macros)
+			{
+			parts.push_back ({ "xl/vbaProject.bin", s.vbaProject });
+			if (!s.ribbonXml.empty ())
+				parts.push_back ({ "customUI/customUI14.xml", s.ribbonXml });
+			}
 		if (toolsPage)
 			{
 			parts.push_back ({ "xl/worksheets/sheet3.xml", toolsXml });

@@ -45,6 +45,7 @@ namespace Settings
 		d.pattern = GetText (L"DumpPattern", FileRules::kDefaultPattern);
 		d.openExcel = GetFlag (L"OpenExcel", true);
 		d.pictures = GetFlag (L"ToolPictures", true);
+		d.macros = GetFlag (L"Macros", false);
 		d.skipKinds = GetText (L"SkipKinds", L"");
 		return d;
 		}
@@ -55,6 +56,7 @@ namespace Settings
 		SetText (L"DumpPattern", d.pattern);
 		SetFlag (L"OpenExcel", d.openExcel);
 		SetFlag (L"ToolPictures", d.pictures);
+		SetFlag (L"Macros", d.macros);
 		SetText (L"SkipKinds", d.skipKinds);
 		}
 

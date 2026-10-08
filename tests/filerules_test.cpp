@@ -27,6 +27,8 @@ int main (int argc, char **argv)
 	check (Name (L"a/b:c*?\"<>|", L"P", when, false, 1) == L"a_b_c______.xlsx", "forbidden characters become _");
 	check (Name (L"{nope} x", L"P", when, false, 1) == L"{nope} x.xlsx", "unknown token kept as typed");
 	check (Name (L"name.xlsx", L"P", when, false, 1) == L"name.xlsx", ".xlsx not doubled");
+	check (Name (L"name", L"P", when, false, 1, L".xlsm") == L"name.xlsm", "macros: .xlsm");
+	check (Name (L"name.xlsx", L"P", when, false, 1, L".xlsm") == L"name.xlsm", "a typed .xlsx gives way to .xlsm");
 	check (Name (L"trailing. ", L"P", when, false, 1) == L"trailing.xlsx", "trailing dots and spaces dropped");
 
 	// Never overwrite.

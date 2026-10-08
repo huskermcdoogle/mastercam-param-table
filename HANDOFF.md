@@ -17,6 +17,11 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
   `HKCU\Software\ParamTableTool`), file name rules (`src\FileRules.*`), Tools sheet with lathe
   tool pictures (`src\ToolPictures.*`, needs `MCTool.lib`), canned-drill time, coolant
   write-back (codes, dialog).
+- **Macro layer (2026-10-08):** `vba\ParamTable.bas` + `vba\Sheet1.cls` + `vba\ribbon.xml`,
+  compiled by `tools\build_vba.ps1` into `res\vbaProject.bin` (embedded as RCDATA). Dump window
+  "Include macros" -> `.xlsm` (code names ThisWorkbook / Sheet1 are written by the writer).
+  `tools\check_macros.ps1`: 16 checks pass in real Excel. NOT yet run from Mastercam.
+  Not done: a bigger editor for manual text (InputBox caps at 255 chars).
 - **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`).
 - Real parts used for testing live in `tests\` locally and are NOT tracked (gitignored).
 
@@ -49,10 +54,13 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
   project trust on the BUILD machine only, to compile the macro source.
 
 ## Next (agreed)
-1. Macro layer (.xlsm, optional, switchable): two-way links, bulk edits, revert, calculators, pickers.
+1. Run a macro dump from Mastercam; try the ribbon tab.
 2. Mill tool pictures.
 
 ## Traps
 - Backslashes die in bash heredocs - write files with the Write/Edit tools, or use '/'.
 - Dropbox locks freshly written files; test build output lives in %TEMP%\ParamTableTests.
 - The PowerShell tool's working directory drifts - use absolute paths / Set-Location.
+- Driving Excel by COM: a VBA MsgBox/InputBox hangs it invisibly - keep testable work in
+  quiet Functions, and run checks under a timeout.
+- The VBA project is PUBLIC: scan res\vbaProject.bin for user names/paths before committing.

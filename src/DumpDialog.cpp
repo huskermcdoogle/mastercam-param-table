@@ -17,7 +17,7 @@ namespace
 		{
 		IdTitle = 2001, IdSummary, IdOpsHead, IdAll, IdSelected, IdKinds, IdSkipped,
 		IdFolderHead, IdFolder, IdBrowse, IdBeside, IdNameHead, IdPattern, IdPreview,
-		IdTokens, IdOpen, IdPictures
+		IdTokens, IdOpen, IdPictures, IdMacros
 		};
 
 	class Dlg : public CDialog
@@ -149,6 +149,11 @@ namespace
 							   WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, CRect (), this, IdPictures);
 				m_pics.SetFont (&m_font);
 				m_pics.SetCheck (m_settings.pictures ? BST_CHECKED : BST_UNCHECKED);
+				m_macros.Create (L"Include macros (.xlsm): a Parameter Table ribbon tab - bulk edit, "
+								 L"revert, change list, calculators",
+								 WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, CRect (), this, IdMacros);
+				m_macros.SetFont (&m_font);
+				m_macros.SetCheck (m_settings.macros ? BST_CHECKED : BST_UNCHECKED);
 
 				m_ok.Create (L"Dump", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON, CRect (), this, IDOK);
 				m_ok.SetFont (&m_bold);
@@ -223,6 +228,8 @@ namespace
 				place (m_open, pad, y, inner, lineH);
 				y += lineH;
 				place (m_pics, pad, y, inner, lineH);
+				y += lineH;
+				place (m_macros, pad, y, inner, lineH);
 				y += lineH + gap;
 
 				const int okW = u * 13, cW = u * 7;
@@ -258,7 +265,8 @@ namespace
 				const std::wstring name = FileRules::Name (pat.GetString (),
 														   std::filesystem::path (m_part).stem ().wstring (),
 														   std::time (nullptr), m_sel.GetCheck () == BST_CHECKED,
-														   static_cast<size_t> (n));
+														   static_cast<size_t> (n),
+														   m_macros.GetCheck () == BST_CHECKED ? L".xlsm" : L".xlsx");
 				std::error_code ec;
 				const bool folderOk = std::filesystem::is_directory (folder.GetString (), ec);
 				m_previewOk = folderOk;
@@ -283,6 +291,7 @@ namespace
 				m_settings.pattern = pat.GetString ();
 				m_settings.openExcel = m_open.GetCheck () == BST_CHECKED;
 				m_settings.pictures = m_pics.GetCheck () == BST_CHECKED;
+				m_settings.macros = m_macros.GetCheck () == BST_CHECKED;
 				m_settings.skipKinds.clear ();
 				for (int i = 0; i < m_list.GetItemCount (); ++i)
 					{
@@ -348,7 +357,7 @@ namespace
 
 			CFont m_font, m_bold, m_big;
 			CStatic m_title, m_summary, m_opsHead, m_folderHead, m_nameHead, m_skippedCtl, m_preview, m_tokens;
-			CButton m_all, m_sel, m_browse, m_beside, m_open, m_pics, m_ok, m_cancel;
+			CButton m_all, m_sel, m_browse, m_beside, m_open, m_pics, m_macros, m_ok, m_cancel;
 			CListCtrl m_list;
 			CImageList m_rowImages;
 			CEdit m_folder, m_pattern;
@@ -361,6 +370,7 @@ namespace
 		ON_BN_CLICKED (IdSelected, &Dlg::OnChange)
 		ON_EN_CHANGE (IdPattern, &Dlg::OnChange)
 		ON_EN_CHANGE (IdFolder, &Dlg::OnChange)
+		ON_BN_CLICKED (IdMacros, &Dlg::OnChange)
 		ON_NOTIFY (LVN_ITEMCHANGED, IdKinds, &Dlg::OnItemChanged)
 		ON_WM_CTLCOLOR ()
 	END_MESSAGE_MAP ()

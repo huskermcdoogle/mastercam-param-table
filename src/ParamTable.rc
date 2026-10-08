@@ -41,6 +41,11 @@ END
 IDB_FT_SMALL     PNG        "..\\res\\Resources\\ft_small.png"
 IDB_FT_LARGE     PNG        "..\\res\\Resources\\ft_large.png"
 
+// The workbook macros, compiled by tools\\build_vba.ps1 from vba\\ - written into a dump
+// when macros are switched on.
+IDR_VBAPROJECT   RCDATA     "..\\res\\vbaProject.bin"
+IDR_RIBBON       RCDATA     "..\\vba\\ribbon.xml"
+
 STRINGTABLE
 BEGIN
     // TWO-STRING TIP FORMAT: the SECOND string is what appears in Mastercam's

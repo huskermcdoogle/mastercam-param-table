@@ -1,0 +1,38 @@
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+  <ribbon>
+    <tabs>
+      <tab id="ptTab" label="Parameter Table">
+        <group id="ptEdit" label="Bulk edit">
+          <button id="ptSet" label="Set selected" size="large" imageMso="FillDown" onAction="RbSet"
+                  screentip="Set selected" supertip="Put one value into every selected cell. Each cell's own limits still apply."/>
+          <button id="ptScale" label="Scale %" size="large" imageMso="PercentStyle" onAction="RbScale"
+                  screentip="Scale selected" supertip="Multiply the selected numbers by a percentage (110 = 10% more)."/>
+          <button id="ptCopy" label="Copy from op" size="large" imageMso="Copy" onAction="RbCopy"
+                  screentip="Copy from an operation" supertip="Copy one operation's values into the selected rows, for the selected columns."/>
+        </group>
+        <group id="ptRevert" label="Revert">
+          <button id="ptRevSel" label="Selected cells" size="large" imageMso="Undo" onAction="RbRevertSel"
+                  supertip="Put the selected cells back to their dumped values."/>
+          <button id="ptRevRows" label="Selected rows" size="normal" imageMso="Undo" onAction="RbRevertRows"
+                  supertip="Put every cell of the selected rows back to its dumped value."/>
+          <button id="ptRevAll" label="Everything" size="normal" imageMso="Undo" onAction="RbRevertAll"
+                  supertip="Put the whole sheet back to the dump."/>
+        </group>
+        <group id="ptReview" label="Review">
+          <button id="ptChanges" label="List changes" size="large" imageMso="ReviewTrackChanges" onAction="RbChanges"
+                  supertip="A Changes sheet listing every cell that differs from the dump, old and new."/>
+        </group>
+        <group id="ptCalc" label="Calculators">
+          <button id="ptSpeed" label="SFM / RPM" size="large" imageMso="Calculator" onAction="RbSpeed"
+                  supertip="Surface speed to RPM at a diameter, or back."/>
+          <button id="ptFeed" label="Per rev / min" size="large" imageMso="Calculator" onAction="RbFeed"
+                  supertip="Feed per rev to per minute at an RPM, or back."/>
+        </group>
+        <group id="ptPick" label="Pick">
+          <button id="ptCoolant" label="Coolants" size="large" imageMso="SmartArtAddShape" onAction="RbCoolant"
+                  supertip="Pick several coolants for one timing - click a coolant_before / with / after cell first."/>
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

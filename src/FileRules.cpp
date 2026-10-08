@@ -5,7 +5,7 @@
 namespace FileRules
 	{
 	std::wstring Name (const std::wstring &pattern, const std::wstring &part, std::time_t when,
-					   bool selectedOnly, size_t ops)
+					   bool selectedOnly, size_t ops, const std::wstring &ext)
 		{
 		std::tm tmv = {};
 		localtime_s (&tmv, &when);
@@ -51,12 +51,14 @@ namespace FileRules
 		if (out.empty ())
 			out = L"lathe_params";
 
+		// A typed extension of either kind gives way to the one chosen.
 		std::wstring lower = out;
 		for (wchar_t &c : lower)
 			c = static_cast<wchar_t> (towlower (c));
-		if (lower.size () < 5 || lower.compare (lower.size () - 5, 5, L".xlsx") != 0)
-			out += L".xlsx";
-		return out;
+		if (lower.size () >= 5 && (lower.compare (lower.size () - 5, 5, L".xlsx") == 0
+								   || lower.compare (lower.size () - 5, 5, L".xlsm") == 0))
+			out.resize (out.size () - 5);
+		return out + ext;
 		}
 
 	std::filesystem::path Unique (const std::filesystem::path &folder, const std::wstring &name)

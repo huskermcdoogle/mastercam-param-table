@@ -94,6 +94,12 @@ namespace Xlsx
 		/// Main-sheet cells that link to a Tools row: (A1 cell, index into tools).
 		std::vector<std::pair<std::string, size_t>> toolLinks;
 
+		/// A MACRO WORKBOOK (.xlsm): the compiled VBA project (vbaProject.bin) and
+		/// the ribbon tab's XML. Empty = a plain .xlsx. The compiled code expects
+		/// the code names ThisWorkbook and Sheet1 (the main sheet); they are written.
+		std::string vbaProject;
+		std::string ribbonXml;
+
 		/// Per group: gets an outline +/- (its first column stays visible).
 		std::vector<char> outlineGroup;
 		/// Per group: starts collapsed.

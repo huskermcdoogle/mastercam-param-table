@@ -13,6 +13,7 @@
 #include "Settings.h"
 #include "FileRules.h"
 #include "ToolPictures.h"
+#include "resource.h"
 #include "SetupSheet_CH.h"
 
 #include <algorithm>
@@ -330,6 +331,19 @@ namespace
 								  : L"opcode " + std::to_wstring (code);
 		}
 
+	/// An embedded resource's bytes (the compiled macros, the ribbon), or "".
+	std::string Resource (int id)
+		{
+		HMODULE m = AfxGetResourceHandle ();
+		HRSRC r = FindResourceW (m, MAKEINTRESOURCEW (id), RT_RCDATA);
+		if (r == nullptr)
+			return std::string ();
+		HGLOBAL g = LoadResource (m, r);
+		const DWORD n = SizeofResource (m, r);
+		const char *p = g != nullptr ? static_cast<const char *> (LockResource (g)) : nullptr;
+		return p != nullptr ? std::string (p, n) : std::string ();
+		}
+
 	/// One operation the dump will write.
 	struct Found
 		{
@@ -377,7 +391,7 @@ namespace
 	bool WriteXlsx (const std::filesystem::path &file, const std::vector<Csv::Row> &out,
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
 					const std::vector<Stats> &stats, const std::vector<Xlsx::Sheet::ToolRow> &tools,
-					const std::vector<int> &toolOfRow)
+					const std::vector<int> &toolOfRow, bool macros)
 		{
 		Xlsx::Sheet s;
 		s.rows = out;
@@ -723,6 +737,13 @@ namespace
 				}
 			kv.second.cells = ref;
 			s.validations.push_back (kv.second);
+			}
+
+		// ---- With macros: the compiled VBA and the ribbon tab (.xlsm).
+		if (macros)
+			{
+			s.vbaProject = Resource (IDR_VBAPROJECT);
+			s.ribbonXml = Resource (IDR_RIBBON);
 			}
 
 		// ---- The Tools page, and each row's tool number linking to it.
@@ -1081,8 +1102,8 @@ namespace Dump
 												 ? part.parent_path () : std::filesystem::path (settings.folder);
 		const std::filesystem::path file = FileRules::Unique (
 			folder, FileRules::Name (settings.pattern, part.stem ().wstring (), std::time (nullptr),
-									 onlySelected, rows.size ()));
-		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow))
+									 onlySelected, rows.size (), settings.macros ? L".xlsm" : L".xlsx"));
+		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow, settings.macros))
 			{
 			Util::Say (L"Could not write " + file.wstring () + L"\r\n\r\nCheck the "
 					   L"folder can be written to, and try again.",

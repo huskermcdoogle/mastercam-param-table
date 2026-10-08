@@ -76,6 +76,14 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+echo === macro_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\macro_test.exe" ^
+    "%~dp0macro_test.cpp" "%~dp0..\src\Xlsx.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\macro_test.exe" "%OUT%" "%~dp0..\res\vbaProject.bin" "%~dp0..\vba\ribbon.xml"
+    if errorlevel 1 set FAILED=1
+)
+
 if %FAILED%==1 (
     echo.
     echo TESTS FAILED

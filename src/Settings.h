@@ -15,6 +15,7 @@ namespace Settings
 		std::wstring pattern;			//!< file name pattern - see FileRules.h
 		bool openExcel = true;
 		bool pictures = true;
+		bool macros = false;			//!< write an .xlsm with the ribbon tab and its commands
 		std::wstring skipKinds;			//!< "|ROUGH|FACE|" - kinds left unticked
 		};
 
