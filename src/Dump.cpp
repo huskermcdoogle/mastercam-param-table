@@ -67,34 +67,6 @@ namespace
 							: std::wstring (g->name, wcsnlen (g->name, MAX_GROUP_NAME + 1));
 		}
 
-	/// V9-STYLE COOLANT in words: the bit field on the operation's tool info.
-	/// A part set up for X-style coolant leaves this at "off" whatever the
-	/// operation really does - see canned_text_raw.
-	std::wstring CoolantText (short c)
-		{
-		if (c == 0)
-			return L"none";
-		std::wstring s;
-		auto add = [&s] (const std::wstring &w)
-			{
-			if (!s.empty ())
-				s += L" + ";
-			s += w;
-			};
-		if (c & 0x08) add (L"off");
-		if (c & 0x10) add (L"flood");
-		if (c & 0x20) add (L"mist");
-		if (c & 0x40) add (L"through-tool");
-		const int rest = c & ~0x78;
-		if (rest != 0)
-			{
-			wchar_t buf[16];
-			swprintf_s (buf, L"other 0x%X", rest);
-			add (buf);
-			}
-		return s;
-		}
-
 	/// The operation's canned text codes, raw - where X-style coolant is expected
 	/// to live. Shown undecoded until real operations with known coolant settings
 	/// say what the codes mean.
@@ -352,6 +324,26 @@ namespace
 		void *prm = nullptr;
 		};
 
+	bool IsXCoolant (const std::wstring &name)
+		{
+		return name == L"coolant_before" || name == L"coolant_with" || name == L"coolant_after";
+		}
+
+	/// Whether a column means anything for this row. Coolant depends on the
+	/// operation's MACHINE: a V9 machine has the one `coolant` setting; an X-style
+	/// machine has before / with / after - shown on a V9 machine only to clear
+	/// leftover X-style entries it would ignore.
+	bool Applies (const Found &f, const std::wstring &name)
+		{
+		if (Lathe::IndexOf (*f.t, name) < 0)
+			return false;
+		if (name == L"coolant")
+			return Coolant::IsV9 (*f.op);
+		if (IsXCoolant (name))
+			return !Coolant::IsV9 (*f.op) || Coolant::HasXEntries (*f.op);
+		return true;
+		}
+
 	/// Whether this kind of operation carries the operation-level set (tool,
 	/// feeds, planes). Manual entry does not.
 	bool HasTool (const Lathe::Table &t)
@@ -420,7 +412,7 @@ namespace
 			{
 			std::vector<char> na;
 			for (const Column &c : columns)
-				na.push_back (!c.info && Lathe::IndexOf (*f.t, c.name) < 0);
+				na.push_back (!c.info && !Applies (f, c.name));
 			s.notApplicable.push_back (na);
 			}
 
@@ -654,12 +646,18 @@ namespace
 				{
 				Xlsx::Sheet::Validation v;
 				v.title = col.name;
-				const bool applies = col.info || Lathe::IndexOf (*rows[d].t, col.name) >= 0;
+				const bool applies = col.info || Applies (rows[d], col.name);
+				const bool kindHasIt = col.info || Lathe::IndexOf (*rows[d].t, col.name) >= 0;
 				if (!applies)
 					{
 					v.type = "custom";
 					v.f1 = L"FALSE";
-					v.prompt = L"Does not apply to " + rows[d].t->schema.type + L" operations - leave it blank.";
+					if (!kindHasIt)
+						v.prompt = L"Does not apply to " + rows[d].t->schema.type + L" operations - leave it blank.";
+					else if (col.name == L"coolant")
+						v.prompt = L"This operation's machine uses X-style coolant - see coolant_before / with / after.";
+					else
+						v.prompt = L"This operation's machine uses V9 coolant - see the coolant column.";
 					v.error = v.prompt;
 					}
 				else if (col.info || col.readOnly || pc == nullptr || pc->readOnly)
@@ -675,8 +673,16 @@ namespace
 					v.prompt = (help.empty () ? L"" : help + L"\n") + rule + L" Blank = leave as is.";
 					v.error = rule;
 					const bool lo = !std::isnan (pc->lo), hi = !std::isnan (pc->hi);
-					if (col.name == L"coolant_before" || col.name == L"coolant_with"
-						|| col.name == L"coolant_after")
+					if (IsXCoolant (col.name) && Coolant::IsV9 (*rows[d].op))
+						{
+						// Leftovers on a V9 machine: the only thing to do is clear them.
+						v.type = "list";
+						v.choices = { L"none" };
+						v.prompt = L"This operation's machine uses V9 coolant, so these X-style entries are ignored. "
+								   L"Set none to clear them; the coolant column is what the machine uses.";
+						v.error = L"Only none - this machine uses V9 coolant (the coolant column).";
+						}
+					else if (IsXCoolant (col.name))
 						{
 						v.type = "list";
 						v.choices = Coolant::Choices (*rows[d].op);
@@ -919,7 +925,7 @@ namespace Dump
 			for (const Found &f : rows)
 				{
 				const int at = Lathe::IndexOf (*f.t, name);
-				if (at < 0)
+				if (at < 0 || !Applies (f, name))
 					continue;
 				used = true;
 				const Plan::Col &pc = f.t->schema.cols[static_cast<size_t> (at)];
@@ -927,12 +933,12 @@ namespace Dump
 				c.text = c.text || pc.type == Plan::Type::Text;
 				c.isDouble = c.isDouble || pc.type == Plan::Type::Double;
 				}
-			if (!used)
-				continue;
-			columns.push_back (c);
+			if (used)
+				columns.push_back (c);
+			// The stats sit after the coolant columns - whether or not `coolant` itself
+			// is shown (an X-style machine has no use for it).
 			if (name == L"coolant")
 				{
-				info (L"coolant_text", true, false, c.group);
 				info (L"canned_text_raw", true, false, c.group);
 				info (L"cycle_time", true, false, GStats);
 				info (L"cycle_time_raw", false, true, GStats);
@@ -967,7 +973,7 @@ namespace Dump
 			auto read = [&] (const std::wstring &name) -> std::wstring
 				{
 				const int at = Lathe::IndexOf (t, name);
-				return at < 0 ? std::wstring ()
+				return at < 0 || !Applies (f, name) ? std::wstring ()
 							  : Lathe::Read (t.bindings[static_cast<size_t> (at)], pOp, f.prm);
 				};
 
@@ -1012,8 +1018,6 @@ namespace Dump
 					v = pOp->tl.mm ? L"mm" : L"in";
 				else if (c.name == L"needs_regen")
 					v = pOp->db.nci_flag ? L"yes" : L"no";
-				else if (c.name == L"coolant_text" && tool)
-					v = CoolantText (pOp->tl.coolant);
 				else if (c.name == L"canned_text_raw" && tool)
 					v = CannedText (pOp->cantxt);
 				else if (c.name == L"changes")

@@ -24,6 +24,7 @@ namespace Lathe
 	{
 	enum class Kind { Bool, Byte, Short, Int, Long, Double, Text,
 					  Coolant,			//!< X-style coolant at one timing - see Coolant.h
+					  CoolantV9,		//!< V9 coolant: the tool's one setting, by name
 					  DoubleSize,		//!< a signed double's SIZE - the sign is kept
 					  DoubleSign,		//!< a signed double's SIGN, as a word (labels)
 					  LongSize,			//!< a signed long's SIZE - the sign is kept

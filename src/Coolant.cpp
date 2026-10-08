@@ -16,6 +16,7 @@ namespace
 		{
 		std::vector<std::wstring> base, on, off;
 		bool any = false;			//!< the machine names at least one coolant
+		bool v9 = false;			//!< the machine uses V9 coolant (one setting, no timing)
 		};
 
 	std::map<long, Labels> gCache;	// by machine entity id, cleared by Reset
@@ -113,6 +114,10 @@ namespace
 				line += L"  " + std::to_wstring (k + 1) + L"=[" + l.base[k] + L" | " + l.on[k]
 						+ L" | " + l.off[k] + L"]";
 			}
+		// "Use coolant commands in post-processor (provided for backward compatibility)":
+		// the machine runs V9 coolant - the tool's one coolant setting, not canned text.
+		l.v9 = c.useCoolantFromPost;
+		line += l.v9 ? L"  | V9 coolant" : L"  | X-style coolant";
 		Util::Log (part, line);
 		return l;
 		}
@@ -241,10 +246,17 @@ namespace Coolant
 
 	bool Apply (operation &op, int when, const std::wstring &text, std::wstring &why)
 		{
-		const std::vector<std::wstring> names = Names (LabelsOf (MachineOf (op.cmn.grp_idn)));
+		const Labels &l = LabelsOf (MachineOf (op.cmn.grp_idn));
+		const std::vector<std::wstring> names = Names (l);
 		std::vector<Item> items;
 		if (!Parse (text, names, items, why))
 			return false;
+		// A V9 machine ignores X-style entries: "none" (clearing leftovers) is all it takes.
+		if (l.v9 && !items.empty ())
+			{
+			why = L"this machine uses V9 coolant - set the coolant column instead";
+			return false;
+			}
 
 		// Everything else stays: other timings' coolant and all canned text.
 		std::vector<short> keep;
@@ -289,5 +301,73 @@ namespace Coolant
 			}
 		why = first;
 		return false;
+		}
+	
+	// ---------------------------------------------------------------- V9 coolant
+
+	namespace
+		{
+		/// The V9 setting's values, as Mastercam's coolant dropdown names them.
+		const struct { short bit; const wchar_t *name; } kV9[] = {
+			{ 0x08, L"Off" }, { 0x10, L"Flood" }, { 0x20, L"Mist" }, { 0x40, L"Thru-tool" } };
+		}
+
+	bool IsV9 (const operation &op)
+		{
+		return LabelsOf (MachineOf (op.cmn.grp_idn)).v9;
+		}
+
+	bool HasXEntries (const operation &op)
+		{
+		for (short code : op.cantxt.cantxt)
+			if (code < 0 && (-code) / 1000 >= Before && (-code) / 1000 <= After)
+				return true;
+		return false;
+		}
+
+	std::vector<std::wstring> ChoicesV9 ()
+		{
+		std::vector<std::wstring> out;
+		for (const auto &v : kV9)
+			out.push_back (v.name);
+		return out;
+		}
+
+	std::wstring DescribeV9 (short c)
+		{
+		if (c == 0)
+			return L"Off";
+		std::wstring s;
+		for (const auto &v : kV9)
+			if (c & v.bit)
+				s += (s.empty () ? L"" : L" + ") + std::wstring (v.name);
+		if (c & ~0x78)
+			s += (s.empty () ? L"" : L" + ") + std::wstring (L"code ") + std::to_wstring (c);
+		return s;
+		}
+
+	bool CheckV9 (const std::wstring &text, std::wstring &why)
+		{
+		for (const auto &v : kV9)
+			if (Lower (Trim (text)) == Lower (v.name))
+				return true;
+		why = L"\"" + text + L"\" is not a V9 coolant (choose from: Off, Flood, Mist, Thru-tool)";
+		return false;
+		}
+
+	bool ApplyV9 (operation &op, const std::wstring &text, std::wstring &why)
+		{
+		if (!IsV9 (op))
+			{
+			why = L"this machine uses X-style coolant - set coolant_before / with / after instead";
+			return false;
+			}
+		for (const auto &v : kV9)
+			if (Lower (Trim (text)) == Lower (v.name))
+				{
+				op.tl.coolant = v.bit;
+				return true;
+				}
+		return CheckV9 (text, why);
 		}
 	}

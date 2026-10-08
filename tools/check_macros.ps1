@@ -1,4 +1,4 @@
-<#
+﻿<#
     Real-Excel check of the workbook macros: opens macro_sample.xlsm (tests\macro_test.exe)
     with macros enabled and drives them - two-way links, cross-checks, the cell rules on
     bulk writes, scale, copy, the change list and revert.
@@ -72,6 +72,14 @@ try {
     $r = $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O3:O4"), "Thru-tool")
     Check ($r -eq "1 1" -and $ws.Range("O3").Text -eq "Thru-tool" -and $ws.Range("O4").Text -eq "Flood + Mist") "Thru-tool set where the machine has it, refused where not ($r)"
 
+    # The coolant window (not shown): boxes from every selected row's machine, * where not all have it.
+    $t = $xl.Run("ParamTable.CoolantPickerSelfTest", $ws.Range("O3:O4"), "1,3")
+    Check ($t -eq "Flood|Mist|Thru-tool  *#Flood + Thru-tool") "coolant window: union with * on Thru-tool, ticks 1+3 ('$t')"
+    $t = $xl.Run("ParamTable.CoolantPickerSelfTest", $ws.Range("O3:O4"), "")
+    Check ($t -like "*#none") "rows that differ start unticked ('$t')"
+    $t = $xl.Run("ParamTable.CoolantPickerSelfTest", $ws.Range("O4"), "")
+    Check ($t -eq "Flood|Mist#Flood + Mist") "one cell starts ticked as it is now ('$t')"
+
     # The manual-text editor (no window): counter, limit, line breaks as CR LF.
     $t = $xl.Run("ParamTable.EditorSelfTest", "G4 X1.`r`nM01")
     Check ($t -eq "11 / 3,111 characters,  2 lines|True|11") "editor counts '$t'"
@@ -79,6 +87,37 @@ try {
     Check ($t -like "*|True|4") "a bare line feed becomes CR LF ('$t')"
     $t = $xl.Run("ParamTable.EditorSelfTest", ("x" * 4000))
     Check ($t -like "*over the limit by 889*|False|4000") "4000 characters: over the limit, OK off ('$t')"
+
+    # The Set / Scale / Copy window (not shown): a live line of what OK would do.
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("G3:G4"), "0.02")
+    Check ($t -like "2 cell(s) will change.|True|0.02") "set window: 2 feeds will change ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("G3:G4"), "-1")
+    Check ($t -like "0 cell(s) will change,  2 refused*|False|-1") "a negative feed: both refused, OK off ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("G3:G4"), "")
+    Check ($t -like "Type or pick*|False|") "nothing typed: OK off ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("H3:H4"), "#1")
+    Check ($t -like "2 cell(s) will change.|True|per min") "both feed_mode cells share a list: pick from it ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("A3,G3"), "0.03")
+    Check ($t -like "1 cell(s) will change,  1 refused*|True|0.03") "read-only op_idn counted as refused ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "scale", $ws.Range("I3:I4"), "110")
+    Check ($t -like "2 cell(s) will change.*200 -> 220*300 -> 330|True|110") "scale window shows 200 -> 220 ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "scale", $ws.Range("I3:I4"), "abc")
+    Check ($t -like "Type a percent*|False|abc") "scale by 'abc': OK off ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("G4:I4"), "#0")
+    Check ($t -like "2 cell(s) will change,  1 already that.|True|2") "copy window: pick op 2 from the list ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("J4:K4"), "#0")
+    Check ($t -like "0 cell(s) will change,  2 already that.|False|2") "copying what is already there: OK off ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("J4:K4"), "")
+    Check ($t -like "Pick the operation*|False|*") "copy with nothing picked: OK off ('$t')"
+    Check ($ws.Range("G3").Value2 -eq 0.01 -and $ws.Range("I3").Value2 -eq 200) "the windows wrote nothing"
+
+    # The calculator (not shown): filled from the row, the boxes follow each other.
+    $t = $xl.Run("ParamTable.CalcSelfTest", $ws.Range("G3"), "txtDia=14")
+    Check ($t -like "55|200|0.01|0.55|max_ss on this row: 3500 RPM.") "calculator from op 2: 14 dia at 200 SFM = 55 RPM, 0.55 per min ('$t')"
+    $t = $xl.Run("ParamTable.CalcSelfTest", $ws.Range("G3"), "txtDia=0.2")
+    Check ($t -like "3820|*Above this row's max_ss*") "a small diameter goes past max_ss and says so ('$t')"
+    $t = $xl.Run("ParamTable.CalcSelfTest", $ws.Range("G3"), "txtDia=14;txtRpm=100")
+    Check ($t -like "100|366.5|0.01|1.0|*") "typing RPM gives the surface speed back ('$t')"
 
     # Calculators.
     $rpm = $xl.Run("ParamTable.RpmFromSurface", 14, 200, $false)

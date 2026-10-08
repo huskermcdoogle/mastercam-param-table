@@ -18,6 +18,9 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
 - **Readable values.** A feed is its size plus `per rev` / `per min`; a speed is its size
   plus `CSS` / `RPM` and `CW` / `CCW`; coolant is the machine's own coolant names. Dropdowns
   wherever there is a fixed set of choices.
+- **Either coolant style.** A machine set up for X-style coolant gets coolant before / with /
+  after the move (several at once); a machine set up for V9 coolant gets its one setting -
+  Off, Flood, Mist or Thru-tool. Each operation follows its own machine.
 - **Checked as you type.** Every editable cell carries the limits the load enforces, and a
   tooltip saying what the column is. Read-only cells, and cells that do not apply to that kind
   of operation, refuse input and say why.
@@ -31,13 +34,13 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
   section's own spindle setting) and reproduces Mastercam's cycle time to within seconds.
 - **A Tools sheet** with each lathe tool's picture, linked from the `tool` column.
 - **Optional macros** (an `.xlsm`, off unless ticked): a *Parameter Table* ribbon tab -
-  set / scale / copy across selected cells (each cell's limits still apply), revert cells,
-  rows or everything to the dump, a Changes sheet listing every edit, SFM/RPM and
-  per-rev/per-min calculators, a multi-coolant picker (Set selected takes coolant cells too,
-  each row checked against its own machine's list), a big resizable editor for manual-entry
-  text with a live count against the 3,111-character limit (double-click the cell) - and, as
-  you type, linked amount /
-  percent pairs kept in step and gentle warnings in the status bar (CSS with no max RPM, a
+  set / scale / copy across selected cells in a window that shows how many cells will change
+  or be refused before anything is written, revert cells, rows or everything to the dump, a
+  Changes sheet listing every edit, a live speed and feed calculator filled from the row
+  (SFM / RPM at a diameter, per rev / per minute, warns past max_ss), tick boxes for
+  coolants (each row checked against its own machine's list), a big resizable editor for
+  manual-entry text with a live count against the 3,111-character limit (double-click the
+  cell) - and, as you type, linked amount / percent pairs kept in step and gentle warnings in the status bar (CSS with no max RPM, a
   per-minute feed that looks like a per-rev one). The sheet loads back the same without them.
 - Never overwrites a file - a name that is taken gets ` (2)`.
 

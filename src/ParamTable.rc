@@ -38,8 +38,10 @@ BEGIN
     END
 END
 
-IDB_FT_SMALL     PNG        "..\\res\\Resources\\ft_small.png"
-IDB_FT_LARGE     PNG        "..\\res\\Resources\\ft_large.png"
+IDB_DUMP_SMALL   PNG        "..\\res\\Resources\\dump_small.png"
+IDB_DUMP_LARGE   PNG        "..\\res\\Resources\\dump_large.png"
+IDB_LOAD_SMALL   PNG        "..\\res\\Resources\\load_small.png"
+IDB_LOAD_LARGE   PNG        "..\\res\\Resources\\load_large.png"
 
 // The workbook macros, compiled by tools\\build_vba.ps1 from vba\\ - written into a dump
 // when macros are switched on.

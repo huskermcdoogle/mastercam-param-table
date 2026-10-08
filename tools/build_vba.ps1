@@ -42,18 +42,28 @@ try {
         throw "the VBA project has '$($names -join ', ')', expected Sheet1 and ThisWorkbook"
     }
     [void] $vbp.VBComponents.Import($bas)
-    # The manual-text editor: a UserForm with five named controls; its look and
-    # behaviour are all in vba\TextEditor.vb.
-    $frm = $vbp.VBComponents.Add(3)                      # vbext_ct_MSForm
-    $frm.Name = "TextEditor"
-    foreach ($c in @(@("Forms.TextBox.1", "txt"), @("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblCount"),
-                     @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))) {
-        [void] $frm.Designer.Controls.Add($c[0], $c[1], $true)
+    # The forms: named controls made here; their look and behaviour are all in vba\<name>.vb.
+    function Add-Form ($name, $controls) {
+        $frm = $vbp.VBComponents.Add(3)                  # vbext_ct_MSForm
+        $frm.Name = $name
+        foreach ($c in $controls) { [void] $frm.Designer.Controls.Add($c[0], $c[1], $true) }
+        $code = (Get-Content -LiteralPath (Join-Path $Root "vba\$name.vb") -Raw) -replace "`r?`n", "`r`n"
+        $fm = $frm.CodeModule
+        if ($fm.CountOfLines -gt 0) { $fm.DeleteLines(1, $fm.CountOfLines) }
+        $fm.AddFromString($code)
     }
-    $formCode = (Get-Content -LiteralPath (Join-Path $Root "vba\TextEditor.vb") -Raw) -replace "`r?`n", "`r`n"
-    $fm = $frm.CodeModule
-    if ($fm.CountOfLines -gt 0) { $fm.DeleteLines(1, $fm.CountOfLines) }
-    $fm.AddFromString($formCode)
+    Add-Form "TextEditor" @(@("Forms.TextBox.1", "txt"), @("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblCount"),
+                            @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
+    Add-Form "CoolantPicker" (@(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblResult"),
+                                @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"),
+                                @("Forms.CommandButton.1", "btnClear")) +
+                              @(1..12 | ForEach-Object { , @("Forms.CheckBox.1", "chk$_") }))
+    Add-Form "EditBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblPrompt"), @("Forms.ComboBox.1", "cbo"),
+                         @("Forms.Label.1", "lblPreview"), @("Forms.CommandButton.1", "btnOK"),
+                         @("Forms.CommandButton.1", "btnCancel"))
+    Add-Form "Calculator" (@(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblNote"), @("Forms.CheckBox.1", "chkMetric"),
+                             @("Forms.CommandButton.1", "btnClose")) +
+                           @("Dia", "Surf", "Rpm", "Rev", "Min" | ForEach-Object { @("Forms.Label.1", "lbl$_"), @("Forms.TextBox.1", "txt$_") }))
 
     $cm = $vbp.VBComponents.Item("Sheet1").CodeModule
     if ($cm.CountOfLines -gt 0) { $cm.DeleteLines(1, $cm.CountOfLines) }

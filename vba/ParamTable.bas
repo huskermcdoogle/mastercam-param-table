@@ -130,21 +130,22 @@ End Sub
 
 ' ============================================================ bulk edits
 
-' Set every selected cell to one value. Coolant cells get the coolant picker instead -
+' Set every selected cell to one value. Coolant cells get the coolant window instead -
 ' several coolants at once, each row checked against its own machine's coolants.
 Public Sub SetSelected()
-    Dim cells As Range, v As Variant, names As String
+    Dim cells As Range, names As String, f As EditBox
     If Not OnMain() Then Exit Sub
     Set cells = DataCells(Selection)
     If cells Is Nothing Then Exit Sub
     If AllCoolant(cells) Then
-        names = AskCoolants(cells.Cells(1, 1), cells.Count & " selected coolant cell(s)")
-        If names <> "" Then ReportPair "set", SetCoolantCells(cells, names)
+        names = AskCoolants(cells, cells.Count & " selected coolant cell(s)")
+        If names <> "" Then ReportPair "set to " & names, SetCoolantCells(cells, names)
         Exit Sub
     End If
-    v = Application.InputBox("Value for the " & cells.Count & " selected cell(s):", TITLE & " - set selected")
-    If VarType(v) = vbBoolean Then Exit Sub
-    ReportPair "set", SetCells(cells, v)
+    Set f = EditWindow("set", cells)
+    f.Show
+    If f.Accepted Then ReportPair "set to " & f.Value(), SetCells(cells, f.Value())
+    Unload f
 End Sub
 
 ' "done refused" - so a test can call it without a message box in the way.
@@ -164,14 +165,14 @@ End Sub
 
 ' Scale every selected number by a percentage (110 = 10% more).
 Public Sub ScaleSelected()
-    Dim cells As Range, p As Variant
+    Dim cells As Range, f As EditBox
     If Not OnMain() Then Exit Sub
     Set cells = DataCells(Selection)
     If cells Is Nothing Then Exit Sub
-    p = Application.InputBox("Scale the selected numbers to what percent?" & vbCrLf & _
-                             "(110 = 10% more, 90 = 10% less)", TITLE & " - scale", 100, Type:=1)
-    If VarType(p) = vbBoolean Then Exit Sub
-    ReportPair "scaled", ScaleCells(cells, CDbl(p))
+    Set f = EditWindow("scale", cells)
+    f.Show
+    If f.Accepted Then ReportPair "scaled to " & f.Value() & "%", ScaleCells(cells, CDbl(f.Value()))
+    Unload f
 End Sub
 
 Public Function ScaleCells(ByVal cells As Range, ByVal percent As Double) As String
@@ -187,22 +188,19 @@ End Function
 
 ' Copy one operation's values into the selected rows, for the selected columns.
 Public Sub CopyFromOp()
-    Dim cells As Range, op As Variant
+    Dim cells As Range, f As EditBox
     If Not OnMain() Then Exit Sub
     Set cells = DataCells(Selection)
     If cells Is Nothing Then Exit Sub
-    op = Application.InputBox("Copy the selected columns FROM which operation (op_idn)?", TITLE & " - copy", Type:=1)
-    If VarType(op) = vbBoolean Then Exit Sub
-    If MainSheet.Columns(1).Find(What:=op, LookIn:=xlValues, LookAt:=xlWhole) Is Nothing Then
-        MsgBox "No operation " & op & " on this sheet.", vbExclamation, TITLE
-        Exit Sub
-    End If
-    ReportPair "copied from op " & op, CopyCells(cells, op)
+    Set f = EditWindow("copy", cells)
+    f.Show
+    If f.Accepted Then ReportPair "copied from op " & f.Value(), CopyCells(cells, f.Value())
+    Unload f
 End Sub
 
 Public Function CopyCells(ByVal cells As Range, ByVal op As Variant) As String
     Dim f As Range, c As Range, ok As Long, bad As Long, src As Range
-    Set f = MainSheet.Columns(1).Find(What:=op, LookIn:=xlValues, LookAt:=xlWhole)
+    Set f = OpCell(op)
     If f Is Nothing Then CopyCells = "0 0": Exit Function
     For Each c In cells.Cells
         If c.Row <> f.Row Then
@@ -213,6 +211,211 @@ Public Function CopyCells(ByVal cells As Range, ByVal op As Variant) As String
         End If
     Next
     CopyCells = ok & " " & bad
+End Function
+
+' An operation's op_idn cell, or Nothing.
+Private Function OpCell(ByVal op As Variant) As Range
+    If Trim$(CStr(op)) = "" Then Exit Function
+    If IsNumeric(op) Then op = CDbl(op)
+    Set OpCell = MainSheet.Range(MainSheet.Cells(FIRST_ROW, 1), MainSheet.Cells(LastRow, 1)).Find( _
+                     What:=op, LookIn:=xlValues, LookAt:=xlWhole)
+End Function
+
+' ---------------------------------------------------------------- the edit window
+
+' "N cell(s) in feed, speed  -  ops 2, 7" - what is selected, in words.
+Private Function Describe(ByVal cells As Range) As String
+    Dim c As Range, cols As String, ops As String, h As String, o As String, nc As Long, no As Long
+    For Each c In cells.Cells
+        h = CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)
+        If InStr("|" & cols & "|", "|" & h & "|") = 0 Then
+            nc = nc + 1
+            If nc <= 4 Then cols = cols & IIf(cols = "", "", "|") & h
+        End If
+        o = CStr(MainSheet.Cells(c.Row, 1).Value)
+        If InStr("|" & ops & "|", "|" & o & "|") = 0 Then
+            no = no + 1
+            If no <= 8 Then ops = ops & IIf(ops = "", "", "|") & o
+        End If
+    Next
+    Describe = cells.Count & " cell(s) in " & Replace(cols, "|", ", ") & IIf(nc > 4, " and " & nc - 4 & " more", "") & _
+               "  -  op" & IIf(no = 1, " ", "s ") & Replace(ops, "|", ", ") & IIf(no > 8, ", ...", "")
+End Function
+
+' The window for one of the three, set up on the cells but not shown.
+Public Function EditWindow(ByVal mode As String, ByVal cells As Range) As EditBox
+    Dim f As EditBox, c As Range, lst As String, sameList As Boolean, items() As String, k() As String
+    Dim r As Long, n As Long, cmt As Long, v As String, seen As String
+    Set f = New EditBox
+    Select Case mode
+    Case "set"
+        ' Every cell has the same dropdown: offer just that list. Otherwise the values there now.
+        sameList = True
+        For Each c In cells.Cells
+            v = ListOf(c)
+            If c.Address = cells.Cells(1, 1).Address Then lst = v
+            If v = "" Or v <> lst Then sameList = False
+        Next
+        If sameList Then
+            f.Setup "set", cells, TITLE & " - set selected", Describe(cells), "Pick the value for every selected cell:", _
+                    Split(lst, ","), Empty, True, ""
+        Else
+            ReDim items(0 To 0)
+            For Each c In cells.Cells
+                v = CStr(c.Value)
+                If v <> "" And InStr(vbLf & seen & vbLf, vbLf & v & vbLf) = 0 And n < 12 Then
+                    ReDim Preserve items(0 To n): items(n) = v: n = n + 1
+                    seen = seen & vbLf & v
+                End If
+            Next
+            If n > 0 Then
+                f.Setup "set", cells, TITLE & " - set selected", Describe(cells), _
+                        "Value for every selected cell (the list has what is there now):", items, Empty, False, ""
+            Else
+                f.Setup "set", cells, TITLE & " - set selected", Describe(cells), _
+                        "Value for every selected cell:", Empty, Empty, False, ""
+            End If
+        End If
+    Case "scale"
+        f.Setup "scale", cells, TITLE & " - scale", Describe(cells), _
+                "Scale the selected numbers to what percent?  (110 = 10% more, 90 = 10% less)", _
+                Array("50", "80", "90", "95", "105", "110", "120", "150", "200"), Empty, False, "100"
+    Case "copy"
+        cmt = ColOf("comment")
+        For r = FIRST_ROW To LastRow
+            ReDim Preserve items(0 To n): ReDim Preserve k(0 To n)
+            k(n) = CStr(MainSheet.Cells(r, 1).Value)
+            items(n) = "op " & k(n) & "    " & MainSheet.Cells(r, 2).Value & _
+                       IIf(cmt > 0, "    " & MainSheet.Cells(r, IIf(cmt > 0, cmt, 1)).Value, "")
+            n = n + 1
+        Next
+        f.Setup "copy", cells, TITLE & " - copy from an operation", Describe(cells), _
+                "Copy the selected columns FROM which operation?", items, k, True, ""
+    End Select
+    Set EditWindow = f
+End Function
+
+' A cell's dropdown list ("a,b,c"), or "" when it has none.
+Private Function ListOf(ByVal c As Range) As String
+    On Error Resume Next
+    If c.Validation.Type = xlValidateList Then ListOf = Replace(c.Validation.Formula1, """", "")
+End Function
+
+' Whether a cell's rule would take a value - judged without writing it, for the preview.
+' (TryWrite still has the last word when OK writes.)
+Public Function WouldTake(ByVal c As Range, ByVal v As Variant) As Boolean
+    Dim t As Long, op As Long, f1 As String, f2 As String, a As Double, b As Double, x As Double, s As String, it As Variant
+    WouldTake = True
+    On Error Resume Next
+    t = -1
+    t = c.Validation.Type
+    If t = -1 Then Exit Function                      ' no rule
+    op = c.Validation.Operator
+    f1 = Replace(c.Validation.Formula1, "=", "")
+    f2 = Replace(c.Validation.Formula2, "=", "")
+    On Error GoTo 0
+    s = CStr(v)
+    Select Case t
+    Case xlValidateCustom
+        If UCase$(f1) = "FALSE" Then WouldTake = False   ' read-only / does not apply
+        Exit Function
+    Case xlValidateList
+        If Trim$(s) = "" Then Exit Function
+        WouldTake = False
+        For Each it In Split(Replace(f1, """", ""), ",")
+            If LCase$(Trim$(it)) = LCase$(Trim$(s)) Then WouldTake = True
+        Next
+        Exit Function
+    Case xlValidateTextLength
+        x = Len(s)
+    Case xlValidateWholeNumber, xlValidateDecimal
+        If Trim$(s) = "" Then Exit Function
+        If Not IsNumeric(s) Then WouldTake = False: Exit Function
+        x = CDbl(s)
+        If t = xlValidateWholeNumber And x <> Int(x) Then WouldTake = False: Exit Function
+    Case Else
+        Exit Function
+    End Select
+    If Not IsNumeric(f1) Then Exit Function           ' a limit from a formula: leave it to TryWrite
+    a = CDbl(f1)
+    If IsNumeric(f2) Then b = CDbl(f2)
+    Select Case op
+        Case xlBetween: WouldTake = (x >= a And x <= b)
+        Case xlNotBetween: WouldTake = (x < a Or x > b)
+        Case xlEqual: WouldTake = (x = a)
+        Case xlNotEqual: WouldTake = (x <> a)
+        Case xlGreater: WouldTake = (x > a)
+        Case xlLess: WouldTake = (x < a)
+        Case xlGreaterEqual: WouldTake = (x >= a)
+        Case xlLessEqual: WouldTake = (x <= a)
+    End Select
+End Function
+
+' The edit window's live line: "1|..." when OK would change something, "0|..." when not.
+Public Function EditPreview(ByVal mode As String, ByVal cells As Range, ByVal v As String) As String
+    Dim c As Range, take As Long, bad As Long, same As Long, nv As Variant, eg As String, src As Range, shown As Long
+    Select Case mode
+    Case "set"
+        If Trim$(v) = "" Then EditPreview = "0|Type or pick a value.": Exit Function
+        If IsNumeric(v) Then nv = CDbl(v) Else nv = v
+        For Each c In cells.Cells
+            If Not WouldTake(c, v) Then
+                bad = bad + 1
+            ElseIf SameValue(c.Value, nv) Then
+                same = same + 1
+            Else
+                take = take + 1
+            End If
+        Next
+    Case "scale"
+        If Trim$(v) = "" Or Not IsNumeric(v) Then EditPreview = "0|Type a percent, e.g. 110.": Exit Function
+        If CDbl(v) <= 0 Then EditPreview = "0|The percent has to be more than 0.": Exit Function
+        For Each c In cells.Cells
+            If Not c.HasFormula And Not IsEmpty(c.Value) And IsNumeric(c.Value) And VarType(c.Value) <> vbString Then
+                nv = Round(CDbl(c.Value) * CDbl(v) / 100, 10)
+                If Not WouldTake(c, nv) Then
+                    bad = bad + 1
+                ElseIf nv = c.Value Then
+                    same = same + 1
+                Else
+                    take = take + 1
+                    If shown < 3 Then eg = eg & IIf(eg = "", "", ",   ") & c.Value & " -> " & nv: shown = shown + 1
+                End If
+            End If
+        Next
+        If eg <> "" Then eg = vbCrLf & "e.g.  " & eg
+    Case "copy"
+        Set src = OpCell(v)
+        If src Is Nothing Then EditPreview = "0|Pick the operation to copy from.": Exit Function
+        For Each c In cells.Cells
+            If c.Row <> src.Row Then
+                If Not MainSheet.Cells(src.Row, c.Column).HasFormula Then
+                    nv = MainSheet.Cells(src.Row, c.Column).Value
+                    If Not WouldTake(c, nv) Then
+                        bad = bad + 1
+                    ElseIf SameValue(c.Value, nv) Then
+                        same = same + 1
+                    Else
+                        take = take + 1
+                    End If
+                End If
+            End If
+        Next
+    End Select
+    EditPreview = IIf(take > 0, "1|", "0|") & take & " cell(s) will change" & _
+                  IIf(same > 0, ",  " & same & " already that", "") & _
+                  IIf(bad > 0, ",  " & bad & " refused (read-only, not for that operation, or outside its limits)", "") & _
+                  "." & eg
+End Function
+
+' For tools\check_macros.ps1 (no window): what the window says and whether OK is on,
+' after typing a value ("#3" picks list row 3) - "preview|ok|value".
+Public Function EditWindowSelfTest(ByVal mode As String, ByVal cells As Range, ByVal typed As String) As String
+    Dim f As EditBox
+    Set f = EditWindow(mode, cells)
+    If Left$(typed, 1) = "#" Then f.Pick CLng(Mid$(typed, 2)) Else f.TypeIn typed
+    EditWindowSelfTest = f.Preview() & "|" & f.CanAccept() & "|" & f.Value()
+    Unload f
 End Function
 
 ' ============================================================ revert
@@ -303,25 +506,56 @@ End Sub
 
 ' ============================================================ calculators
 
-' SFM <-> RPM at a diameter.
+' The speed and feed calculator, filled from the row the active cell is on.
 Public Sub CalcSpeed()
-    Dim s As Variant, p() As String, d As Double, v As Double
-    s = Application.InputBox("Enter a DIAMETER and a SURFACE SPEED to get RPM, e.g.  14 200" & vbCrLf & _
-                             "or a diameter and RPM followed by 'rpm' to get SFM, e.g.  14 55 rpm" & vbCrLf & vbCrLf & _
-                             "(inches and SFM; in a metric part: mm and m/min)", TITLE & " - speed")
-    If VarType(s) = vbBoolean Then Exit Sub
-    p = Split(Application.WorksheetFunction.Trim(CStr(s)), " ")
-    If UBound(p) < 1 Then Exit Sub
-    d = Val(p(0)): v = Val(p(1))
-    If d <= 0 Then Exit Sub
-    If UBound(p) >= 2 Then
-        MsgBox Format(v, "0") & " RPM at " & d & " dia  =  " & Format(SurfaceFromRpm(d, v, False), "0.0") & " SFM" & _
-               "  (" & Format(SurfaceFromRpm(d, v, True), "0.0") & " m/min if mm)", vbInformation, TITLE
-    Else
-        MsgBox Format(v, "0") & " SFM at " & d & " dia  =  " & Format(RpmFromSurface(d, v, False), "0") & " RPM" & _
-               "  (" & Format(RpmFromSurface(d, v, True), "0") & " RPM if mm and m/min)", vbInformation, TITLE
-    End If
+    Dim f As Calculator
+    Set f = CalcWindow(ActiveCell)
+    f.Show
+    Unload f
 End Sub
+
+Public Sub CalcFeed()
+    CalcSpeed
+End Sub
+
+' The calculator set up from a cell's row (speed, feed, units, max_ss), not shown.
+Public Function CalcWindow(ByVal c As Range) As Calculator
+    Dim f As Calculator, r As Long, sm As String, sp As Variant, fm As String, fd As Variant, mx As Variant
+    Dim surf As String, rpm As String, rev As String, pm As String, info As String, metric As Boolean
+    Set f = New Calculator
+    info = "Type in any box - the others follow."
+    If Not c Is Nothing Then
+        If c.Worksheet.Name = MAIN_SHEET And c.Row >= FIRST_ROW And c.Row <= LastRow Then
+            r = c.Row
+            sp = ValueAt(r, "speed"): sm = CStr(ValueAt(r, "speed_mode"))
+            fd = ValueAt(r, "feed"): fm = CStr(ValueAt(r, "feed_mode"))
+            mx = ValueAt(r, "max_ss")
+            metric = (CStr(ValueAt(r, "units")) = "mm")
+            If IsNumeric(sp) And Not IsEmpty(sp) Then If sm = "CSS" Then surf = CStr(sp) Else rpm = CStr(sp)
+            If IsNumeric(fd) And Not IsEmpty(fd) Then If fm = "per min" Then pm = CStr(fd) Else rev = CStr(fd)
+            info = "From op " & MainSheet.Cells(r, 1).Value & " (" & MainSheet.Cells(r, 2).Value & ")" & _
+                   IIf(surf <> "", " - CSS: type a diameter for the RPM there.", ".") & "  Type in any box - the others follow."
+        End If
+    End If
+    f.Setup "", surf, rpm, rev, pm, metric, IIf(IsNumeric(mx) And Not IsEmpty(mx), Val(CStr(mx)), 0), info
+    Set CalcWindow = f
+End Function
+
+' For tools\check_macros.ps1 (no window): fill from a cell, type "box=value;box=value",
+' read back "rpm|surface|per rev|per min|note".
+Public Function CalcSelfTest(ByVal c As Range, ByVal typed As String) As String
+    Dim f As Calculator, t As Variant, kv() As String
+    Set f = CalcWindow(c)
+    For Each t In Split(typed, ";")
+        If InStr(t, "=") > 0 Then
+            kv = Split(t, "=")
+            f.TypeIn kv(0), kv(1)
+        End If
+    Next
+    CalcSelfTest = f.Field("txtRpm") & "|" & f.Field("txtSurf") & "|" & f.Field("txtRev") & "|" & _
+                   f.Field("txtMin") & "|" & f.Field("lblNote")
+    Unload f
+End Function
 
 Public Function RpmFromSurface(ByVal dia As Double, ByVal surface As Double, ByVal metric As Boolean) As Double
     If dia > 0 Then RpmFromSurface = IIf(metric, 1000, 12) * surface / (Application.Pi() * dia)
@@ -330,24 +564,6 @@ End Function
 Public Function SurfaceFromRpm(ByVal dia As Double, ByVal rpm As Double, ByVal metric As Boolean) As Double
     SurfaceFromRpm = rpm * Application.Pi() * dia / IIf(metric, 1000, 12)
 End Function
-
-' Per rev <-> per minute at an RPM.
-Public Sub CalcFeed()
-    Dim s As Variant, p() As String, f As Double, rpm As Double
-    s = Application.InputBox("Enter a feed PER REV and an RPM to get per minute, e.g.  0.01 550" & vbCrLf & _
-                             "or a feed per minute and an RPM followed by 'min' to get per rev, e.g.  5.5 550 min", _
-                             TITLE & " - feed")
-    If VarType(s) = vbBoolean Then Exit Sub
-    p = Split(Application.WorksheetFunction.Trim(CStr(s)), " ")
-    If UBound(p) < 1 Then Exit Sub
-    f = Val(p(0)): rpm = Val(p(1))
-    If rpm <= 0 Then Exit Sub
-    If UBound(p) >= 2 Then
-        MsgBox f & " per min at " & rpm & " RPM  =  " & Format(f / rpm, "0.00000") & " per rev", vbInformation, TITLE
-    Else
-        MsgBox f & " per rev at " & rpm & " RPM  =  " & Format(f * rpm, "0.000") & " per min", vbInformation, TITLE
-    End If
-End Sub
 
 ' ============================================================ pickers
 
@@ -377,27 +593,70 @@ Private Function CoolantChoices(ByVal c As Range) As Variant
     End If
 End Function
 
-' Ask for coolants by number ("1+3"); the names joined by " + ", "none", or "" if cancelled.
-Public Function AskCoolants(ByVal c As Range, ByVal what As String) As String
-    Dim opts As Variant, i As Long, s As Variant, pick() As String, out As String, k As Long, list As String
-    opts = CoolantChoices(c)
-    If UBound(opts) < 1 Then
+' The coolant window for some cells: one tick box per coolant any of their machines has
+' (marked * when not every row's machine has it), ticked as the cells are now when they
+' all agree. Not shown - the caller shows it.
+Private Function CoolantForm(ByVal cells As Range, ByVal what As String) As CoolantPicker
+    Dim c As Range, opts As Variant, i As Long, k As Long, offer() As String, hits() As Long, n As Long
+    Dim partial() As Boolean, current As String, same As Boolean, f As CoolantPicker
+    ReDim offer(0 To 0): ReDim hits(0 To 0)
+    same = True
+    For Each c In cells.Cells
+        opts = CoolantChoices(c)
+        For i = 1 To UBound(opts)                         ' 0 is "none"
+            For k = 0 To n - 1
+                If LCase$(offer(k)) = LCase$(Trim$(opts(i))) Then Exit For
+            Next
+            If k = n Then
+                ReDim Preserve offer(0 To n): ReDim Preserve hits(0 To n)
+                offer(n) = Trim$(opts(i)): n = n + 1
+            End If
+            hits(k) = hits(k) + 1
+        Next
+        If c.Address <> cells.Cells(1, 1).Address Then
+            If LCase$(CStr(c.Value)) <> LCase$(CStr(cells.Cells(1, 1).Value)) Then same = False
+        End If
+    Next
+    If n = 0 Then Exit Function
+    ReDim partial(0 To n - 1)
+    For k = 0 To n - 1
+        partial(k) = (hits(k) < cells.Count)
+    Next
+    If same Then current = CStr(cells.Cells(1, 1).Value)
+    Set f = New CoolantPicker
+    f.Setup offer, partial, current, what & ":  tick the coolants to turn on.  None ticked = none."
+    Set CoolantForm = f
+End Function
+
+' Ask with the coolant window; the names joined by " + ", "none", or "" if cancelled.
+Public Function AskCoolants(ByVal cells As Range, ByVal what As String) As String
+    Dim f As CoolantPicker
+    Set f = CoolantForm(cells, what)
+    If f Is Nothing Then
         MsgBox "No coolant choices here - is this a row with coolant?", vbInformation, TITLE
         Exit Function
     End If
-    For i = 1 To UBound(opts)             ' 0 is "none"
-        list = list & i & "  " & opts(i) & vbCrLf
-    Next
-    s = Application.InputBox("Coolants for " & what & " - numbers joined by +, e.g.  1+3" & vbCrLf & _
-                             "(0 = none)" & vbCrLf & vbCrLf & list, TITLE & " - coolant")
-    If VarType(s) = vbBoolean Then Exit Function
-    pick = Split(Replace(CStr(s), " ", ""), "+")
-    For i = 0 To UBound(pick)
-        k = Val(pick(i))
-        If k >= 1 And k <= UBound(opts) Then out = out & IIf(out = "", "", " + ") & opts(k)
-    Next
-    If out = "" Then out = "none"
-    AskCoolants = out
+    f.Show
+    If f.Accepted Then AskCoolants = f.Result()
+    Unload f
+End Function
+
+' For tools\check_macros.ps1 (no window): the boxes offered, then what ticking boxes
+' "1,3" (positions) would set - "captions|...#result".
+Public Function CoolantPickerSelfTest(ByVal cells As Range, ByVal ticks As String) As String
+    Dim f As CoolantPicker, t As Variant, i As Long
+    Set f = CoolantForm(cells, "test")
+    If f Is Nothing Then Exit Function
+    If ticks <> "" Then
+        For i = 1 To 12
+            f.Tick i, False
+        Next
+        For Each t In Split(ticks, ",")
+            f.Tick CLng(t), True
+        Next
+    End If
+    CoolantPickerSelfTest = f.Captions() & "#" & f.Result()
+    Unload f
 End Function
 
 ' Coolant names into cells, each row checked against ITS OWN choices (machines differ).
@@ -434,7 +693,7 @@ Public Sub PickCoolant()
         MsgBox "Click a cell in coolant_before, coolant_with or coolant_after first.", vbInformation, TITLE
         Exit Sub
     End If
-    names = AskCoolants(c, CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value))
+    names = AskCoolants(c, "op " & MainSheet.Cells(c.Row, 1).Value & "  " & MainSheet.Cells(HEADER_ROW, c.Column).Value)
     If names <> "" Then SetCoolantCells c, names
 End Sub
 

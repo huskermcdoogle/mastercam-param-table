@@ -9,7 +9,7 @@ namespace ColumnHelp
 		static const std::map<std::wstring, std::wstring> help = {
 			// Identity and context
 			{ L"op_idn",        L"The operation's ID - how a load finds its row's operation. Do not change." },
-			{ L"type",          L"The kind of operation: ROUGH, FINISH, DYNAMIC, DRILL or MANUAL." },
+			{ L"type",          L"The kind of operation - ROUGH, FINISH, FACE, GROOVE, DRILL, MANUAL, DYNAMIC MILL and so on." },
 			{ L"tool",          L"Tool number." },
 			{ L"comment",       L"The operation's comment, as the Operation Manager shows it." },
 			{ L"changes",       L"How many cells in this row differ from the dump. Edited cells are highlighted." },
@@ -74,7 +74,7 @@ namespace ColumnHelp
 			{ L"coolant_before", L"Coolant turned on BEFORE the move - pick from this machine's coolants, or none." },
 			{ L"coolant_with",   L"Coolant turned on WITH the move - pick from this machine's coolants, or none." },
 			{ L"coolant_after",  L"Coolant turned on AFTER the move - pick from this machine's coolants, or none." },
-			{ L"coolant",        L"Old-style (V9) coolant bit field: 8 off, 16 flood, 32 mist, 64 through-tool." },
+			{ L"coolant",        L"V9 coolant - the one coolant setting on a machine set up for V9 coolant: Off, Flood, Mist or Thru-tool." },
 			{ L"coolant_text",   L"The V9 coolant field in words." },
 			{ L"canned_text_raw", L"The operation's canned text and coolant codes, raw." },
 
@@ -109,7 +109,7 @@ namespace ColumnHelp
 			{ L"linear_tol",     L"Tolerance for turning spline geometry into lines. Only matters on spline chains." },
 			{ L"nonCuttingRegionAngle", L"Dynamic rough non-cutting region angle, degrees." },
 			{ L"manual_gcode",   L"Manual entry output: 1005 = as a comment, 1006 = as code." },
-			{ L"manual_text",    L"The manual entry's text (up to 3111 characters). Alt+Enter for a new line." },
+			{ L"manual_text",    L"The manual entry's text (up to 3111 characters). Alt+Enter for a new line; with macros, double-click for a bigger editor." },
 			{ L"manual_source",  L"Where the manual entry text comes from. Shown, never written." },
 			{ L"manual_save",    L"How the manual entry is saved. Shown, never written." },
 			{ L"cycle",          L"Drill cycle number." },

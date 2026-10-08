@@ -44,6 +44,10 @@ namespace Lathe
 					c.hi = 400.0;
 					c.check = &Coolant::Check;
 					break;
+				case Kind::CoolantV9:
+					c.type = Plan::Type::Text;
+					c.choices = Coolant::ChoicesV9 ();
+					break;
 				case Kind::DoubleSize: c.type = Plan::Type::Double; break;
 				case Kind::LongSize:   c.type = Plan::Type::Long;   break;
 				case Kind::DoubleSign:
@@ -136,8 +140,9 @@ namespace Lathe
 			AddOp (t, L"surf_fin_feed",    Kind::Bool,   ACCO (tl.surf_fin_feed));
 			AddOp (t, L"plunge_surf_fin",  Kind::Bool,   ACCO (tl.pl_surf_fin_feed));
 
-			// Coolant is a bit field: 0x08 off, 0x10 flood, 0x20 mist, 0x40 through-tool.
-			AddOp (t, L"coolant",          Kind::Short,  ACCO (tl.coolant), false, 0, 255);
+			// V9 coolant: one setting, Off / Flood / Mist / Thru-tool (a bit field on the
+			// tool info). Only machines set up for V9 coolant use it - see Coolant.h.
+			AddOp (t, L"coolant",          Kind::CoolantV9, ACCO (tl.coolant));
 
 			// X-style coolant, by the machine's own names: which coolants come on
 			// before, with and after the move. A write replaces only that timing's
@@ -799,6 +804,8 @@ namespace Lathe
 				return Csv::FormatDouble (*static_cast<double *> (p));
 			case Kind::Coolant:
 				return Coolant::Describe (*static_cast<const operation *> (op), b.arg);
+			case Kind::CoolantV9:
+				return Coolant::DescribeV9 (*static_cast<short *> (p));
 			case Kind::DoubleSize:
 				return Csv::FormatDouble (std::fabs (*static_cast<double *> (p)));
 			case Kind::DoubleSign:
@@ -879,6 +886,11 @@ namespace Lathe
 				{
 				std::wstring why;
 				return Coolant::Apply (*static_cast<operation *> (op), b.arg, text, why);
+				}
+			case Kind::CoolantV9:
+				{
+				std::wstring why;
+				return Coolant::ApplyV9 (*static_cast<operation *> (op), text, why);
 				}
 			case Kind::DoubleSize:
 				{

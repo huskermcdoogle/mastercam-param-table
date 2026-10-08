@@ -4,11 +4,11 @@
       <tab id="ptTab" label="Parameter Table">
         <group id="ptEdit" label="Bulk edit">
           <button id="ptSet" label="Set selected" size="large" imageMso="FillDown" onAction="RbSet"
-                  screentip="Set selected" supertip="Put one value into every selected cell. Each cell's own limits still apply."/>
+                  screentip="Set selected" supertip="Put one value into every selected cell - a window shows how many will change and how many are refused before anything is written. On coolant cells: tick boxes for the coolants."/>
           <button id="ptScale" label="Scale %" size="large" imageMso="PercentStyle" onAction="RbScale"
-                  screentip="Scale selected" supertip="Multiply the selected numbers by a percentage (110 = 10% more)."/>
+                  screentip="Scale selected" supertip="Multiply the selected numbers by a percentage (110 = 10% more), with a preview of the new values."/>
           <button id="ptCopy" label="Copy from op" size="large" imageMso="Copy" onAction="RbCopy"
-                  screentip="Copy from an operation" supertip="Copy one operation's values into the selected rows, for the selected columns."/>
+                  screentip="Copy from an operation" supertip="Copy one operation's values into the selected rows, for the selected columns - pick the operation from a list."/>
         </group>
         <group id="ptRevert" label="Revert">
           <button id="ptRevSel" label="Selected cells" size="large" imageMso="Undo" onAction="RbRevertSel"
@@ -23,14 +23,12 @@
                   supertip="A Changes sheet listing every cell that differs from the dump, old and new."/>
         </group>
         <group id="ptCalc" label="Calculators">
-          <button id="ptSpeed" label="SFM / RPM" size="large" imageMso="Calculator" onAction="RbSpeed"
-                  supertip="Surface speed to RPM at a diameter, or back."/>
-          <button id="ptFeed" label="Per rev / min" size="large" imageMso="Calculator" onAction="RbFeed"
-                  supertip="Feed per rev to per minute at an RPM, or back."/>
+          <button id="ptSpeed" label="Speed / feed" size="large" imageMso="Calculator" onAction="RbSpeed"
+                  supertip="A live calculator: diameter and SFM to RPM and back, feed per rev to per minute. Filled from the row you are on; warns past max_ss."/>
         </group>
         <group id="ptPick" label="Pick">
           <button id="ptCoolant" label="Coolants" size="large" imageMso="SmartArtAddShape" onAction="RbCoolant"
-                  supertip="Pick several coolants for one timing - click a coolant_before / with / after cell first."/>
+                  supertip="Tick boxes for the coolants at one timing - click a coolant_before / with / after cell first (or select several and use Set selected)."/>
           <button id="ptText" label="Manual text" size="large" imageMso="EditDocument" onAction="RbText"
                   supertip="A big editor for a manual entry's text, with a live character count - click a manual_text cell first (or double-click it)."/>
         </group>
