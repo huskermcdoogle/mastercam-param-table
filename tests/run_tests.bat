@@ -92,6 +92,14 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+echo === stocksim_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\stocksim_test.exe" ^
+    "%~dp0stocksim_test.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\stocksim_test.exe"
+    if errorlevel 1 set FAILED=1
+)
+
 if %FAILED%==1 (
     echo.
     echo TESTS FAILED

@@ -8,6 +8,7 @@
 #include "Coolant.h"
 #include "ColumnHelp.h"
 #include "Paths.h"
+#include "StockSim.h"
 #include "Estimate.h"
 #include "DumpDialog.h"
 #include "Settings.h"
@@ -1272,13 +1273,18 @@ namespace Dump
 		if (const unsigned long diag = Settings::Diag ())
 			Util::Log (part, L"diag " + std::to_wstring (diag) + L": "
 							 + ((diag & 1) ? L"no Mastercam cycle time  " : L"")
-							 + ((diag & 2) ? L"no NCI walk" : L""));
+							 + ((diag & 2) ? L"no NCI walk  " : L"")
+							 + ((diag & 4) ? L"stock sim" : L""));
 		if (part.empty ())
 			{
 			Util::Say (L"Save the part first - the CSV file is written beside "
 					   L"it, and there is nowhere to put it yet.");
 			return 0;
 			}
+
+		// PROBE: material removed per op from a 2D stock simulation, to the log only.
+		if (Settings::Diag () & 4)
+			StockSim::Run (part);
 
 		// ---- EVERY OPERATION THIS TOOL KNOWS, in Operation Manager order (the
 		// order they run), and which of them are selected.

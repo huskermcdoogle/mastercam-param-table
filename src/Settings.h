@@ -29,6 +29,7 @@ namespace Settings
 	/// Troubleshooting switches (diag.txt beside the DLL holding a number, else the
 	/// DWORD "Diag"; normally neither = 0), to find which
 	/// Mastercam call a part objects to: 1 = no Mastercam cycle time,
-	/// 2 = no NCI walk (no path stats or estimate).
+	/// 2 = no NCI walk (no path stats or estimate), 4 = stock sim probe (removed
+	/// volume per op from a 2D stock simulation, logged only - StockSim.h).
 	unsigned long Diag ();
 	}
