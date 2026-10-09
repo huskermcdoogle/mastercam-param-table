@@ -25,7 +25,7 @@ namespace Plan
 			L"flips", L"flips_est", L"flips_why", L"flip_longest", L"insp_mode", L"cut_seconds_est",
 			L"cut_dia", L"mrr", L"mrr_avg", L"removed_est", L"mrr_basis",
 			L"flips_uncommented", L"flips_part", L"edge_limit", L"edge_after",
-			L"removed", L"removed_from", L"air_pct", L"mrr_engaged", L"est_note", L"removed_check" };
+			L"removed", L"removed_from", L"air_pct", L"mrr_engaged", L"est_note", L"removed_check", L"xf_copies" };
 		for (const wchar_t *n : info)
 			if (name == n)
 				return true;

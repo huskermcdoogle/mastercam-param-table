@@ -1359,6 +1359,127 @@ namespace
 			}
 		}
 
+		// ---- TRANSFORMS ARE COPIES OF THEIR SOURCES. Its own NCI holds N copies
+		// of its source operations' cuts (measured: its cut length over theirs).
+		// So, live: its time = Mastercam's + N x the change in its sources'
+		// estimates; its cut time, flips and removed = N x theirs. And each source
+		// carries xf_copies (the extra times transforms cut it), which the Tools
+		// page weights its per-tool totals by - the transform rows have no tool, so
+		// nothing is counted twice. Sources are found by op_idn (INDIRECT + MATCH),
+		// so sorting keeps it right and no range holds its own cell.
+		const int copiesCol = colOf (L"xf_copies");
+		std::vector<double> copiesOf (rows.size (), 0);		// per row: extra copies by transforms
+		{
+		const int idCol = colOf (L"op_idn"), srcCol = colOf (L"xf_sources"), estCol = colOf (L"est_seconds");
+		const int rawCol = colOf (L"cycle_time_raw"), partCol = colOf (L"flips_part"), remCol = colOf (L"removed");
+		const std::wstring lastRow = std::to_wstring (rows.size () + 2);
+		auto rowOfId = [&] (long id) -> int
+			{
+			for (size_t d = 0; d < rows.size (); ++d)
+				if (rows[d].op->op_idn == id)
+					return static_cast<int> (d);
+			return -1;
+			};
+		auto at = [&] (int col, long id)
+			{
+			// N (): a blank or text cell counts 0 rather than spoiling the sum.
+			return L"IFERROR(N(INDIRECT(\"" + letters (static_cast<size_t> (col)) + L"\"&(MATCH(" + std::to_wstring (id)
+				   + L",$" + letters (static_cast<size_t> (idCol)) + L"$3:$" + letters (static_cast<size_t> (idCol)) + L"$"
+				   + lastRow + L",0)+2))),0)";
+			};
+		auto num = [&] (size_t d, int col)
+			{
+			double v = 0;
+			if (col >= 0)
+				Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (col)], v);
+			return v;
+			};
+		for (size_t d = 0; idCol >= 0 && srcCol >= 0 && d < rows.size () && d < stats.size (); ++d)
+			{
+			if (rows[d].t->opcode != TP_XFORM || !stats[d].path.ok)
+				continue;
+			// The sources in this dump.
+			std::vector<long> ids;
+			std::vector<int> at0;
+			double srcCut = 0;
+			{
+			const std::wstring list = s.rows[d + 1][static_cast<size_t> (srcCol)];
+			std::wstring n;
+			for (size_t i = 0; i <= list.size (); ++i)
+				if (i < list.size () && std::iswdigit (list[i]))
+					n += list[i];
+				else if (!n.empty ())
+					{
+					const long id = std::wcstol (n.c_str (), nullptr, 10);
+					n.clear ();
+					const int r = rowOfId (id);
+					if (r < 0 || !stats[static_cast<size_t> (r)].path.ok)
+						continue;
+					ids.push_back (id);
+					at0.push_back (r);
+					srcCut += stats[static_cast<size_t> (r)].path.cutLength;
+					}
+			}
+			if (ids.empty () || srcCut <= 0)
+				{
+				Util::Log (Util::PartFile (), L"transform op " + std::to_wstring (rows[d].op->op_idn)
+												  + L": its sources are not in this dump - shown as it is, not as copies");
+				continue;
+				}
+			const double n = (std::max) (1.0, std::round (stats[d].path.cutLength / srcCut));
+			Util::Log (Util::PartFile (), L"transform op " + std::to_wstring (rows[d].op->op_idn) + L": "
+											  + Csv::Tidy (n) + L" cop" + (n == 1 ? L"y" : L"ies") + L" of its sources (cut "
+											  + Csv::Tidy (std::round (stats[d].path.cutLength * 1000) / 1000) + L" vs "
+											  + Csv::Tidy (std::round (srcCut * 1000) / 1000) + L")");
+			for (int r : at0)
+				copiesOf[static_cast<size_t> (r)] += n;
+			if (copiesCol >= 0)
+				s.rows[d + 1][static_cast<size_t> (copiesCol)] = Csv::Tidy (n);
+			const std::wstring N = Csv::Tidy (n);
+			auto sumOf = [&] (int col, int minus)
+				{
+				std::wstring f;
+				for (long id : ids)
+					f += (f.empty () ? L"" : L"+") + at (col, id) + (minus >= 0 ? L"-" + at (minus, id) : L"");
+				return L"(" + f + L")";
+				};
+			// Time: Mastercam's for the transform, moved by N x its sources' change.
+			if (estCol >= 0 && rawCol >= 0)
+				{
+				s.formula[d][static_cast<size_t> (estCol)] = letters (static_cast<size_t> (rawCol)) + std::to_wstring (d + 3)
+															+ L"+" + N + L"*" + sumOf (estCol, rawCol);
+				s.rows[d + 1][static_cast<size_t> (estCol)] = Csv::Tidy (stats[d].seconds);
+				}
+			double cut0 = 0, flips0 = 0, rem0 = 0;
+			for (int r : at0)
+				{
+				cut0 += num (static_cast<size_t> (r), cutEst);
+				flips0 += num (static_cast<size_t> (r), partCol);
+				rem0 += num (static_cast<size_t> (r), remCol);
+				}
+			if (cutEst >= 0)
+				{
+				s.formula[d][static_cast<size_t> (cutEst)] = N + L"*" + sumOf (cutEst, -1);
+				s.rows[d + 1][static_cast<size_t> (cutEst)] = Csv::Tidy (n * cut0);
+				}
+			if (partCol >= 0)
+				{
+				s.formula[d][static_cast<size_t> (partCol)] = N + L"*" + sumOf (partCol, -1);
+				s.rows[d + 1][static_cast<size_t> (partCol)] = Csv::Tidy (n * flips0);
+				}
+			if (remCol >= 0 && rem0 > 0)
+				{
+				s.rows[d + 1][static_cast<size_t> (remCol)] = Csv::Tidy (std::round (n * rem0 * 1000) / 1000);
+				if (const int fromCol = colOf (L"removed_from"); fromCol >= 0)
+					s.rows[d + 1][static_cast<size_t> (fromCol)] = L"its sources' x " + N;
+				}
+			}
+		// The sources: how many more times transforms cut them.
+		for (size_t d = 0; copiesCol >= 0 && d < rows.size (); ++d)
+			if (copiesOf[d] > 0)
+				s.rows[d + 1][static_cast<size_t> (copiesCol)] = Csv::Tidy (copiesOf[d]);
+		}
+
 		// ---- THE TOOLS PAGE: per tool, its insert and - live - flips and cut time
 		// per part, summed from the main sheet by tool number; then per insert.
 		const int toolCol = colOf (L"tool");
@@ -1380,12 +1501,13 @@ namespace
 				if (d < toolOfRow.size () && toolOfRow[d] >= 0)
 					{
 					const size_t k = static_cast<size_t> (toolOfRow[d]);
+					const double w = 1 + copiesOf[d];		// the op, and its copies by transforms
 					double fp = 0;
 					Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (partCol)], fp);
-					flipsOf[k] += fp;
+					flipsOf[k] += fp * w;
 					double v = 0;
 					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], v))
-						cutOf[k] += v;
+						cutOf[k] += v * w;
 					longOf[k] = (std::max) (longOf[k], stats[d].inspRes.longest);
 					inspects[k] = inspects[k] || (stats[d].inspOk && stats[d].insp.doStop);
 					if (stats[d].inspOk && stats[d].insp.doStop && stats[d].insp.time > 0)
@@ -1403,10 +1525,19 @@ namespace
 				tr.extra[0].editable = true;			// the insert: correct it, and the table below follows
 				const std::wstring row = std::to_wstring (k + 2);
 				Xlsx::Sheet::FreeCell f, c, l;
-				f.formula = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (partCol) + L")";
+				// Weighted by 1 + xf_copies: a transform's copies count for its sources' tool.
+				// (SUMPRODUCT's comma form takes blanks as 0; the tool compared as text,
+				// as the Tools page keeps it.)
+				auto perTool = [&] (int col)
+					{
+					return copiesCol >= 0
+						? L"SUMPRODUCT(--(" + range (toolCol) + L"&\"\"=$A" + row + L")," + range (col) + L",1+"
+							  + range (copiesCol) + L")"
+						: L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (col) + L")";
+					};
+				f.formula = perTool (partCol);
 				f.text = Csv::Tidy (flipsOf[k]);
-				c.formula = L"TEXT(SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst)
-							+ L")/86400,\"[h]:mm:ss\")";
+				c.formula = L"TEXT(" + perTool (cutEst) + L"/86400,\"[h]:mm:ss\")";
 				c.text = Hms (cutOf[k]);
 				l.text = longOf[k] > 0 ? Inspect::MinSec (longOf[k]) : std::wstring ();
 				tr.extra.push_back (f);
@@ -1853,6 +1984,7 @@ namespace Dump
 				info (L"xf_detail", true, false, c.group);
 				info (L"xf_instances", false, false, c.group);
 				info (L"xf_sources", true, false, c.group);
+				info (L"xf_copies", false, false, c.group);
 				}
 			// The stats sit after the coolant columns - whether or not `coolant` itself
 			// is shown (an X-style machine has no use for it).
