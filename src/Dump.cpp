@@ -1688,7 +1688,10 @@ namespace Dump
 				else if (c.name == L"cut_seconds_est" && stats.path.ok)
 					v = Csv::Tidy (stats.path.feedSeconds);
 				else if (c.name == L"cut_dia" && stats.path.ok && stats.path.cutLength > 0
-						 && stats.path.lengthTimesRadius > 0)
+						 && stats.path.lengthTimesRadius > 0
+						 // A diameter means something only for turning: a mill op's X is not a radius.
+						 && ((t.opcode >= TP_LATHE_START1 && t.opcode <= TP_LATHE_END1)
+							 || (t.opcode >= TP_LATHE_START2 && t.opcode <= TP_LATHE_END2)))
 					v = Csv::Tidy (std::round (2.0 * stats.path.lengthTimesRadius / stats.path.cutLength * 1000.0) / 1000.0);
 
 				// Mastercam's arithmetic noise off the last digits. Well inside
