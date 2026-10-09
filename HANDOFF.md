@@ -24,7 +24,12 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
   (`vba\TextEditor.vb`, controls made by build_vba.ps1); Set selected is coolant-aware. The
   form's MSForms reference embeds C:\Users\<name>\...\MSForms.exd - `tools\scrub_vba.py`
   (run by build_vba.ps1, needs python) overwrites the name in place.
-- **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`).
+- **Built, NOT yet run in Mastercam:** mill tool pictures (`ToolPictures::MillTool`: the tool
+  manager's `CreateITlBitmapFactory ()->Create (TlToolMill, ...)`, deliberately not the setup
+  sheet's `WriteMillToolImage` - setup-sheet code is what raised the same-tool-number prompt);
+  mill `mrr` (`src\MillMrr.*`: ae x ap x feed/min, formulas checked in real Excel); TRANSFORM
+  rows (read-only table + `xf_detail` / `xf_instances` / `xf_sources` from `GetSourceOpIDs`,
+  their own NCI walked for time and flips; `src\Xform.*`).
 - Real parts used for testing live in `tests\` locally and are NOT tracked (gitignored).
 
 ## Layout of the code

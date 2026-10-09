@@ -13,6 +13,9 @@
 #include "DumpDialog.h"
 #include "Settings.h"
 #include "Inspect.h"
+#include "MillMrr.h"
+#include "Xform.h"
+#include "DependentOperations_CH.h"
 
 #include <cwctype>
 #include "FileRules.h"
@@ -323,6 +326,61 @@ namespace
 		const auto it = names.find (code);
 		return it != names.end () ? std::wstring (it->second)
 								  : L"opcode " + std::to_wstring (code);
+		}
+
+	/// A transform's numbers, out of its prm_xform - only the union member its
+	/// type says is in use is read.
+	Xform::Params XformOf (const operation &op)
+		{
+		const prm_xform &x = op.u.prm_xf;
+		Xform::Params p;
+		p.type = x.xf_type;
+		auto copy = [] (double *to, const p_3d &from)
+			{
+			for (int a = 0; a < 3; ++a)
+				to[a] = from[a];
+			};
+		if (x.xf_type == 1)
+			{
+			copy (p.mirrorFrom, x.u.mir.pt[0]);
+			copy (p.mirrorTo, x.u.mir.pt[1]);
+			}
+		else if (x.xf_type == 2)
+			{
+			p.rotSteps = x.u.rot.n_steps;
+			p.rotAngle = x.u.rot.rot_angle;
+			p.rotStart = x.u.rot.start_angle;
+			p.rotTotal = x.u.rot.distMode == 1;
+			copy (p.rotAbout, x.u.rot.pt);
+			}
+		else if (x.xf_type == 3)
+			{
+			p.trnStyle = x.u.trn.pt_type;
+			for (int i = 0; i < 2; ++i)
+				{
+				p.trnSteps[i] = x.u.trn.n_steps[i];
+				p.trnDist[i] = x.u.trn.dist[i];
+				p.trnPolar[i] = x.u.trn.pol[i];
+				}
+			p.trnTotal = x.u.trn.distMode == 1;
+			p.zigzag = x.u.trn.zigzag;
+			}
+		return p;
+		}
+
+	/// The operations a transform copies, as Mastercam lists them ("" when it
+	/// cannot say). Anything thrown is logged and the cell left blank.
+	std::wstring XformSources (const operation &op, const std::filesystem::path &part)
+		{
+		try
+			{
+			return Xform::IdList (GetSourceOpIDs (op.op_idn));
+			}
+		catch (...)
+			{
+			Util::Log (part, L"transform op " + std::to_wstring (op.op_idn) + L": could not read its source operations");
+			}
+		return std::wstring ();
 		}
 
 	/// An embedded resource's bytes (the compiled macros, the ribbon), or "".
@@ -1020,6 +1078,26 @@ namespace
 			if (!has (L"speed") || !has (L"feed") || !has (L"feed_mode") || !has (L"speed_mode"))
 				continue;
 			const std::wstring type = t.schema.type;
+
+			// MILLING: radial engagement x axial depth x feed per minute, from the
+			// row's own cells (MillMrr.h says which). No cut_dia - a mill op's NCI X
+			// is not a turning radius.
+			if (type == L"CONTOUR" || type == L"DYNAMIC MILL")
+				{
+				MillMrr::Cells cells;
+				for (const wchar_t *name : MillMrr::kColumns)
+					if (has (name))
+						cells[name] = { text (name), ref (name) };
+				const MillMrr::Result m = MillMrr::Compute (type, text (L"units") == L"mm", st.toolDia, cells);
+				if (!m.ok)
+					continue;
+				s.formula[d][static_cast<size_t> (mrrCol)] = m.formula;
+				s.rows[d + 1][static_cast<size_t> (mrrCol)] = Csv::Tidy (m.mrr);
+				if (basisCol >= 0)
+					s.rows[d + 1][static_cast<size_t> (basisCol)] = m.basis;
+				continue;
+				}
+
 			const bool drill = type == L"DRILL" || type == L"MILL DRILL";
 			const wchar_t *ap = nullptr;
 			if (type == L"ROUGH" || type == L"PRIME")
@@ -1820,6 +1898,14 @@ namespace Dump
 				}
 			if (used)
 				columns.push_back (c);
+			// A transform in words, beside its type: what it does, how many copies,
+			// of which operations.
+			if (used && name == L"xf_type")
+				{
+				info (L"xf_detail", true, false, c.group);
+				info (L"xf_instances", false, false, c.group);
+				info (L"xf_sources", true, false, c.group);
+				}
 			// The stats sit after the coolant columns - whether or not `coolant` itself
 			// is shown (an X-style machine has no use for it).
 			if (name == L"coolant")
@@ -1898,6 +1984,21 @@ namespace Dump
 			operation *pOp = f.op;
 			const Lathe::Table &t = *f.t;
 			const bool tool = HasTool (t);
+			// A transform has no tool of its own, but its own NCI (the copies) -
+			// walked like any other for its time, lengths and inspection stops.
+			const bool xform = t.opcode == TP_XFORM;
+			const bool walk = tool || xform;
+			std::wstring xfSources, xfDetail, xfInstances;
+			if (xform)
+				{
+				const Xform::Params xp = XformOf (*pOp);
+				xfDetail = Xform::Describe (xp);
+				if (const long n = Xform::Instances (xp); n > 0)
+					xfInstances = std::to_wstring (n);
+				xfSources = XformSources (*pOp, part);
+				Util::Log (part, L"transform op " + std::to_wstring (pOp->op_idn) + L": " + xfDetail
+								 + L" | sources: " + (xfSources.empty () ? L"-" : xfSources));
+				}
 
 			auto read = [&] (const std::wstring &name) -> std::wstring
 				{
@@ -1918,7 +2019,7 @@ namespace Dump
 				++radiusHow[static_cast<int> (how)];
 				}
 
-			Stats stats = tool ? StatsOf (pOp) : Stats ();
+			Stats stats = walk ? StatsOf (pOp) : Stats ();
 			if (tool)
 				stats.toolDia = pOp->tl.dia;
 			if (const auto hit = sim.find (pOp->op_idn); hit != sim.end ())
@@ -1966,9 +2067,9 @@ namespace Dump
 				else if (stats.simBoundaryBad)
 					stats.simCheck = L"Mastercam's boundary here looks wrong - simulation used";
 				}
-			if (tool)
+			if (walk)
 				Util::Log (part, Paths::Describe (*pOp, stats.path, stats.seconds));
-			if (tool && stats.path.ok)
+			if (walk && stats.path.ok)
 				{
 				// Tool inspection: the settings, then what the NCI did and why.
 				Inspect::Settings &is = stats.insp;
@@ -2032,6 +2133,12 @@ namespace Dump
 					v = pOp->tl.mm ? L"mm" : L"in";
 				else if (c.name == L"needs_regen")
 					v = pOp->db.nci_flag ? L"yes" : L"no";
+				else if (c.name == L"xf_detail")
+					v = xfDetail;
+				else if (c.name == L"xf_instances")
+					v = xfInstances;
+				else if (c.name == L"xf_sources")
+					v = xfSources;
 				else if (c.name == L"canned_text_raw" && tool)
 					v = CannedText (pOp->cantxt);
 				else if (c.name == L"changes")
@@ -2119,9 +2226,10 @@ namespace Dump
 					Xlsx::Sheet::ToolRow tr;
 					tr.number = std::to_wstring (o->tl.tlno);
 					tr.name = std::wstring (o->tl.comment, wcsnlen (o->tl.comment, COMMENT_SIZE));
-					std::wstring why = L"a mill tool - no picture yet";
+					std::wstring why;
 					if (settings.pictures
-						&& (!latheKind || !ToolPictures::LatheTool (slot, tr.png, tr.width, tr.height, why)))
+						&& !(latheKind ? ToolPictures::LatheTool (slot, tr.png, tr.width, tr.height, why)
+									   : ToolPictures::MillTool (slot, tr.png, tr.width, tr.height, why)))
 						{
 						tr.png.clear ();
 						Util::Log (part, L"tool " + tr.number + L": no picture - " + why);

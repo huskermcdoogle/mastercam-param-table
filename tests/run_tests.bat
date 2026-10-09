@@ -100,6 +100,14 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+echo === mill_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\mill_test.exe" ^
+    "%~dp0mill_test.cpp" "%~dp0..\src\MillMrr.cpp" "%~dp0..\src\Xform.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\mill_test.exe"
+    if errorlevel 1 set FAILED=1
+)
+
 if %FAILED%==1 (
     echo.
     echo TESTS FAILED

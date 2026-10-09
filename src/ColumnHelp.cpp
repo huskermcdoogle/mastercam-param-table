@@ -145,14 +145,20 @@ namespace ColumnHelp
 			{ L"edge_limit",     L"Cut time (seconds) an edge takes before a comment-less stop counts as a flip: the op's insp_time when filled in, else the tool's edge life on the Tools page (8:00)." },
 			{ L"edge_after",     L"Cut time (seconds) the tool's edge has done since its last flip, leaving this op - the next op of the same tool carries on from it." },
 			{ L"cut_dia",       L"Mean cutting diameter over the feed moves (from the NCI) - where an RPM op's surface speed, and CSS's max_ss cap, are taken. A drill: the tool diameter." },
-			{ L"mrr",            L"Metal removal rate while cutting, LIVE, in3/min (cm3/min metric): 12 x SFM x feed per rev x depth of cut; a drill: pi D^2/4 x feed per minute. Follows speed, feed and depth edits." },
+			{ L"mrr",            L"Metal removal rate while cutting, LIVE, in3/min (cm3/min metric). Turning: 12 x SFM x feed/rev x depth; drill: pi D^2/4 x feed/min; mill: ae x ap x feed/min (see mrr_basis). Follows speed, feed and depth edits." },
 			{ L"removed",        L"Material the op removes (in3, cm3 metric) - fixed by its toolpath, so feed and speed edits do not change it (a depth edit does only once the op is regenerated). From a 2D stock simulation where it covers the op, else mrr x cut time - see removed_from." },
 			{ L"removed_from",   L"Where removed comes from: the stock simulation (the toolpath swept through the stock), or an estimate (mrr x cut time, which counts air as cutting). Drill cycles, mill moves and ops after a stock flip are not simulated." },
 			{ L"removed_check",  L"The stock simulation set against Mastercam's own stock boundaries: 'agrees', or both figures when they differ by more than 20% - usually a tool whose outline in Mastercam is not its real insert." },
 			{ L"air_pct",        L"Share of the op's feed time cutting nothing (stock simulation)." },
 			{ L"mrr_avg",        L"Actual MRR over the whole operation, LIVE: removed / op time - rapids, leads and air cuts included. Follows feed and speed edits through the estimate." },
 			{ L"mrr_engaged",    L"Actual MRR while in metal, LIVE: removed / (cut time less its air share). Set it beside mrr (theoretical) - a big gap says the depth or engagement is not what the parameters suggest." },
-			{ L"mrr_basis",      L"What mrr is worked from: the depth-of-cut column, the diameter, and whether max_ss caps the speed." },
+			{ L"mrr_basis",      L"What mrr is worked from: the depth-of-cut column, the diameter, and whether max_ss caps the speed. A mill op: its ae (contour: full tool width unless multi passes - an upper bound; dynamic: stepover) and ap." },
+			{ L"xf_type",        L"Transform kind: mirror, rotate or translate. Transforms are shown, never written." },
+			{ L"xf_detail",      L"The transform in words: its kind and numbers (steps, angle or distance, about where)." },
+			{ L"xf_instances",   L"Copies the transform makes, as its dialog counts them: rotate - its steps; rectangular array - X steps x Y steps; mirror - 1." },
+			{ L"xf_sources",     L"The op_idn of each operation the transform copies, as Mastercam lists them." },
+			{ L"xf_make_ops",    L"1 = the transform makes new operations (and geometry); 0 = it transforms the toolpath only." },
+			{ L"xf_source_geom", L"1 = transforms the source operations' geometry; 0 = their NCI." },
 			};
 		const auto it = help.find (name);
 		if (it != help.end ())
