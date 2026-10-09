@@ -20,6 +20,7 @@ Private sel As Range
 Private busy As Boolean
 Private stale As Boolean
 Private planOk As Boolean
+Private lstBox(3) As Single                 ' the list's place: left, top, width, height
 
 Private Sub UserForm_Initialize()
     Accepted = False
@@ -38,6 +39,7 @@ Private Sub UserForm_Initialize()
     lst.Font.Size = 9
     lst.ColumnCount = 6
     lst.TabStop = False
+    lst.IntegralHeight = False
     lblSummary.Font.Size = 9
     lblSummary.WordWrap = True
     btnOK.Default = True                    ' Enter: preview, then apply
@@ -45,8 +47,10 @@ Private Sub UserForm_Initialize()
     btnCancel.Cancel = True                 ' Esc
 End Sub
 
+' Shown on a scaled display, a list box drops back to its design size: put it back.
 Private Sub UserForm_Activate()
     On Error Resume Next
+    If lstBox(2) > 0 Then lst.Move lstBox(0), lstBox(1), lstBox(2), lstBox(3)
     cboTarget.SetFocus
     cboTarget.SelStart = 0
     cboTarget.SelLength = Len(cboTarget.Text)
@@ -113,7 +117,9 @@ Public Sub Setup(ByVal how As String, ByVal selection As Range, ByVal scopes As 
         cboHow.Move PAD + 284, y, w - 284, 20
     End If
     y = y + 30
-    lst.Move PAD, y, w, 170: y = y + 176
+    lst.Move PAD, y, w, 170
+    lstBox(0) = PAD: lstBox(1) = y: lstBox(2) = w: lstBox(3) = 170
+    y = y + 176
     lblSummary.Move PAD, y, w, 54: y = y + 58
     btnOK.Move Me.InsideWidth - 2 * 80 - PAD, y, 76, 24
     btnCancel.Move Me.InsideWidth - 80 - PAD + 4, y, 76, 24

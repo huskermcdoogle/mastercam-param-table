@@ -16,6 +16,8 @@ Private target As Range
 Private keys As Variant                     ' what each list row stands for (copy: op_idn)
 Private listOnly As Boolean
 
+Private lstBox(3) As Single                 ' the list's place: left, top, width, height
+
 Private Sub UserForm_Initialize()
     Accepted = False
     Me.Width = 500
@@ -30,6 +32,7 @@ Private Sub UserForm_Initialize()
     lstDetail.Font.Name = "Consolas"
     lstDetail.Font.Size = 9
     lstDetail.TabStop = False
+    lstDetail.IntegralHeight = False
     btnOK.Caption = "OK"
     btnOK.Default = True                    ' Enter
     btnCancel.Caption = "Cancel"
@@ -37,8 +40,10 @@ Private Sub UserForm_Initialize()
 End Sub
 
 ' Typing replaces what is in the box: it opens with all of it selected.
+' Shown on a scaled display, a list box drops back to its design size: put it back.
 Private Sub UserForm_Activate()
     On Error Resume Next
+    If lstBox(2) > 0 Then lstDetail.Move lstBox(0), lstBox(1), lstBox(2), lstBox(3)
     cbo.SetFocus
     cbo.SelStart = 0
     cbo.SelLength = Len(cbo.Text)
@@ -82,7 +87,9 @@ Public Sub Setup(ByVal how As String, ByVal cells As Range, ByVal caption As Str
     lblPrompt.Move PAD, y, w, 14: y = y + 16
     cbo.Move PAD, y, w, 22: y = y + 30
     lblPreview.Move PAD, y, w, 42: y = y + 46
-    lstDetail.Move PAD, y, w, 120: y = y + 128
+    lstDetail.Move PAD, y, w, 120
+    lstBox(0) = PAD: lstBox(1) = y: lstBox(2) = w: lstBox(3) = 120
+    y = y + 128
     btnOK.Move Me.InsideWidth - 2 * 72 - PAD, y, 68, 24
     btnCancel.Move Me.InsideWidth - 72 - PAD + 4, y, 68, 24
     Me.Height = (Me.Height - Me.InsideHeight) + y + 24 + PAD
