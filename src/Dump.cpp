@@ -423,14 +423,14 @@ namespace
 			   + L"))*86400,VALUE(" + c + L")))";
 		}
 
-	/// Edges per insert, from an ISO insert code in its name (CNMG 432, VBMT 16,
-	/// RCMT ...): corners by the shape letter - C, D, E, K, V 2; T, W 3; S 4; a round
-	/// (R) about 8 - doubled when the clearance letter is N (double-sided). Blank
-	/// when the name holds no such code - a file name, a holder: typed in instead.
-	std::wstring EdgesGuess (const std::wstring &insert)
+	/// The first ISO insert code in a name ("CNMG432 BORING BAR" -> CNMG432,
+	/// "RH RNG86E" -> RNG86E, "RPGV45" -> RPGV45), or "". Shape letter, a
+	/// clearance letter, then letters and digits: four letters then digits, or a
+	/// round's three (RNG86). A holder code (CRGNL8, PCLNL2020) is not one.
+	std::wstring IsoInsertCode (const std::wstring &name)
 		{
 		std::wstring u;
-		for (wchar_t c : insert)
+		for (wchar_t c : name)
 			u += std::iswalnum (c) ? static_cast<wchar_t> (std::towupper (c)) : L' ';
 		size_t at = 0;
 		while (at < u.size ())
@@ -442,30 +442,40 @@ namespace
 				++end;
 			const std::wstring tok = u.substr (at, end - at);
 			at = end;
-			if (tok == L"ROUND")
-				return L"8";
-			// Four letters (shape, clearance, tolerance, type), then digits or nothing.
-			if (tok.size () < 4 || !std::iswalpha (tok[0]) || !std::iswalpha (tok[1]) || !std::iswalpha (tok[2])
-				|| !std::iswalpha (tok[3]))
+			if (tok.size () < 4 || std::wstring (L"CDEKRSTVW").find (tok[0]) == std::wstring::npos
+				|| std::wstring (L"ABCDEFGNP").find (tok[1]) == std::wstring::npos || !std::iswalpha (tok[2]))
 				continue;
-			if (tok.size () > 4 && !std::iswdigit (tok[4]))
-				continue;
-			const std::wstring clearance = L"ABCDEFGNPO";
-			if (clearance.find (tok[1]) == std::wstring::npos)
-				continue;
-			int corners = 0;
-			switch (tok[0])
-				{
-				case L'C': case L'D': case L'E': case L'K': case L'V': corners = 2; break;
-				case L'T': case L'W': corners = 3; break;
-				case L'S': corners = 4; break;
-				case L'R': return L"8";
-				default: break;
-				}
-			if (corners > 0)
-				return std::to_wstring (tok[1] == L'N' ? corners * 2 : corners);
+			const bool four = std::iswalpha (tok[3]) && (tok.size () == 4 || std::iswdigit (tok[4]));
+			const bool round3 = tok[0] == L'R' && std::iswdigit (tok[3]);
+			if (four || round3)
+				return tok;
 			}
 		return std::wstring ();
+		}
+
+	/// Edges per insert from its ISO code: corners by the shape letter - C, D,
+	/// E, K, V 2; T, W 3; S 4; a round (R) about 8 - doubled when the clearance
+	/// letter is N (double-sided). Blank without a code: typed in instead.
+	std::wstring EdgesGuess (const std::wstring &insert)
+		{
+		std::wstring up;
+		for (wchar_t c : insert)
+			up += static_cast<wchar_t> (std::towupper (c));
+		if (up.find (L"ROUND") != std::wstring::npos)
+			return L"8";
+		const std::wstring code = IsoInsertCode (insert);
+		if (code.empty ())
+			return std::wstring ();
+		int corners = 0;
+		switch (code[0])
+			{
+			case L'C': case L'D': case L'E': case L'K': case L'V': corners = 2; break;
+			case L'T': case L'W': corners = 3; break;
+			case L'S': corners = 4; break;
+			case L'R': return L"8";
+			default: return std::wstring ();
+			}
+		return std::to_wstring (code[1] == L'N' ? corners * 2 : corners);
 		}
 
 	bool WriteXlsx (const std::filesystem::path &file, const std::vector<Csv::Row> &out,
@@ -1145,6 +1155,7 @@ namespace
 				{
 				Xlsx::Sheet::ToolRow &tr = tools[k];
 				tr.extra.resize (1);
+				tr.extra[0].editable = true;			// the insert: correct it, and the table below follows
 				const std::wstring row = std::to_wstring (k + 2);
 				Xlsx::Sheet::FreeCell f, c, l;
 				f.formula = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (partCol) + L")";
@@ -1178,10 +1189,10 @@ namespace
 				if (!tr.extra[0].text.empty ())
 					byInsert[tr.extra[0].text].push_back (k);
 				}
-			if (!byInsert.empty ())
-				{
+			{
 				// Below the tools: per insert. The tool rows' column D is the insert
-				// and E the flips, so each insert sums its tools by name.
+				// and E the flips, so each insert sums its tools by name - type a name
+				// into a tool's Insert cell and into a row here, and it adds up.
 				const std::wstring lastTool = std::to_wstring (tools.size () + 1);
 				auto head = [] (const wchar_t *t)
 					{
@@ -1198,6 +1209,7 @@ namespace
 					const std::wstring r = std::to_wstring (tools.size () + 4 + i);
 					Xlsx::Sheet::FreeCell blank, name, used, edges, flips, inserts;
 					name.text = kv.first;
+					name.editable = true;
 					double total = 0;
 					for (size_t k : kv.second)
 						{
@@ -1214,6 +1226,18 @@ namespace
 									   ? Csv::Tidy (std::ceil (std::round (total / e * 1e6) / 1e6)) : std::wstring ();
 					s.toolsAfter.push_back ({ blank, name, used, edges, flips, inserts });
 					++i;
+					}
+				// Room for the inserts the names did not give.
+				for (int extra = 0; extra < 4; ++extra, ++i)
+					{
+					const std::wstring r = std::to_wstring (tools.size () + 4 + i);
+					Xlsx::Sheet::FreeCell blank, name, used, edges, flips, inserts;
+					name.editable = true;
+					edges.editable = true;
+					flips.formula = L"IF($B" + r + L"=\"\",\"\",SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$"
+									+ lastTool + L"))";
+					inserts.formula = L"IF(N($D" + r + L")>0,ROUNDUP(ROUND(N($E" + r + L")/$D" + r + L",6),0),\"\")";
+					s.toolsAfter.push_back ({ blank, name, used, edges, flips, inserts });
 					}
 				}
 
@@ -1895,6 +1919,13 @@ namespace Dump
 						if (dot != std::wstring::npos && ins.text.size () - dot <= 5
 							&& ins.text.find_first_of (L"\\/ ", dot) == std::wstring::npos)
 							ins.text.erase (dot);
+						// A generic name ("Insert", nothing) says nothing: the ISO code in
+						// the tool's own name, if it has one ("CNMG432 BORING BAR").
+						std::wstring low;
+						for (wchar_t c : ins.text)
+							low += static_cast<wchar_t> (std::towlower (c));
+						if (low.empty () || low == L"insert" || low == L"default")
+							ins.text = IsoInsertCode (tr.name);
 						}
 					tr.extra.push_back (ins);
 					k = tools.size ();
