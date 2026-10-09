@@ -25,6 +25,8 @@ try {
     $wb = $xl.Workbooks.Open($f)
     $ws = $wb.Worksheets.Item("Lathe params")
     $xl.EnableEvents = $true
+    # The Summary opens first; the macros' sheets keep their names and code names.
+    Check ($wb.Worksheets.Item(1).Name -eq "Summary" -and $wb.ActiveSheet.Name -eq "Summary" -and $ws.CodeName -eq "Sheet1") "Summary first and open, main sheet still Sheet1 ($($ws.CodeName))"
     "opened: $($xl.Windows.Item(1).Caption)  sheets: " + (($wb.Worksheets | ForEach-Object { $_.Name }) -join ', ') +
         "  modules: " + (($wb.VBProject.VBComponents | ForEach-Object { $_.Name }) -join ', ')
 

@@ -164,6 +164,12 @@
     <ClCompile Include="src\PreviewTicks.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Summary.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\Pick.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h" />
@@ -186,6 +192,8 @@
     <ClInclude Include="src\Plan.h" />
     <ClInclude Include="src\Impact.h" />
     <ClInclude Include="src\Undo.h" />
+    <ClInclude Include="src\Summary.h" />
+    <ClInclude Include="src\Pick.h" />
     <ClInclude Include="src\Inspect.h" />
     <ClInclude Include="src\MillMrr.h" />
     <ClInclude Include="src\Xform.h" />

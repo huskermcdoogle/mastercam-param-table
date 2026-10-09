@@ -16,7 +16,7 @@ try {
     $xl.Visible = $false; $xl.DisplayAlerts = $false
     foreach ($line in $expect) {
         $edits, $want = $line -split '\|'
-        $wb = $xl.Workbooks.Open($file); $ws = $wb.Worksheets.Item(1)
+        $wb = $xl.Workbooks.Open($file); $ws = $wb.Worksheets.Item("Lathe params")
         if ($edits) {
             foreach ($e in ($edits -split ';')) {
                 $ref, $val = $e -split '=', 2

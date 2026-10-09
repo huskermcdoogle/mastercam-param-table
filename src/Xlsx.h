@@ -96,6 +96,24 @@ namespace Xlsx
 			bool head = false;			//!< drawn as a heading
 			bool editable = false;		//!< drawn as a cell to type in (not grey)
 			bool textFormat = false;	//!< formatted as Text: a typed 8:00 stays 8:00
+
+			/// How a cell of a REPORT page looks. Auto is the grid's own: a heading,
+			/// a cell to type in, or grey (worked out). The others are for a page
+			/// that is read rather than typed in (the Summary): no grid colours.
+			enum Look { Auto, Title, Section, Note, Plain, Link, Input };
+			Look look = Auto;
+
+			/// A number format: "" General, or "0%", "0.0%", "0.00", "currency" (the
+			/// computer's own currency), "@" Text.
+			std::wstring numFmt;
+
+			/// An ARRAY formula (as if entered with Ctrl+Shift+Enter): array maths
+			/// inside it works in every Excel, with or without dynamic arrays.
+			bool array = false;
+
+			/// Aligned right: a figure (or a time, which the sheet writes as text)
+			/// lined up under its heading.
+			bool right = false;
 			};
 		struct ToolRow
 			{
@@ -109,6 +127,13 @@ namespace Xlsx
 
 		/// Rows written under the tools, after one blank row (a summary table).
 		std::vector<std::vector<FreeCell>> toolsAfter;
+
+		/// THE SUMMARY PAGE: first in the workbook and the page it opens on - rows of
+		/// cells from A1, no gridlines. Empty = no Summary sheet. Its formulas read
+		/// the other sheets by name ('Lathe params', 'Tools', Dumped).
+		std::vector<std::vector<FreeCell>> summary;
+		/// Its column widths in characters, from A; 0 = a hidden working column.
+		std::vector<double> summaryWidths;
 
 		/// Main-sheet cells that link to a Tools row: (A1 cell, index into tools).
 		std::vector<std::pair<std::string, size_t>> toolLinks;

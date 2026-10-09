@@ -6,6 +6,8 @@
 #pragma once
 
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace Settings
 	{
@@ -26,6 +28,13 @@ namespace Settings
 	/// The last sheet dumped, and for which part - where a load starts looking.
 	void SetLastDump (const std::wstring &file, const std::wstring &part);
 	std::wstring LastDumpFor (const std::wstring &part);
+
+	/// SAVED SELECTIONS: named sets of ticked operations (by op number), per part
+	/// file name - Selections\<part file name>, one value per name, "2,5,12".
+	/// In name order.
+	std::vector<std::pair<std::wstring, std::vector<long>>> Selections (const std::wstring &partFile);
+	void SaveSelection (const std::wstring &partFile, const std::wstring &name, const std::vector<long> &ids);
+	void DeleteSelection (const std::wstring &partFile, const std::wstring &name);
 
 	/// Troubleshooting switches (diag.txt beside the DLL holding a number, else the
 	/// DWORD "Diag"; normally neither = 0), to find which
