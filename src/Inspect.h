@@ -66,6 +66,10 @@ namespace Inspect
 
 	Result Explain (const Settings &s, const Paths::Totals &t);
 
+	/// When it stops, in words: "every 5 in of cut, at end" ("" when it never
+	/// stops). `unit` is the part's length unit ("in" / "mm").
+	std::wstring Criteria (const Settings &s, const std::wstring &unit);
+
 	/// A log line: settings, stops and causes.
 	std::wstring Describe (long opIdn, const Settings &s, const Result &r);
 	}

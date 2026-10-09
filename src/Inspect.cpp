@@ -137,17 +137,28 @@ namespace Inspect
 		return r;
 		}
 
+	std::wstring Criteria (const Settings &s, const std::wstring &unit)
+		{
+		std::wstring o;
+		auto add = [&o] (const std::wstring &t) { o += (o.empty () ? L"" : L", ") + t; };
+		if (!s.doStop)
+			return o;
+		if (s.timeOn) add (L"every " + MinSec (s.time));
+		if (s.distOn) add (L"every " + Csv::Tidy (s.dist) + (unit.empty () ? L"" : L" " + unit) + L" of cut");
+		if (s.cutsOn) add (L"every " + std::to_wstring (s.cuts) + L" cut(s)");
+		if (s.firstCut) add (L"after first cut");
+		if (s.eachDepth) add (L"each depth");
+		if (s.eachGroove) add (L"each groove");
+		if (s.eachSection) add (L"every " + std::to_wstring (s.sections) + L" section(s)");
+		if (s.atEnd) add (L"at end");
+		return o;
+		}
+
 	std::wstring Describe (long opIdn, const Settings &s, const Result &r)
 		{
 		std::wstring o = L"inspect op " + std::to_wstring (opIdn) + L": " + (s.doStop ? L"on" : L"off");
-		if (s.timeOn) o += L", every " + MinSec (s.time);
-		if (s.distOn) o += L", every " + Csv::Tidy (s.dist) + L" of cut";
-		if (s.cutsOn) o += L", every " + std::to_wstring (s.cuts) + L" cut(s)";
-		if (s.firstCut) o += L", after first cut";
-		if (s.eachDepth) o += L", each depth";
-		if (s.eachGroove) o += L", each groove";
-		if (s.eachSection) o += L", every " + std::to_wstring (s.sections) + L" section(s)";
-		if (s.atEnd) o += L", at end";
+		if (s.doStop && !Criteria (s, L"").empty ())
+			o += L", " + Criteria (s, L"");
 		o += L", " + r.mode + L" | " + std::to_wstring (r.stops) + L" stop(s), "
 			 + std::to_wstring (r.flips) + L" flip(s)" + (r.why.empty () ? L"" : L": " + r.why)
 			 + (r.flips ? L", longest " + MinSec (r.longest) : L"");

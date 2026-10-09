@@ -1290,8 +1290,8 @@ namespace
 		const double defaultLife = 480.0;		// the Tools page's edge life to start with
 		// The Tools page's edge life for a tool (column H, as m:ss), in seconds.
 		const std::wstring lifeOf = toolsN > 0
-			? L"IFERROR(" + SecondsOf (L"VLOOKUP(" + std::wstring (L"TOOLREF") + L"&\"\",'Tools'!$A$2:$H$"
-									   + std::to_wstring (toolsN + 1) + L",8,FALSE)") + L"," + full (defaultLife) + L")"
+			? L"IFERROR(" + SecondsOf (L"VLOOKUP(" + std::wstring (L"TOOLREF") + L"&\"\",'Tools'!$A$2:$I$"
+									   + std::to_wstring (toolsN + 1) + L",9,FALSE)") + L"," + full (defaultLife) + L")"
 			: full (defaultLife);
 		std::map<long, double> clockOf;			// tool -> edge clock leaving its last op
 		std::map<long, std::wstring> lastOpOf;	// tool -> op_idn of its last op
@@ -1519,11 +1519,14 @@ namespace
 				const std::wstring l = letters (static_cast<size_t> (c));
 				return L"'Lathe params'!$" + l + L"$3:$" + l + L"$" + last;
 				};
-			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips",
+			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips", L"Inspection",
 								 L"Edge life (fallback)", L"Insert code", L"Simulated shape", L"Shape check" };
 			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
 			std::vector<char> inspects (tools.size (), 0);	// any of its ops has tool inspection on
 			std::vector<std::map<double, int>> lifeVotes (tools.size ());	// its inspected ops' insp_time
+			std::vector<char> fallback (tools.size (), 0);	// an inspected op of it sets no insp_time: the edge life is used
+			// What its ops stop on, in words - per op ("op 2: every 5 in of cut").
+			std::vector<std::vector<std::pair<long, std::wstring>>> criteria (tools.size ());
 			for (size_t d = 0; d < rows.size () && d < stats.size (); ++d)
 				if (d < toolOfRow.size () && toolOfRow[d] >= 0)
 					{
@@ -1539,6 +1542,12 @@ namespace
 					inspects[k] = inspects[k] || (stats[d].inspOk && stats[d].insp.doStop);
 					if (stats[d].inspOk && stats[d].insp.doStop && stats[d].insp.time > 0)
 						++lifeVotes[k][stats[d].insp.time];
+					if (stats[d].inspOk && stats[d].insp.doStop)
+						{
+						fallback[k] = fallback[k] || !(stats[d].insp.time > 0);
+						criteria[k].push_back ({ rows[d].op->op_idn,
+												 Inspect::Criteria (stats[d].insp, rows[d].op->tl.mm ? L"mm" : L"in") });
+						}
 					}
 			std::map<std::wstring, std::vector<size_t>> byInsert;
 			for (size_t k = 0; k < tools.size (); ++k)
@@ -1570,12 +1579,26 @@ namespace
 				tr.extra.push_back (f);
 				tr.extra.push_back (c);
 				tr.extra.push_back (l);
+				// Inspection: what its ops actually stop on - the flips come from this.
+				// One line when its ops agree, else per op.
+				{
+				Xlsx::Sheet::FreeCell in;
+				bool same = true;
+				for (const auto &c : criteria[k])
+					same = same && c.second == criteria[k].front ().second;
+				for (const auto &c : criteria[k])
+					if (!same)
+						in.text += (in.text.empty () ? L"" : L"; ") + (L"op " + std::to_wstring (c.first) + L": ") + c.second;
+				if (same && !criteria[k].empty ())
+					in.text = criteria[k].front ().second;
+				tr.extra.push_back (in);
+				}
 				// Edge life (typed, m:ss): the cut time before a comment-less stop
-				// counts as a flip, on this tool's ops that set no insp_time of their
-				// own - the flips themselves come from the inspection criteria. It
-				// starts at the tool's own insp_time (the most common across its
-				// inspected ops, the shorter on a tie), 8:00 where none is set, and
-				// blank for a tool that does not inspect (its insert lasts the part).
+				// counts as a flip, ONLY on this tool's ops that set no insp_time of
+				// their own - the flips themselves come from the inspection criteria
+				// (the column before). Filled in (8:00, or the tool's own insp_time
+				// where some ops set one) only where an op uses it: blank - and greyed
+				// - where every inspected op sets its own, or the tool does not inspect.
 				Xlsx::Sheet::FreeCell life;
 				double life0 = 480.0;
 				int best = 0;
@@ -1585,7 +1608,7 @@ namespace
 						best = v.second;
 						life0 = v.first;
 						}
-				life.text = inspects[k] ? Inspect::MinSec (life0) : L"";
+				life.text = inspects[k] && fallback[k] ? Inspect::MinSec (life0) : L"";
 				{
 				// The part's .ptconfig: a life typed over an earlier dump's own (only
 				// one recorded against what that dump filled in); then this dump's own.
@@ -1597,6 +1620,8 @@ namespace
 				}
 				life.editable = true;
 				life.textFormat = true;
+				if (!(inspects[k] && fallback[k]))
+					s.toolsGreyed.push_back ({ "I" + std::to_string (k + 2), L"TRUE" });
 				tr.extra.push_back (life);
 				for (const Xlsx::Sheet::FreeCell &t : tail)
 					tr.extra.push_back (t);
@@ -1670,8 +1695,8 @@ namespace
 					// from the shape alone (one-sided - type over a double-sided one).
 					std::wstring codeOf;
 					for (size_t k : kv.second)
-						if (codeOf.empty () && tools[k].extra.size () > 5)
-							codeOf = tools[k].extra[5].text;
+						if (codeOf.empty () && tools[k].extra.size () > 6)
+							codeOf = tools[k].extra[6].text;
 					edges.text = EdgesGuess (codeOf);
 					if (edges.text.empty ())
 						edges.text = EdgesGuess (kv.first);
@@ -1755,9 +1780,9 @@ namespace
 				rule (range ("D", t0, t1), "", "", L"", L"", L"Insert",
 					  L"The insert this tool carries. Tools with the same name are counted as one insert below. Correct it if the guess is wrong - it is kept for the next dump.",
 					  L"");
-				rule (range ("H", t0, t1), "custom", "",
-					  L"OR(H2=\"\",AND(ISNUMBER(H2),H2>0),ISNUMBER(TIMEVALUE(\"0:\"&H2)),ISNUMBER(TIMEVALUE(H2)))", L"",
-					  L"Edge life", L"Cut time before a stop with no comment counts as an insert flip, for ops that set no insp_time of their own. Minutes:seconds (8:00) or seconds.",
+				rule (range ("I", t0, t1), "custom", "",
+					  L"OR(I2=\"\",AND(ISNUMBER(I2),I2>0),ISNUMBER(TIMEVALUE(\"0:\"&I2)),ISNUMBER(TIMEVALUE(I2)))", L"",
+					  L"Edge life", L"Cut time before a stop with no comment counts as an insert flip - only for ops that set no insp_time of their own (blank and greyed where none does). Minutes:seconds (8:00) or seconds.",
 					  L"Type a time: minutes:seconds (8:00) or seconds (480).");
 				if (i > 0)
 					{

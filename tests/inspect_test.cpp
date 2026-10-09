@@ -99,6 +99,18 @@ int main ()
 	Check (r.byDist == 2, "two by distance");
 	Check (r.mode == L"mid-cut, finishes the pass if under 0.25 left", "mode mid-cut with min cut");
 
+	// The Tools page's Inspection column: when it stops, in words.
+	Inspect::Settings c;
+	c.doStop = c.distOn = c.atEnd = true;
+	c.dist = 5;
+	Check (Inspect::Criteria (c, L"in") == L"every 5 in of cut, at end", "criteria: distance with its unit, at end");
+	c.distOn = c.atEnd = false;
+	c.timeOn = true;
+	c.time = 70;
+	Check (Inspect::Criteria (c, L"in") == L"every 1:10", "criteria: time");
+	c.doStop = false;
+	Check (Inspect::Criteria (c, L"in").empty (), "criteria: none when it never stops");
+
 	if (failed)
 		std::printf ("inspect_test: %d FAILED\n", failed);
 	else
