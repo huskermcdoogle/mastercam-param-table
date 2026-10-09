@@ -42,6 +42,19 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
   manual-entry text with a live count against the 3,111-character limit (double-click the
   cell) - and, as you type, linked amount / percent pairs kept in step and gentle warnings in the status bar (CSS with no max RPM, a
   per-minute feed that looks like a per-rev one). The sheet loads back the same without them.
+  Planning tools on the same tab, each showing every op before -> after before it writes:
+  - *Hit a target time* - pick ops or a tool, type the time you want (`12:30`) or a cut
+    (`10%`); the feeds (and speeds, if ticked) scale by one factor, each inside its own
+    limits, worked out on the sheet's own live estimate - time, flips and MRR per op, and
+    which cells hit a limit.
+  - *Even out flips* - the insp_time (or feeds) that give each tool the same flips per part
+    with every edge used evenly, or one flip fewer, or a count you type.
+  - *To all ops of tool* - copy the selected columns of one op into every op of its tool.
+  - *What-if scenarios* - save the sheet's edits under a name, restore one, and compare
+    them side by side (cycle time, cutting time, flips, MRR, every changed parameter).
+  - *Show* - only the changed rows, only this tool's ops, or all (the sheet's own filter).
+  - The calculator also does round-insert chip thinning for dynamic turning (chip
+    thickness <-> the feed to program at a depth) and can set the row's feed.
 - Never overwrites a file - a name that is taken gets ` (2)`.
 
 **Load** - pick the edited, saved workbook (or a CSV). A preview window lists every change

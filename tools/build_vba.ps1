@@ -1,6 +1,6 @@
 <#
-    Compile the workbook macros: vba\ParamTable.bas (a module) and vba\Sheet1.cls (the main
-    sheet's events) into res\vbaProject.bin - the compiled block an .xlsm carries. The add-in
+    Compile the workbook macros: vba\ParamTable.bas and vba\Planner.bas (modules), the forms
+    (vba\*.vb) and vba\Sheet1.cls (the main sheet's events) into res\vbaProject.bin - the compiled block an .xlsm carries. The add-in
     embeds that file, and writes it into a dump when macros are switched on.
 
     Run after changing anything in vba\, then rebuild the add-in. Needs Excel, with "Trust
@@ -14,13 +14,17 @@ param([string] $Root = "")
 $ErrorActionPreference = "Stop"
 if (-not $Root) { $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path) }
 
-$tmp = Join-Path $env:TEMP "ParamTableVba"
+# PT_TEST_OUT (when set) keeps one checkout's build out of another's way.
+$tmp = Join-Path $(if ($env:PT_TEST_OUT) { $env:PT_TEST_OUT } else { $env:TEMP }) "ParamTableVba"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 
 # The VBA editor imports ANSI text with CRLF line ends.
-$bas = Join-Path $tmp "ParamTable.bas"
-$text = (Get-Content -LiteralPath (Join-Path $Root "vba\ParamTable.bas") -Raw) -replace "`r?`n", "`r`n"
-[IO.File]::WriteAllText($bas, $text, [Text.Encoding]::GetEncoding(1252))
+$modules = foreach ($m in "ParamTable", "Planner") {
+    $bas = Join-Path $tmp "$m.bas"
+    $text = (Get-Content -LiteralPath (Join-Path $Root "vba\$m.bas") -Raw) -replace "`r?`n", "`r`n"
+    [IO.File]::WriteAllText($bas, $text, [Text.Encoding]::GetEncoding(1252))
+    $bas
+}
 $sheetCode = (Get-Content -LiteralPath (Join-Path $Root "vba\Sheet1.cls") -Raw) -replace "`r?`n", "`r`n"
 
 $xlsm = Join-Path $tmp "vba.xlsm"
@@ -41,7 +45,7 @@ try {
     if ($names -notcontains "Sheet1" -or $names -notcontains "ThisWorkbook") {
         throw "the VBA project has '$($names -join ', ')', expected Sheet1 and ThisWorkbook"
     }
-    [void] $vbp.VBComponents.Import($bas)
+    foreach ($bas in $modules) { [void] $vbp.VBComponents.Import($bas) }
     # The forms: named controls made here; their look and behaviour are all in vba\<name>.vb.
     function Add-Form ($name, $controls) {
         $frm = $vbp.VBComponents.Add(3)                  # vbext_ct_MSForm
@@ -59,11 +63,17 @@ try {
                                 @("Forms.CommandButton.1", "btnClear")) +
                               @(1..12 | ForEach-Object { , @("Forms.CheckBox.1", "chk$_") }))
     Add-Form "EditBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblPrompt"), @("Forms.ComboBox.1", "cbo"),
-                         @("Forms.Label.1", "lblPreview"), @("Forms.CommandButton.1", "btnOK"),
-                         @("Forms.CommandButton.1", "btnCancel"))
+                         @("Forms.Label.1", "lblPreview"), @("Forms.ListBox.1", "lstDetail"),
+                         @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
+    Add-Form "PlanBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblScope"), @("Forms.ComboBox.1", "cboScope"),
+                         @("Forms.Label.1", "lblTarget"), @("Forms.ComboBox.1", "cboTarget"), @("Forms.Label.1", "lblHow"),
+                         @("Forms.ComboBox.1", "cboHow"), @("Forms.CheckBox.1", "chk1"), @("Forms.CheckBox.1", "chk2"),
+                         @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblSummary"),
+                         @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
     Add-Form "Calculator" (@(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblNote"), @("Forms.CheckBox.1", "chkMetric"),
-                             @("Forms.CommandButton.1", "btnClose")) +
-                           @("Dia", "Surf", "Rpm", "Rev", "Min" | ForEach-Object { @("Forms.Label.1", "lbl$_"), @("Forms.TextBox.1", "txt$_") }))
+                             @("Forms.CommandButton.1", "btnClose"), @("Forms.Label.1", "lblChip"), @("Forms.Label.1", "lblThin"),
+                             @("Forms.CommandButton.1", "btnUseFeed"), @("Forms.CommandButton.1", "btnSetRow")) +
+                           @("Dia", "Surf", "Rpm", "Rev", "Min", "IC", "Ap", "Hex", "Fn" | ForEach-Object { @("Forms.Label.1", "lbl$_"), @("Forms.TextBox.1", "txt$_") }))
 
     $cm = $vbp.VBComponents.Item("Sheet1").CodeModule
     if ($cm.CountOfLines -gt 0) { $cm.DeleteLines(1, $cm.CountOfLines) }
