@@ -153,6 +153,10 @@ namespace
 		{
 		P a, b;
 		bool feed;
+		double rate = 0;		//!< the move's feed: negative per rev, positive per minute
+		double speed = 0;		//!< the section's spindle: RPM, or surface speed when css
+		bool css = false;
+		double cap = 0;
 		};
 
 	/// The boundary's entities, copied out under a guard: bdryEnts is only good
@@ -307,12 +311,22 @@ namespace
 		const INT_PTR n = nci.ReadSection (op.op_idn, true);
 		bool started = false;
 		P at { 0, 0 };
+		// The spindle as the NCI sets it (see Paths.cpp): the op's own, then each 1002 line's.
+		double speed = std::fabs (static_cast<double> (op.tl.rpm)), cap = std::fabs (static_cast<double> (op.tl.max_ss));
+		bool css = op.tl.use_css;
 		for (INT_PTR i = 0; i < n; ++i)
 			{
 			const nci_bin *b = nci[i];
 			if (b == nullptr)
 				continue;
 			const NCI_GCODE g = b->gcode;
+			if (static_cast<int> (g) == 1002 && b->type == NCI_LATHE_TYPE)
+				{
+				css = b->u.l1002.rpm < 0;
+				speed = std::fabs (static_cast<double> (b->u.l1002.rpm));
+				cap = std::fabs (b->u.l1002.max_rpm);
+				continue;
+				}
 			if (g == NCI_DRILL_START || g == NCI_DRILL_HOLE)
 				{
 				++r.holes;
@@ -337,13 +351,13 @@ namespace
 				continue;
 				}
 			if (!arc)
-				r.segs.push_back ({ at, end, g == NCI_LINEAR });
+				r.segs.push_back ({ at, end, g == NCI_LINEAR, b->u.l1.feed, speed, css, cap });
 			else
 				{
 				P prev = at;
 				for (const P &p : Chords (at, end, { b->u.l2.cpt[1], b->u.l2.cpt[0] }, g == NCI_ARC_CW, 0.0005))
 					{
-					r.segs.push_back ({ prev, p, true });
+					r.segs.push_back ({ prev, p, true, b->u.l2.feed, speed, css, cap });
 					prev = p;
 					}
 				}
@@ -593,7 +607,7 @@ namespace StockSim
 								 + std::to_wstring (ins.nz) + L" cells of " + F (h) + L" | feed moves Z " + F (fz0) + L".."
 								 + F (fz1) + L" R to " + F (fx1));
 
-			double totIns = 0, totNose = 0, totAir = 0, totSwept = 0;
+			double totIns = 0, totNose = 0, totAir = 0, totSwept = 0;	// air / all feed seconds
 			std::set<long> mcLogged;
 			double mcPrev = stockExact;		// Mastercam's stock left so far, by its boundaries
 			for (const OpPath &p : paths)
@@ -602,7 +616,7 @@ namespace StockSim
 				const Shape &sh = shapes[p.op->tl.slot];
 				ins.BeginOp ();
 				nose.BeginOp ();
-				double rapidIn = 0;
+				double rapidIn = 0, cutT = 0, airT = 0, cutL = 0, airL = 0;
 				long feeds = 0;
 				for (const Seg &s : p.segs)
 					{
@@ -611,15 +625,32 @@ namespace StockSim
 						rapidIn += ins.ThroughStock (s.a, s.b);
 						continue;
 						}
-					++feeds;
-					ins.Sweep (sh.insert, s.a, s.b);
-					nose.Sweep (sh.nose, s.a, s.b);
+					// AIR CUTTING BY TIME: the move in pieces of at most 0.05", each timed
+					// like the path walk and counted as cutting when it clears more than
+					// a sliver (a mean depth over 0.001", and more than two cells).
+					const double len = std::hypot (s.b.z - s.a.z, s.b.x - s.a.x);
+					const int k = (std::max) (1, static_cast<int> (std::ceil (len / 0.05)));
+					for (int q = 0; q < k; ++q)
+						{
+						const P pa { s.a.z + (s.b.z - s.a.z) * q / k, s.a.x + (s.b.x - s.a.x) * q / k };
+						const P pb { s.a.z + (s.b.z - s.a.z) * (q + 1) / k, s.a.x + (s.b.x - s.a.x) * (q + 1) / k };
+						const double before = ins.removedArea;
+						ins.Sweep (sh.insert, pa, pb);
+						nose.Sweep (sh.nose, pa, pb);
+						++feeds;
+						const double cut = ins.removedArea - before;
+						const double t = Paths::FeedSeconds (s.speed, s.css, s.cap, p.op->tl.mm, len / k,
+															 std::fabs ((pa.x + pb.x) / 2), s.rate);
+						const bool cutting = cut > (std::max) (2.5 * h * h, 0.001 * len / k);
+						(cutting ? cutT : airT) += t;
+						(cutting ? cutL : airL) += len / k;
+						}
 					}
 				const double secs = std::chrono::duration<double> (std::chrono::steady_clock::now () - s0).count ();
 				totIns += ins.removedVol;
 				totNose += nose.removedVol;
-				totAir += ins.airArea;
-				totSwept += ins.airArea + ins.removedArea;
+				totAir += airT;
+				totSwept += airT + cutT;
 				// Feed time, for an average removal rate to set beside 12*SFM*IPR*DOC.
 				const Paths::Totals pt = Paths::Walk (*p.op);
 				const double minutes = pt.feedSeconds / 60.0;
@@ -647,8 +678,11 @@ namespace StockSim
 									 + std::to_wstring (p.op->tl.tlno) + L" \""
 									 + std::wstring (p.op->comment, wcsnlen (p.op->comment, COMMENT_SIZE))
 									 + L"\": removed " + F (ins.removedVol, 3) + L" in^3 (nose only "
-									 + F (nose.removedVol, 3) + L"), air " + F (swept > 0 ? 100.0 * ins.airArea / swept : 0, 1)
-									 + L"% of " + F (swept, 3) + L" in^2 swept, cells " + std::to_wstring (
+									 + F (nose.removedVol, 3) + L"), AIR " + F (airT + cutT > 0 ? 100.0 * airT / (airT + cutT) : 0, 1)
+									 + L"% of feed time (" + Ms (airT) + L" of " + Ms (airT + cutT) + L"), "
+									 + F (airL + cutL > 0 ? 100.0 * airL / (airL + cutL) : 0, 1) + L"% of feed length ("
+									 + F (airL, 2) + L" of " + F (airL + cutL, 2) + L" in) | swept " + F (swept, 3)
+									 + L" in^2, cells " + std::to_wstring (
 										   static_cast<long long> (ins.removedArea / (h * h) + 0.5))
 									 + L" | feed " + Ms (pt.feedSeconds) + L", avg " + F (minutes > 0 ? ins.removedVol / minutes : 0, 3)
 									 + L" in^3/min | " + std::to_wstring (feeds) + L" feed pieces, rapids through stock "
@@ -659,7 +693,8 @@ namespace StockSim
 			Util::Log (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" TOTAL removed " + F (totIns, 3)
 								 + L" in^3 (nose only " + F (totNose, 3) + L"), left " + F (ins.Volume (), 3)
 								 + L" in^3 of " + F (stockGrid, 3) + L" (nose only left " + F (nose.Volume (), 3)
-								 + L"), air " + F (totSwept > 0 ? 100.0 * totAir / totSwept : 0, 1) + L"%");
+								 + L"), AIR " + F (totSwept > 0 ? 100.0 * totAir / totSwept : 0, 1) + L"% of feed time ("
+								 + Ms (totAir) + L" of " + Ms (totSwept) + L")");
 			}
 		Util::Log (part, L"stock sim done in "
 							 + F (std::chrono::duration<double> (std::chrono::steady_clock::now () - t0).count (), 2) + L" s");

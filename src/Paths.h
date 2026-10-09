@@ -65,6 +65,11 @@ namespace Paths
 	/// regenerating, or a kind with no moves).
 	Totals Walk (operation &op);
 
+	/// Seconds for one feed move of `len` at `radius`, as the walk times it: the
+	/// move's feed sign says per rev (negative) or per minute; speed is RPM, or
+	/// surface speed when css (SFM, or m/min when mm), capped at cap (0 = none).
+	double FeedSeconds (double speed, bool css, double cap, bool mm, double len, double radius, double feed);
+
 	/// Every NCI line of the operation as CSV rows (gcode, type, plane, end point,
 	/// centre, feed ...) - raw, for working out how a move should be read.
 	std::wstring Listing (operation &op);

@@ -290,6 +290,16 @@ namespace Paths
 		return t;
 		}
 
+	double FeedSeconds (double speed, bool css, double cap, bool mm, double len, double radius, double feed)
+		{
+		Spindle sp;
+		sp.speed = speed;
+		sp.css = css;
+		sp.cap = cap;
+		sp.mm = mm;
+		return MoveSeconds (sp, len, radius, feed);
+		}
+
 	std::wstring Listing (operation &op)
 		{
 		CBnciReadWrite nci;
