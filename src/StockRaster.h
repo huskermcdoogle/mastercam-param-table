@@ -108,6 +108,37 @@ namespace StockRaster
 				}
 			}
 
+		/// Material wherever a cell's centre is inside the closed outline (even-odd),
+		/// x read as a radius.
+		void FillPolygon (const std::vector<P> &poly)
+			{
+			const size_t n = poly.size ();
+			if (n < 3)
+				return;
+			std::vector<double> cross;
+			for (int i = 0; i < nx; ++i)
+				{
+				const double yc = (i + 0.5) * h;
+				cross.clear ();
+				for (size_t e = 0; e < n; ++e)
+					{
+					const P &a = poly[e], &b = poly[(e + 1) % n];
+					if ((a.x <= yc) != (b.x <= yc))
+						cross.push_back (a.z + (yc - a.x) / (b.x - a.x) * (b.z - a.z));
+					}
+				std::sort (cross.begin (), cross.end ());
+				for (size_t k = 0; k + 1 < cross.size (); k += 2)
+					{
+					int jl = static_cast<int> (std::ceil ((cross[k] - z0) / h - 0.5));
+					int jr = static_cast<int> (std::floor ((cross[k + 1] - z0) / h - 0.5));
+					jl = (std::max) (jl, 0);
+					jr = (std::min) (jr, nz - 1);
+					for (int j = jl; j <= jr; ++j)
+						mat[static_cast<size_t> (i) * nz + j] = 1;
+					}
+				}
+			}
+
 		double Volume () const
 			{
 			double v = 0;
@@ -240,6 +271,59 @@ namespace StockRaster
 			const double a = a0 + dir * sweep * k / pieces;
 			out.push_back (k == pieces ? to : P { c.z + rad * std::cos (a), c.x + rad * std::sin (a) });
 			}
+		return out;
+		}
+	
+	/// The volume a closed outline in (z, radius) sweeps about the axis - exact
+	/// for a polygon (each edge a frustum), whichever way round it goes.
+	inline double RevolvedVolume (const std::vector<P> &poly)
+		{
+		double v = 0;
+		for (size_t i = 0; i < poly.size (); ++i)
+			{
+			const P &a = poly[i], &b = poly[(i + 1) % poly.size ()];
+			v += (b.z - a.z) * (a.x * a.x + a.x * b.x + b.x * b.x);
+			}
+		return std::fabs (v) * kPi / 3.0;
+		}
+
+	/// Pieces (each a run of points) joined end to end into one outline, the
+	/// next piece the nearest unused end (reversed when its far end is nearer).
+	/// `gap` is the worst jump taken.
+	inline std::vector<P> Chain (std::vector<std::vector<P>> pieces, double &gap)
+		{
+		gap = 0;
+		std::vector<P> out;
+		if (pieces.empty ())
+			return out;
+		std::vector<bool> used (pieces.size (), false);
+		out = pieces[0];
+		used[0] = true;
+		for (size_t done = 1; done < pieces.size (); ++done)
+			{
+			const P end = out.back ();
+			size_t best = 0;
+			bool rev = false;
+			double bd = 1e300;
+			for (size_t k = 0; k < pieces.size (); ++k)
+				{
+				if (used[k] || pieces[k].empty ())
+					continue;
+				const double d0 = std::hypot (pieces[k].front ().z - end.z, pieces[k].front ().x - end.x);
+				const double d1 = std::hypot (pieces[k].back ().z - end.z, pieces[k].back ().x - end.x);
+				if (d0 < bd) { bd = d0; best = k; rev = false; }
+				if (d1 < bd) { bd = d1; best = k; rev = true; }
+				}
+			if (bd == 1e300)
+				break;
+			used[best] = true;
+			gap = (std::max) (gap, bd);
+			std::vector<P> p = pieces[best];
+			if (rev)
+				std::reverse (p.begin (), p.end ());
+			out.insert (out.end (), p.begin () + 1, p.end ());
+			}
+		gap = (std::max) (gap, std::hypot (out.front ().z - out.back ().z, out.front ().x - out.back ().x));
 		return out;
 		}
 	}

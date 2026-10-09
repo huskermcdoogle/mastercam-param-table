@@ -86,6 +86,19 @@ int main ()
 	near (t.airArea, 0.04, 0.002, "air counted once per op");
 	}
 
+	// A stock outline: a 14" bar 4 long with a 2" bore, drawn as pieces out of order.
+	{
+	double gap = 0;
+	const std::vector<P> o = Chain ({ { { 0, 1 }, { 0, 7 } }, { { 4, 1 }, { 0, 1 } }, { { 0, 7 }, { 4, 7 } },
+									{ { 4, 7 }, { 4, 1 } } }, gap);
+	near (gap, 0, 1e-12, "outline closes");
+	near (RevolvedVolume (o), kPi * (49 - 1) * 4, 1e-9, "outline revolved volume");
+	Grid t;
+	t.Init (0.01, -0.5, 4.5, 7.5);
+	t.FillPolygon (o);
+	near (t.Volume (), kPi * (49 - 1) * 4, 0.5, "outline filled into the raster");
+	}
+
 	if (failed)
 		std::printf ("%d FAILED\n", failed);
 	return failed ? 1 : 0;

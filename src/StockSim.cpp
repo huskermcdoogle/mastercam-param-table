@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstdint>
 #include <map>
+#include <set>
 #include <vector>
 
 namespace
@@ -153,6 +154,132 @@ namespace
 		P a, b;
 		bool feed;
 		};
+
+	/// The boundary's entities, copied out under a guard: bdryEnts is only good
+	/// while the boundary is in memory, and nothing in the SDK says when that is.
+	int CopyBoundary (const lathe_bdry *b, tp_ent *out, int max)
+		{
+		__try
+			{
+			if (b->bdryEnts == nullptr || b->nRec <= 0)
+				return 0;
+			const int n = b->nRec < max ? static_cast<int> (b->nRec) : max;
+			memcpy (out, b->bdryEnts, sizeof (tp_ent) * n);
+			return n;
+			}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+			{
+			return -1;
+			}
+		}
+
+	/// A LATHE BOUNDARY ENTITY (LBDRY: the stock outline the machine group's
+	/// stock setup draws, and each op's stock left behind) as a closed outline
+	/// in its own XY, not yet mapped onto (z, radius).
+	struct Bdry
+		{
+		bool ok = false;
+		std::vector<P> raw;		//!< (bdy x, bdy y)
+		std::wstring info;
+		};
+
+	Bdry ReadBoundary (long id)
+		{
+		Bdry r;
+		r.info = L"ent " + std::to_wstring (id);
+		if (id <= 0)
+			return r;
+		ent e;
+		bool got = false;
+		GetEntityByID (id, e, &got);
+		if (!got)
+			{
+			r.info += L" not found";
+			return r;
+			}
+		const lathe_bdry &b = e.u.lbdry;
+		r.info += L" type " + std::to_wstring (e.id) + L"/assoc " + std::to_wstring (static_cast<int> (e.assoc_id))
+				  + L" nRec " + std::to_wstring (b.nRec) + L" kind " + std::to_wstring (b.type) + L" valid "
+				  + std::to_wstring (b.valid) + L" op " + std::to_wstring (b.op_idn) + L" xlate (" + F (b.xlateVec[0])
+				  + L"," + F (b.xlateVec[1]) + L") mirrored " + std::to_wstring (b.mirrored) + L" transferred "
+				  + std::to_wstring (b.transferred) + L" scale " + F (b.scale) + L" view " + std::to_wstring (b.view_n)
+				  + L" depth " + F (b.rel_depth) + L" ram " + std::to_wstring (b.ram) + L" m [";
+		for (int i = 0; i < 3; ++i)
+			r.info += F (b.view_m[i][0], 3) + L"," + F (b.view_m[i][1], 3) + L","
+					  + F (b.view_m[i][2], 3) + (i < 2 ? L"; " : L"]");
+		if (static_cast<int> (e.assoc_id) != static_cast<int> (LBDRY_ID))
+			{
+			r.info += L" NOT A LATHE BOUNDARY";
+			return r;
+			}
+		std::vector<tp_ent> ents (20000);
+		const int n = CopyBoundary (&b, ents.data (), static_cast<int> (ents.size ()));
+		if (n < 0)
+			{
+			r.info += L" ENTITIES UNREADABLE";
+			return r;
+			}
+		std::vector<std::vector<P>> pieces;
+		int shown = 0;
+		for (int k = 0; k < n; ++k)
+			{
+			const tp_ent &t = ents[k];
+			std::vector<P> pc;
+			if (t.id == L_ID)
+				{
+				pc = { { t.u.li.e1[0], t.u.li.e1[1] }, { t.u.li.e2[0], t.u.li.e2[1] } };
+				if (shown++ < 12)
+					r.info += L" L(" + F (pc[0].z) + L"," + F (pc[0].x) + L")-(" + F (pc[1].z) + L"," + F (pc[1].x) + L")";
+				}
+			else if (t.id == A_ID)
+				{
+				const a_3d &a = t.u.ar;
+				const int m = (std::max) (2, static_cast<int> (std::ceil (std::fabs (a.sw) / (kPi / 180))));
+				for (int q = 0; q <= m; ++q)
+					{
+					const double ang = a.sa + a.sw * q / m;
+					pc.push_back ({ a.c[0] + a.r * std::cos (ang), a.c[1] + a.r * std::sin (ang) });
+					}
+				// Ends as stored, in case the angles run the other way.
+				const double d1 = std::hypot (pc.front ().z - a.ep1[0], pc.front ().x - a.ep1[1]);
+				const double d2 = std::hypot (pc.back ().z - a.ep2[0], pc.back ().x - a.ep2[1]);
+				if (shown++ < 12)
+					r.info += L" A(c " + F (a.c[0]) + L"," + F (a.c[1]) + L" r " + F (a.r) + L" ends off " + F (d1)
+							  + L"/" + F (d2) + L")";
+				}
+			if (!pc.empty ())
+				pieces.push_back (pc);
+			}
+		double gap = 0;
+		r.raw = Chain (pieces, gap);
+		double x0 = 1e300, x1 = -1e300, y0 = 1e300, y1 = -1e300;
+		for (const P &p : r.raw)
+			{
+			x0 = (std::min) (x0, p.z); x1 = (std::max) (x1, p.z);
+			y0 = (std::min) (y0, p.x); y1 = (std::max) (y1, p.x);
+			}
+		r.info += L" | " + std::to_wstring (n) + L" ents chained, worst gap " + F (gap) + L", bdy x " + F (x0) + L".."
+				  + F (x1) + L" y " + F (y0) + L".." + F (y1);
+		r.ok = r.raw.size () >= 3 && gap < 0.01;
+		if (!r.ok)
+			r.info += L" - NOT A CLOSED OUTLINE";
+		return r;
+		}
+
+	/// Boundary XY onto the lathe half-plane: swap = bdy y is Z; dia = the
+	/// radial coordinate is a diameter.
+	std::vector<P> Mapped (const std::vector<P> &raw, bool swap, bool dia)
+		{
+		std::vector<P> out;
+		out.reserve (raw.size ());
+		for (const P &p : raw)
+			{
+			P q = swap ? P { p.x, p.z } : p;
+			q.x = std::fabs (q.x) * (dia ? 0.5 : 1.0);
+			out.push_back (q);
+			}
+		return out;
+		}
 
 	struct OpPath
 		{
@@ -352,8 +479,68 @@ namespace StockSim
 							fx1 = (std::max) (fx1, std::fabs (q.x) + hx);
 							}
 				}
+			// THE STOCK BOUNDARY the stock setup draws (lstock_id), mapped onto
+			// (z, radius) whichever way best covers where the tool feeds.
+			double rawR = 0;
+			for (const OpPath &p : paths)
+				for (const Seg &s : p.segs)
+					if (s.feed)
+						rawR = (std::max) ({ rawR, std::fabs (s.a.x), std::fabs (s.b.x) });
+			std::vector<P> outline;
+			bool swap = false, dia = false;
+			for (int k = 0; k < 2; ++k)
+				{
+				if (s3.lstock_id[k] <= 0)
+					continue;
+				const Bdry bd = ReadBoundary (s3.lstock_id[k]);
+				Util::Log (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" lstock_id[" + std::to_wstring (k)
+									 + L"]: " + bd.info);
+				if (!bd.ok || !outline.empty ())
+					continue;
+				double best = -1;
+				for (int m = 0; m < 4; ++m)
+					{
+					const std::vector<P> c = Mapped (bd.raw, (m & 1) != 0, (m & 2) != 0);
+					double cz0 = 1e300, cz1 = -1e300, cr = 0;
+					for (const P &q : c)
+						{
+						cz0 = (std::min) (cz0, q.z);
+						cz1 = (std::max) (cz1, q.z);
+						cr = (std::max) (cr, q.x);
+						}
+					// How much of the feed moves' Z span it covers, and how near its OD
+					// is to the furthest the tool feeds out.
+					const double zo = fz1 > fz0 ? (std::max) (0.0, (std::min) (cz1, fz1) - (std::max) (cz0, fz0)) / (fz1 - fz0) : 0;
+					const double ro = cr > 0 && rawR > 0 ? (std::min) (cr, rawR) / (std::max) (cr, rawR) : 0;
+					const double score = zo + ro;
+					Util::Log (part, L"stock sim   mapping " + std::wstring (m & 1 ? L"y->Z" : L"x->Z")
+										 + (m & 2 ? L" diameter" : L" radius") + L": Z " + F (cz0) + L".." + F (cz1)
+										 + L" R to " + F (cr) + L" = " + F (RevolvedVolume (c), 3) + L" in^3, score "
+										 + F (score, 3));
+					if (score > best + 1e-9)
+						{
+						best = score;
+						swap = (m & 1) != 0;
+						dia = (m & 2) != 0;
+						outline = c;
+						}
+					}
+				}
+
 			std::wstring from;
-			if (bar != nullptr)
+			if (!outline.empty ())
+				{
+				zA = 1e300;
+				zB = -1e300;
+				for (const P &q : outline)
+					{
+					zA = (std::min) (zA, q.z);
+					zB = (std::max) (zB, q.z);
+					odR = (std::max) (odR, q.x);
+					}
+				from = std::wstring (L"stock boundary (") + (swap ? L"y->Z" : L"x->Z") + (dia ? L", diameter)" : L", radius)");
+				}
+			else if (bar != nullptr)
 				{
 				odR = bar->od / 2;
 				idR = bar->holeInStock ? bar->id / 2 : 0;
@@ -377,9 +564,18 @@ namespace StockSim
 			Grid ins, nose;
 			ins.Init (h, zLo, zHi, rHi);
 			nose.Init (h, zLo, zHi, rHi);
-			ins.FillStock (idR, odR, zA, zB);
-			nose.FillStock (idR, odR, zA, zB);
-			const double stockExact = kPi * (odR * odR - idR * idR) * (zB - zA);
+			if (!outline.empty ())
+				{
+				ins.FillPolygon (outline);
+				nose.FillPolygon (outline);
+				}
+			else
+				{
+				ins.FillStock (idR, odR, zA, zB);
+				nose.FillStock (idR, odR, zA, zB);
+				}
+			const double stockExact = !outline.empty () ? RevolvedVolume (outline)
+														: kPi * (odR * odR - idR * idR) * (zB - zA);
 			const double stockGrid = ins.Volume ();
 			Util::Log (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" stock from " + from + L": R "
 								 + F (idR) + L".." + F (odR) + L" Z " + F (zA) + L".." + F (zB) + L" = " + F (stockExact, 3)
@@ -388,6 +584,7 @@ namespace StockSim
 								 + F (fz1) + L" R to " + F (fx1));
 
 			double totIns = 0, totNose = 0, totAir = 0, totSwept = 0;
+			std::set<long> mcLogged;
 			for (const OpPath &p : paths)
 				{
 				const auto s0 = std::chrono::steady_clock::now ();
@@ -416,6 +613,21 @@ namespace StockSim
 				const Paths::Totals pt = Paths::Walk (*p.op);
 				const double minutes = pt.feedSeconds / 60.0;
 				const double swept = ins.airArea + ins.removedArea;
+				// The op's own stock boundary, as Mastercam keeps it (lathe ops).
+				std::wstring mc;
+				const long ol = p.op->cmn_lathe.lstock_id;
+				if (ol > 0 || p.op->cmn_lathe.rstock_id > 0)
+					{
+					mc = L" | Mastercam bdry L" + std::to_wstring (ol) + L" R" + std::to_wstring (p.op->cmn_lathe.rstock_id)
+						 + L" valid " + std::to_wstring (p.op->cmn_lathe.bdrys_valid) + L" upd "
+						 + std::to_wstring (p.op->cmn_lathe.upd_cur_bdry) + L"/" + std::to_wstring (p.op->cmn_lathe.upd_subs_bdry);
+					const Bdry ob = ReadBoundary (ol);
+					if (ob.ok)
+						mc += L": " + F (RevolvedVolume (Mapped (ob.raw, swap, dia)), 3) + L" in^3";
+					if (!mcLogged.count (ol))
+						Util::Log (part, L"stock sim   op " + std::to_wstring (p.op->op_idn) + L" bdry " + ob.info);
+					mcLogged.insert (ol);
+					}
 				Util::Log (part, L"stock sim op " + std::to_wstring (p.op->op_idn) + L" T"
 									 + std::to_wstring (p.op->tl.tlno) + L" \""
 									 + std::wstring (p.op->comment, wcsnlen (p.op->comment, COMMENT_SIZE))
@@ -427,7 +639,7 @@ namespace StockSim
 									 + L" in^3/min | " + std::to_wstring (feeds) + L" feed pieces, rapids through stock "
 									 + F (rapidIn, 3) + L" in" + (p.holes ? L", " + std::to_wstring (p.holes) + L" DRILL HOLES NOT SIMULATED" : L"")
 									 + (p.otherType ? L", " + std::to_wstring (p.otherType) + L" non-lathe moves skipped" : L"")
-									 + L" | " + F (secs * 1000, 0) + L" ms");
+									 + L" | " + F (secs * 1000, 0) + L" ms" + mc);
 				}
 			Util::Log (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" TOTAL removed " + F (totIns, 3)
 								 + L" in^3 (nose only " + F (totNose, 3) + L"), left " + F (ins.Volume (), 3)
