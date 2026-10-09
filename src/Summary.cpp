@@ -265,6 +265,37 @@ namespace Summary
 							 + tcol (L"G") + L",0))", Round2 (batch0), L"currency");
 			batch.array = true;
 			p.Add ({ Blank (), Text (L"Insert cost per batch (whole inserts)"), batch });
+
+			// ---- INSERT USAGE, per insert: what a part (and the batch) uses of
+			// each, straight off the Tools page's inserts table - live, including
+			// the rows typed into there. Blank names stay blank.
+			p.Add ();
+			p.Add ({ Text (L"Insert usage per part", Cell::Section) });
+			p.Add ({ Blank (), Head (L"Insert"), Head (L"Used by"), Right (Head (L"Edges")), Right (Head (L"Flips / part")),
+					 Right (Head (L"Inserts / part")), Right (Head (L"Inserts / batch")), Right (Head (L"Cost / part")) });
+			for (size_t r = insertFirst; r <= insertLast; ++r)
+				{
+				if (r < after0 || r - after0 >= s.toolsAfter.size ())
+					continue;
+				const std::vector<Cell> &row = s.toolsAfter[r - after0];
+				auto cellOf = [&] (size_t c) { return c < row.size () ? row[c].text : std::wstring (); };
+				const std::wstring R = std::to_wstring (r);
+				auto ref = [&] (const wchar_t *l) { return std::wstring (kTools) + L"$" + l + L"$" + R; };
+				auto shown = [&] (const wchar_t *l, size_t c, bool number)
+					{
+					// Blank while the insert row is unnamed; else the Tools cell.
+					Cell x = Fx (L"IF(" + ref (L"B") + L"=\"\",\"\"," + ref (l) + L")", cellOf (c));
+					return number ? Right (x) : x;
+					};
+				double edges = 0, flips = 0;
+				const bool known = Csv::ParseDouble (cellOf (CD), edges) && edges > 0 && Csv::ParseDouble (cellOf (CE), flips);
+				Cell batchN = Right (Fx (L"IF(OR(" + ref (L"B") + L"=\"\",N(" + ref (L"D") + L")<=0),\"\",ROUNDUP(ROUND(N("
+										 + ref (L"E") + L")*" + q + L"/" + ref (L"D") + L",6),0))",
+										 known ? Csv::Tidy (std::ceil (std::round (flips / edges * 1e6) / 1e6)) : std::wstring ()));
+				p.Add ({ Blank (), shown (L"B", CB, false), shown (L"C", CC, false), shown (L"D", CD, true),
+						 shown (L"E", CE, true), shown (L"F", CF, true), batchN,
+						 Fx (L"IF(" + ref (L"B") + L"=\"\",\"\"," + ref (L"H") + L")", cellOf (CH), L"currency") });
+				}
 			}
 		p.Add ();
 		}

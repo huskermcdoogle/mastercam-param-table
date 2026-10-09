@@ -57,11 +57,12 @@ if not exist "%VSPATH%\VC\Tools\MSVC\%TOOLVER%\atlmfc\include\afxwin.h" (
     exit /b 1
 )
 
-rem The link tracking log is deleted before every build. MSBuild's own record of
-rem the last link was measured to report "up to date" over a stale DLL on the
-rem sister project; only the LINK logs go, so compilation stays incremental.
-set "TLOG=%LOCALAPPDATA%\ParamTable\obj\x64\%CFG%\ParamTable.tlog"
-if exist "%TLOG%\link.read.1.tlog" del /q "%TLOG%\link.*.tlog" >nul 2>&1
+rem ALWAYS LINK. MSBuild's own record of the last link was measured to report
+rem "up to date" over a stale DLL (and the intermediates now sit in a folder per
+rem checkout, so the old trick of deleting its link logs no longer found them):
+rem the DLL goes before every build, so the link always runs. It takes seconds;
+rem compilation stays incremental.
+if exist "%~dp0build\x64\%CFG%\ParamTable.dll" del /q "%~dp0build\x64\%CFG%\ParamTable.dll"
 
 echo Building ParamTable ^(%CFG%^|x64, v143 %TOOLVER%^)...
 "%MSBUILD%" "%~dp0ParamTable.vcxproj" /nologo /v:minimal /p:Configuration=%CFG% /p:Platform=x64 /p:PlatformToolset=v143 /p:VCToolsVersion=%TOOLVER% "/p:VCTargetsPath=%VCT%\"
@@ -76,6 +77,12 @@ if not exist "%~dp0build\x64\%CFG%\ParamTable.dll" (
     exit /b 1
 )
 
+rem A backstop: never report "Build complete" over a DLL older than any source file.
+powershell -NoProfile -Command "$d=(Get-Item '%~dp0build\x64\%CFG%\ParamTable.dll').LastWriteTimeUtc; $s=Get-ChildItem '%~dp0src','%~dp0res\vbaProject.bin','%~dp0vba\ribbon.xml' -Recurse -File | Where-Object { $_.LastWriteTimeUtc -gt $d.AddSeconds(2) }; if ($s) { 'STALE DLL - newer than it: ' + (($s | Select-Object -First 5 -ExpandProperty Name) -join ', '); exit 1 }"
+if errorlevel 1 (
+    echo Build FAILED - the DLL is older than the sources. Delete %LOCALAPPDATA%\ParamTable\obj and build again.
+    exit /b 1
+)
 echo.
 echo Build complete: %~dp0build\x64\%CFG%\ParamTable.dll
 endlocal

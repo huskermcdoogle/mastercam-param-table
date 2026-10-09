@@ -335,18 +335,21 @@ namespace
 		{
 		const prm_xform &x = op.u.prm_xf;
 		Xform::Params p;
-		p.type = x.xf_type;
+		// The SDK documents 1 mirror, 2 rotate, 3 translate; Mastercam 2026 also
+		// stores a rotate as 13 (confirmed on a part whose transforms are all rotates).
+		const short type = x.xf_type == 13 ? 2 : x.xf_type;
+		p.type = type;
 		auto copy = [] (double *to, const p_3d &from)
 			{
 			for (int a = 0; a < 3; ++a)
 				to[a] = from[a];
 			};
-		if (x.xf_type == 1)
+		if (type == 1)
 			{
 			copy (p.mirrorFrom, x.u.mir.pt[0]);
 			copy (p.mirrorTo, x.u.mir.pt[1]);
 			}
-		else if (x.xf_type == 2)
+		else if (type == 2)
 			{
 			p.rotSteps = x.u.rot.n_steps;
 			p.rotAngle = x.u.rot.rot_angle;
@@ -354,7 +357,7 @@ namespace
 			p.rotTotal = x.u.rot.distMode == 1;
 			copy (p.rotAbout, x.u.rot.pt);
 			}
-		else if (x.xf_type == 3)
+		else if (type == 3)
 			{
 			p.trnStyle = x.u.trn.pt_type;
 			for (int i = 0; i < 2; ++i)
