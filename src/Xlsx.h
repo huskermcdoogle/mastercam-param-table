@@ -132,6 +132,15 @@ namespace Xlsx
 		/// on that page) - edges, cost, parts per edge, edge life, batch quantity.
 		std::vector<Validation> toolsValidations, summaryValidations;
 
+		/// Tools-page cells shown greyed out while a formula holds (relative to the
+		/// range's top-left cell): an input that does not apply there.
+		struct Greyed
+			{
+			std::string cells;		//!< "I14:I22"
+			std::wstring formula;	//!< no leading "="
+			};
+		std::vector<Greyed> toolsGreyed;
+
 		/// THE SUMMARY PAGE: first in the workbook and the page it opens on - rows of
 		/// cells from A1, no gridlines. Empty = no Summary sheet. Its formulas read
 		/// the other sheets by name ('Lathe params', 'Tools', Dumped).

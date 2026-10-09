@@ -1625,7 +1625,23 @@ namespace
 				s.toolsAfter.push_back (heads);
 				// An insert that outlasts a part: "parts per edge" typed in (column I)
 				// replaces the flips the stops give - 1 / parts per edge - and inserts
-				// per part go fractional; a batch still counts whole inserts.
+				// per part go fractional; a batch still counts whole inserts. Only where
+				// the stops give no flip: an edge flipped every part does not last more
+				// than one, so there column I is greyed out, refused and ignored.
+				auto counted = [&] (const std::wstring &r)
+					{
+					return L"SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$" + lastTool + L")";
+					};
+				auto flipsFormula = [&] (const std::wstring &r)
+					{
+					return L"IF(AND(N($I" + r + L")>0," + counted (r) + L"<1),1/$I" + r + L"," + counted (r) + L")";
+					};
+				// Flips from the stops are whole, so fewer than one comes from parts per edge.
+				auto insertsFormula = [] (const std::wstring &r)
+					{
+					return L"IF(N($D" + r + L")>0,IF(N($E" + r + L")<1,ROUND(N($E" + r + L")/$D" + r + L",4),ROUNDUP(ROUND($E" + r
+						   + L"/$D" + r + L",6),0)),\"\")";
+					};
 				auto partsCell = [] (const std::wstring &v)
 					{
 					Xlsx::Sheet::FreeCell c;
@@ -1669,15 +1685,14 @@ namespace
 					had->edgesDetected = own.empty () ? std::wstring (L"-") : own;
 					}
 					double ppe = 0;
-					const bool perParts = had != nullptr && Csv::ParseDouble (had->partsPerEdge, ppe) && ppe > 0;
-					flips.formula = L"IF(N($I" + r + L")>0,1/$I" + r + L",SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$"
-									+ lastTool + L"))";
+					const bool outlasts = total < 1;
+					const bool perParts = outlasts && Csv::ParseDouble (had->partsPerEdge, ppe) && ppe > 0;
+					flips.formula = flipsFormula (r);
 					if (perParts)
 						total = 1.0 / ppe;
 					flips.text = Csv::Tidy (std::round (total * 1e6) / 1e6);
 					double e = 0;
-					inserts.formula = L"IF(N($D" + r + L")>0,IF(N($I" + r + L")>0,ROUND($E" + r + L"/$D" + r
-									  + L",4),ROUNDUP(ROUND($E" + r + L"/$D" + r + L",6),0)),\"\")";
+					inserts.formula = insertsFormula (r);
 					inserts.text = Csv::ParseDouble (edges.text, e) && e > 0
 									   ? Csv::Tidy (perParts ? std::round (total / e * 1e4) / 1e4
 															 : std::ceil (std::round (total / e * 1e6) / 1e6))
@@ -1689,7 +1704,7 @@ namespace
 							c.text = had->cost;
 						row.push_back (c);
 						}
-					row.push_back (partsCell (had != nullptr ? had->partsPerEdge : std::wstring ()));
+					row.push_back (partsCell (outlasts ? had->partsPerEdge : std::wstring ()));
 					s.toolsAfter.push_back (row);
 					++i;
 					}
@@ -1701,10 +1716,8 @@ namespace
 					Xlsx::Sheet::FreeCell blank, name, used, edges, flips, inserts;
 					name.editable = true;
 					edges.editable = true;
-					flips.formula = L"IF($B" + r + L"=\"\",\"\",IF(N($I" + r + L")>0,1/$I" + r + L",SUMIF($D$2:$D$" + lastTool
-									+ L",$B" + r + L",$E$2:$E$" + lastTool + L")))";
-					inserts.formula = L"IF(N($D" + r + L")>0,IF(N($I" + r + L")>0,ROUND(N($E" + r + L")/$D" + r
-									  + L",4),ROUNDUP(ROUND(N($E" + r + L")/$D" + r + L",6),0)),\"\")";
+					flips.formula = L"IF($B" + r + L"=\"\",\"\"," + flipsFormula (r) + L")";
+					inserts.formula = insertsFormula (r);
 					std::vector<Xlsx::Sheet::FreeCell> row = { blank, name, used, edges, flips, inserts };
 					for (Xlsx::Sheet::FreeCell c : Summary::CostCells (tools.size () + 4 + i))
 						{
@@ -1755,9 +1768,13 @@ namespace
 						  L"A whole number of edges, 1 or more.");
 					rule (range ("G", i0, i1), "decimal", "greaterThanOrEqual", L"0", L"", L"Cost per insert",
 						  L"What one insert costs - for the insert cost per part and per batch.", L"A cost: a number, 0 or more.");
-					rule (range ("I", i0, i1), "decimal", "greaterThan", L"0", L"", L"Parts per edge",
-						  L"For an insert that outlasts a part: how many parts one edge makes. Leave blank to count the stops in the toolpath.",
-						  L"A number of parts, more than 0 (0.5 = an edge every half part).");
+					// Parts per edge only where the stops flip no edge in a part (greyed elsewhere).
+					const std::wstring flipsHere = L"SUMIF($D$2:$D$" + lastTool + L",$B" + i0 + L",$E$2:$E$" + lastTool + L")";
+					rule (range ("I", i0, i1), "custom", "", L"AND(ISNUMBER(I" + i0 + L"),I" + i0 + L">0," + flipsHere + L"<1)", L"",
+						  L"Parts per edge",
+						  L"For an insert that outlasts a part: how many parts one edge makes. Greyed out where the toolpath already flips an edge every part. Leave blank to count the stops.",
+						  L"A number of parts, more than 0 - and only for an insert whose edge is not already flipped every part (greyed out).");
+					s.toolsGreyed.push_back ({ range ("I", i0, i1), L"AND($B" + i0 + L"<>\"\"," + flipsHere + L">=1)" });
 					}
 				}
 

@@ -271,13 +271,15 @@ namespace Xlsx
 					 "xfId=\"0\" builtinId=\"0\"/></cellStyles>"
 					 // 0: an edited cell; 1: the edit count of a row with edits;
 					 // 2: a calculated cell that has moved with the edits
-					 "<dxfs count=\"3\">"
+					 "<dxfs count=\"4\">"
 					 "<dxf><font><b/><color rgb=\"FF6B3E00\"/></font><fill><patternFill patternType=\"solid\">"
 					 "<bgColor rgb=\"FFFFE08A\"/></patternFill></fill></dxf>"
 					 "<dxf><font><b/><color rgb=\"FF9A3412\"/></font><fill><patternFill patternType=\"solid\">"
 					 "<bgColor rgb=\"FFFFD3A6\"/></patternFill></fill></dxf>"
 					 "<dxf><font><b/><color rgb=\"FF1E3A8A\"/></font><fill><patternFill patternType=\"solid\">"
 					 "<bgColor rgb=\"FFDBEAFE\"/></patternFill></fill></dxf>"
+					 "<dxf><font><color rgb=\"FF9CA3AF\"/></font><fill><patternFill patternType=\"solid\">"
+					 "<bgColor rgb=\"FFE5E7EB\"/></patternFill></fill></dxf>"
 					 "</dxfs></styleSheet>";
 				return o;
 				}
@@ -888,7 +890,13 @@ namespace Xlsx
 					toolsXml += freeCell (r, c, s.toolsAfter[k][c]);
 				toolsXml += "</row>";
 				}
-			toolsXml += "</sheetData>" + validationsXml (s.toolsValidations);
+			toolsXml += "</sheetData>";
+			// Greyed: an input that does not apply on that row (dxf 3).
+			for (size_t g = 0; g < s.toolsGreyed.size (); ++g)
+				toolsXml += "<conditionalFormatting sqref=\"" + s.toolsGreyed[g].cells + "\"><cfRule type=\"expression\" "
+							"dxfId=\"3\" priority=\"" + std::to_string (g + 1) + "\"><formula>"
+							+ Esc (s.toolsGreyed[g].formula) + "</formula></cfRule></conditionalFormatting>";
+			toolsXml += validationsXml (s.toolsValidations);
 			if (!media.empty ())
 				{
 				toolsXml += "<drawing r:id=\"rId1\"/>";

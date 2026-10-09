@@ -131,6 +131,15 @@ int main (int argc, char **argv)
 	v.prompt = L"How many cutting edges one insert has.";
 	v.error = L"A whole number of edges, 1 or more.";
 	s.toolsValidations.push_back (v);
+	// Parts per edge (column I): refused and greyed where the tools already flip
+	// an edge every part - both inserts here; row 8 (no insert) takes it.
+	v.cells = "I6:I8";
+	v.type = "custom";
+	v.op = "";
+	v.f1 = L"AND(ISNUMBER(I6),I6>0,SUMIF($D$2:$D$3,$B6,$E$2:$E$3)<1)";
+	v.title = L"Parts per edge";
+	s.toolsValidations.push_back (v);
+	s.toolsGreyed.push_back ({ "I6:I8", L"AND($B6<>\"\",SUMIF($D$2:$D$3,$B6,$E$2:$E$3)>=1)" });
 	}
 
 	Summary::Where w;
