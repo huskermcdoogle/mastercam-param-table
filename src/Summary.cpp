@@ -216,6 +216,17 @@ namespace Summary
 		Cell qty = Text (w.batchQty.empty () ? std::wstring (L"1") : w.batchQty, Cell::Input);
 		qty.editable = true;
 		p.Add ({ Blank (), Text (L"Batch quantity (type it in)"), qty });
+		{
+		Xlsx::Sheet::Validation v;
+		v.cells = "C" + std::to_string (qtyRow);
+		v.type = "whole";
+		v.op = "greaterThanOrEqual";
+		v.f1 = L"1";
+		v.title = L"Batch quantity";
+		v.prompt = L"How many parts in a batch - for the cycle time, flips and whole inserts per batch.";
+		v.error = L"A whole number of parts, 1 or more.";
+		s.summaryValidations.push_back (v);
+		}
 		const std::wstring q = L"$C$" + std::to_wstring (qtyRow);
 		if (estCol >= 0)
 			p.Add ({ Blank (), Text (L"Cycle time per batch (now)"),
@@ -331,6 +342,8 @@ namespace Summary
 		// A main-sheet cell of the n-th row: text, op number (a link to the row), time.
 		auto mainText = [&] (int c, const std::wstring &at, long pos0, const wchar_t *none)
 			{
+			if (c < 0)
+				return Blank ();
 			const std::wstring f = L"INDEX(" + range (c) + L"," + at + L")&\"\"";
 			return Fx (L"IF(" + at + L"=\"\"," + (none ? L"\"" + std::wstring (none) + L"\"" : L"\"\"") + L"," + f + L")",
 					   pos0 > 0 ? text (static_cast<size_t> (pos0 - 1), c) : none ? none : L"");

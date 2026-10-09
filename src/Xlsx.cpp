@@ -644,10 +644,12 @@ namespace Xlsx
 					  "</cfRule></conditionalFormatting>";
 			}
 
-		// ---- What each cell accepts, and its tooltip.
+		// ---- What each cell accepts, and its tooltip - for any page.
+		auto validationsXml = [&] (const std::vector<Sheet::Validation> &rules)
+		{
 		std::string dv;
 		size_t nDv = 0;
-		for (const Sheet::Validation &v : s.validations)
+		for (const Sheet::Validation &v : rules)
 			{
 			if (v.cells.empty ())
 				continue;
@@ -683,9 +685,10 @@ namespace Xlsx
 			dv += "</dataValidation>";
 			++nDv;
 			}
-		if (nDv)
-			sd += "<dataValidations count=\"" + std::to_string (nDv) + "\">" + dv
-				  + "</dataValidations>";
+		return nDv ? "<dataValidations count=\"" + std::to_string (nDv) + "\">" + dv + "</dataValidations>"
+				   : std::string ();
+		};
+		sd += validationsXml (s.validations);
 
 		// Tool numbers link to their row on the Tools page.
 		const bool toolsPage = !s.tools.empty ();
@@ -811,7 +814,7 @@ namespace Xlsx
 					}
 				summaryXml += "</row>";
 				}
-			summaryXml += "</sheetData><pageMargins left=\"0.5\" right=\"0.5\" top=\"0.6\" bottom=\"0.6\" "
+			summaryXml += "</sheetData>" + validationsXml (s.summaryValidations) + "<pageMargins left=\"0.5\" right=\"0.5\" top=\"0.6\" bottom=\"0.6\" "
 						  "header=\"0.3\" footer=\"0.3\"/><pageSetup orientation=\"landscape\" fitToWidth=\"1\" fitToHeight=\"0\"/>"
 						  "</worksheet>";
 			}
@@ -885,7 +888,7 @@ namespace Xlsx
 					toolsXml += freeCell (r, c, s.toolsAfter[k][c]);
 				toolsXml += "</row>";
 				}
-			toolsXml += "</sheetData>";
+			toolsXml += "</sheetData>" + validationsXml (s.toolsValidations);
 			if (!media.empty ())
 				{
 				toolsXml += "<drawing r:id=\"rId1\"/>";

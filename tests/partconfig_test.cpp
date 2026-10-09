@@ -38,6 +38,8 @@ int main (int argc, char **argv)
 	s.readOnly.assign (5, 1);
 	s.text = { 0, 1, 0, 0, 0 };
 	s.formula.assign (2, std::vector<std::wstring> (5));
+	s.trackChanges = true;					// a real dump always has its hidden Dumped sheet
+	s.untracked.assign (5, 0);
 
 	// Tools: D insert (T1 corrected by hand, T3 as the dump labelled it), H edge life.
 	Xlsx::Sheet::ToolRow t1, t3;
@@ -57,6 +59,18 @@ int main (int argc, char **argv)
 							  Cell (L"12.5"), Cell (L""), Cell (L"") });
 	s.toolsAfter.push_back ({ Cell (L""), Cell (L"C 80° r0.031"), Cell (L"T3"), Cell (L"2"), Cell (L"0.2"), Cell (L"0.1"),
 							  Cell (L""), Cell (L""), Cell (L"5") });
+	// What the inserts' edges accept (rows 6-7 on the Tools page).
+	{
+	Xlsx::Sheet::Validation v;
+	v.cells = "D6:D7";
+	v.type = "whole";
+	v.op = "greaterThanOrEqual";
+	v.f1 = L"1";
+	v.title = L"Edges per insert";
+	v.prompt = L"How many edges";
+	v.error = L"A whole number, 1 or more.";
+	s.toolsValidations.push_back (v);
+	}
 	Summary::Where w;
 	w.title = L"Summary - SAMPLE.mcam";
 	w.batchQty = L"25";

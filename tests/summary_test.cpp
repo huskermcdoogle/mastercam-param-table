@@ -120,6 +120,19 @@ int main (int argc, char **argv)
 		}
 	}
 
+	// What an insert's edges accept (rows 6-7), as the dump sets it.
+	{
+	Xlsx::Sheet::Validation v;
+	v.cells = "D6:D7";
+	v.type = "whole";
+	v.op = "greaterThanOrEqual";
+	v.f1 = L"1";
+	v.title = L"Edges per insert";
+	v.prompt = L"How many cutting edges one insert has.";
+	v.error = L"A whole number of edges, 1 or more.";
+	s.toolsValidations.push_back (v);
+	}
+
 	Summary::Where w;
 	w.title = L"Summary - SAMPLE.mcam";
 	w.subtitle = L"Dumped 2026-10-09 12:00 - 4 operations";

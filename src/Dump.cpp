@@ -1715,6 +1715,52 @@ namespace
 					row.push_back (partsCell (had != nullptr ? had->partsPerEdge : std::wstring ()));
 					s.toolsAfter.push_back (row);
 					}
+				// WHAT THE TYPED CELLS ACCEPT - the figures feed the flips, inserts and
+				// cost: a tool's insert (a name) and edge life (m:ss); per insert its
+				// name, edges (whole, 1 or more), cost (0 or more), parts per edge (>0).
+				{
+				const std::wstring t0 = L"2", t1 = std::to_wstring (tools.size () + 1);
+				const std::wstring i0 = std::to_wstring (tools.size () + 4), i1 = std::to_wstring (tools.size () + 3 + i);
+				auto rule = [&] (const std::string &cells, const char *type, const char *op, const std::wstring &f1,
+								 const std::wstring &f2, const wchar_t *title, const wchar_t *prompt, const wchar_t *error)
+					{
+					Xlsx::Sheet::Validation v;
+					v.cells = cells;
+					v.type = type;
+					v.op = op;
+					v.f1 = f1;
+					v.f2 = f2;
+					v.title = title;
+					v.prompt = prompt;
+					v.error = error;
+					s.toolsValidations.push_back (v);
+					};
+				auto range = [] (const char *col, const std::wstring &a, const std::wstring &b)
+					{
+					return std::string (col) + std::string (a.begin (), a.end ()) + ":" + col + std::string (b.begin (), b.end ());
+					};
+				rule (range ("D", t0, t1), "", "", L"", L"", L"Insert",
+					  L"The insert this tool carries. Tools with the same name are counted as one insert below. Correct it if the guess is wrong - it is kept for the next dump.",
+					  L"");
+				rule (range ("H", t0, t1), "custom", "",
+					  L"OR(H2=\"\",AND(ISNUMBER(H2),H2>0),ISNUMBER(TIMEVALUE(\"0:\"&H2)),ISNUMBER(TIMEVALUE(H2)))", L"",
+					  L"Edge life", L"Cut time before a stop with no comment counts as an insert flip, for ops that set no insp_time of their own. Minutes:seconds (8:00) or seconds.",
+					  L"Type a time: minutes:seconds (8:00) or seconds (480).");
+				if (i > 0)
+					{
+					rule (range ("B", i0, i1), "", "", L"", L"", L"Insert",
+						  L"The insert's name - the same as on the tool rows above.", L"");
+					rule (range ("D", i0, i1), "whole", "greaterThanOrEqual", L"1", L"", L"Edges per insert",
+						  L"How many cutting edges one insert has (a CNMG: 4; a V-bottom: 2; a round: about 8).",
+						  L"A whole number of edges, 1 or more.");
+					rule (range ("G", i0, i1), "decimal", "greaterThanOrEqual", L"0", L"", L"Cost per insert",
+						  L"What one insert costs - for the insert cost per part and per batch.", L"A cost: a number, 0 or more.");
+					rule (range ("I", i0, i1), "decimal", "greaterThan", L"0", L"", L"Parts per edge",
+						  L"For an insert that outlasts a part: how many parts one edge makes. Leave blank to count the stops in the toolpath.",
+						  L"A number of parts, more than 0 (0.5 = an edge every half part).");
+					}
+				}
+
 				// A dump of the whole part: what it no longer uses goes from the file.
 				if (wholePart)
 					{

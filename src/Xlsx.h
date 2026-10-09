@@ -128,6 +128,10 @@ namespace Xlsx
 		/// Rows written under the tools, after one blank row (a summary table).
 		std::vector<std::vector<FreeCell>> toolsAfter;
 
+		/// What the Tools and Summary pages' typed cells accept (cells in A1 terms
+		/// on that page) - edges, cost, parts per edge, edge life, batch quantity.
+		std::vector<Validation> toolsValidations, summaryValidations;
+
 		/// THE SUMMARY PAGE: first in the workbook and the page it opens on - rows of
 		/// cells from A1, no gridlines. Empty = no Summary sheet. Its formulas read
 		/// the other sheets by name ('Lathe params', 'Tools', Dumped).
