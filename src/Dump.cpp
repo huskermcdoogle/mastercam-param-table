@@ -529,6 +529,27 @@ namespace
 		return (c ? ShapeName (c).first : L"polygon " + Dim (std::round (sim.noseAngle)) + L"°") + r;
 		}
 
+	/// A PrimeTurning (CoroTurn Prime) insert's type from the names around it:
+	/// "CP-25BL" / "C4-CP-25BL-..." -> B, "CP-30AR" / "CP_A1104" -> A; 0 when none
+	/// says. CP, then an optional separator and digits, then A or B.
+	wchar_t PrimeType (const std::wstring &names)
+		{
+		std::wstring u;
+		for (wchar_t c : names)
+			u += static_cast<wchar_t> (std::towupper (c));
+		for (size_t at = u.find (L"CP"); at != std::wstring::npos; at = u.find (L"CP", at + 2))
+			{
+			size_t i = at + 2;
+			if (i < u.size () && (u[i] == L'-' || u[i] == L'_' || u[i] == L' '))
+				++i;
+			while (i < u.size () && std::iswdigit (u[i]))
+				++i;
+			if (i < u.size () && (u[i] == L'A' || u[i] == L'B'))
+				return u[i];
+			}
+		return 0;
+		}
+
 	/// The insert's own data against the shape the stock simulation sweeps; with
 	/// no insert data, an ISO code in the names against it.
 	std::wstring ShapeCheck (const ToolPictures::InsertInfo &in, const StockSim::ToolShape &sim,
@@ -588,6 +609,8 @@ namespace
 		std::wstring up;
 		for (wchar_t c : insert)
 			up += static_cast<wchar_t> (std::towupper (c));
+		if (up.rfind (L"PRIMETURNING", 0) == 0)
+			return std::wstring ();			// not ISO: typed in
 		if (up.find (L"ROUND") != std::wstring::npos)
 			return L"8";
 		std::wstring code = IsoInsertCode (insert);
@@ -2073,6 +2096,11 @@ namespace Dump
 		std::vector<int> toolOfRow (rows.size (), -1);
 			{
 			std::map<long, size_t> bySlot;
+			// The tools that prime turn: their inserts are PrimeTurning ones, not ISO.
+			std::set<long> primeSlots;
+			for (const Found &f : rows)
+				if (f.t->schema.type == L"PRIME")
+					primeSlots.insert (f.op->tl.slot);
 			for (size_t d = 0; d < rows.size (); ++d)
 				{
 				const operation *o = rows[d].op;
@@ -2131,10 +2159,22 @@ namespace Dump
 						std::wstring label = InsertLabel (info);
 						if (label.empty ())
 							label = OutlineLabel (sim);		// a 3D tool: what its cutting outline is
-						if (!label.empty ())
-							ins.text = label;
 						simShape.text = SimShapeText (sim);
 						check.text = ShapeCheck (info, sim, code.text);
+						// A tool that prime turns carries a PrimeTurning insert - not an ISO
+						// shape: its type (A / B) from the names, its nose radius from the outline.
+						if (primeSlots.count (slot))
+							{
+							const wchar_t type = PrimeType (tr.name + L" " + code.text + L" " + ToolPictures::LatheInsert (slot));
+							label = L"PrimeTurning" + (type ? L" " + std::wstring (1, type) : std::wstring ())
+									+ (sim.ok && sim.noseRadius > 0 ? L" r" + Dim (sim.noseRadius) : std::wstring ());
+							check.text = L"PrimeTurning insert" + (type ? L" (" + std::wstring (1, type) + L"-type)"
+																	 : std::wstring (L" (type not in the names)"))
+										 + (sim.ok && !sim.round ? L" - outline nose " + Dim (std::round (sim.noseAngle)) + L"°"
+															 : std::wstring ());
+							}
+						if (!label.empty ())
+							ins.text = label;
 						Util::Log (part, L"tool " + tr.number + L" insert: " + (label.empty () ? L"(no geometry)" : label)
 										 + L" | code " + (code.text.empty () ? L"-" : code.text)
 										 + (info.grade.empty () ? L"" : L" | grade " + info.grade)
