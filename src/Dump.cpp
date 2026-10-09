@@ -1176,8 +1176,10 @@ namespace
 				life.editable = true;
 				life.textFormat = true;
 				const std::wstring cutSum = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst) + L")";
-				need.formula = L"IFERROR(ROUND(" + cutSum + L"/" + SecondsOf (L"$H" + row) + L",2),\"\")";
-				const double needV = std::round (cutOf[k] / life0 * 100.0) / 100.0;
+				// Whole flips, rounded UP: a part that needs 2.1 edges of cut takes 3.
+				// (A hair over a whole number from rounding does not round up.)
+				need.formula = L"IFERROR(ROUNDUP(ROUND(" + cutSum + L"/" + SecondsOf (L"$H" + row) + L",6),0),\"\")";
+				const double needV = std::ceil (std::round (cutOf[k] / life0 * 1e6) / 1e6);
 				need.text = inspects[k] ? Csv::Tidy (needV) : L"";
 				check.formula = L"IF(ISNUMBER($I" + row + L"),IF(ABS($I" + row + L"-$E" + row
 								+ L")>=1,IF($I" + row + L">$E" + row + L",\"program flips too few\",\"program flips more than needed\"),\"\"),\"\")";
@@ -1221,9 +1223,9 @@ namespace
 					flips.formula = L"SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$" + lastTool + L")";
 					flips.text = Csv::Tidy (total);
 					double e = 0;
-					inserts.formula = L"IF(N($D" + r + L")>0,ROUND($E" + r + L"/$D" + r + L",2),\"\")";
+					inserts.formula = L"IF(N($D" + r + L")>0,ROUNDUP(ROUND($E" + r + L"/$D" + r + L",6),0),\"\")";
 					inserts.text = Csv::ParseDouble (edges.text, e) && e > 0
-									   ? Csv::Tidy (std::round (total / e * 100.0) / 100.0) : std::wstring ();
+									   ? Csv::Tidy (std::ceil (std::round (total / e * 1e6) / 1e6)) : std::wstring ();
 					s.toolsAfter.push_back ({ blank, name, used, edges, flips, inserts });
 					++i;
 					}
