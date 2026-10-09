@@ -115,6 +115,11 @@ try {
     Check ($t -like "*|True|4") "a bare line feed becomes CR LF ('$t')"
     $t = $xl.Run("ParamTable.EditorSelfTest", ("x" * 4000))
     Check ($t -like "*over the limit by 889*|False|4000") "4000 characters: over the limit, OK off ('$t')"
+    # A one-line comment (an op's, an inspection stop's): its own limit, no line breaks.
+    $t = $xl.Run("ParamTable.EditorSelfTest", "ROTATE`r`nINSERT", 119, $true)
+    Check ($t -eq "13 / 119 characters|True|13") "a comment: line break gone, its own limit ('$t')"
+    $t = $xl.Run("ParamTable.EditorSelfTest", ("x" * 120), 119, $true)
+    Check ($t -like "*over the limit by 1|False|120") "a comment past 119: OK off ('$t')"
 
     # The Set / Scale / Copy window (not shown): a live line of what OK would do.
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("G3:G4"), "0.02")

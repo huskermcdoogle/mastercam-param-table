@@ -233,13 +233,29 @@ int main ()
 	Check (c.refusals.empty (), "whitespace alone is blank");
 	}
 
-	// ---- The identity columns are not "unknown" columns.
+	// ---- The identity columns are not "unknown" columns; the comment is a column
+	// like any other (every kind has one) - an edited comment is a change.
 	{
-	const auto csv = Sheet ({
+	Plan::Schema withComment = schema;
+	Plan::Col c;
+	c.name = L"comment";
+	c.type = Plan::Type::Text;
+	c.hi = 119;
+	withComment.cols.push_back (c);
+	std::vector<Plan::Current> opsC = ops;
+	for (Plan::Current &o : opsC)
+		o.values.push_back (L"Rough OD");
+	const auto same = Sheet ({
 		{ L"op_idn", L"type", L"tool", L"comment", L"step" },
 		{ L"10", L"ROUGH", L"5", L"Rough OD", L"0.1" } });
-	const Plan::Result r = Plan::Make (schema, ops, csv);
-	Check (r.unknownColumns.empty (), "tool and comment are identity columns, not unknown");
+	Plan::Result r = Plan::Make (withComment, opsC, same);
+	Check (r.unknownColumns.empty () && r.changes.empty (), "tool is an identity column; the comment as it was is no change");
+	const auto edited = Sheet ({
+		{ L"op_idn", L"type", L"tool", L"comment", L"step" },
+		{ L"10", L"ROUGH", L"5", L"OD rough - check chips", L"0.1" } });
+	r = Plan::Make (withComment, opsC, edited);
+	Check (r.changes.size () == 1 && r.changes[0].name == L"comment" && r.changes[0].to == L"OD rough - check chips",
+		   "an edited comment loads back");
 	}
 
 	// ---- Duplicates.

@@ -11,7 +11,7 @@ namespace ColumnHelp
 			{ L"op_idn",        L"The operation's ID - how a load finds its row's operation. Do not change." },
 			{ L"type",          L"The kind of operation - ROUGH, FINISH, FACE, GROOVE, DRILL, MANUAL, DYNAMIC MILL and so on." },
 			{ L"tool",          L"Tool number." },
-			{ L"comment",       L"The operation's comment, as the Operation Manager shows it." },
+			{ L"comment",       L"The operation's comment, as the Operation Manager shows it. Edit it here and it loads back (up to 119 characters)." },
 			{ L"changes",       L"How many cells in this row differ from the dump. Edited cells are highlighted." },
 			{ L"tool_radius",   L"The tool radius the percent columns are a percent of (dynamic rough)." },
 			{ L"tool_name",     L"The tool's description." },

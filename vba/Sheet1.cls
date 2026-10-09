@@ -10,10 +10,11 @@ Done:
     Application.EnableEvents = True
 End Sub
 
-' Double-click a manual_text cell: the editor window instead of in-cell editing.
+' Double-click a comment, inspection comment or manual entry text cell: the editor
+' window instead of in-cell editing.
 Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean)
     If Target.Cells.Count <> 1 Or Target.Row < 3 Then Exit Sub
-    If CStr(Me.Cells(2, Target.Column).Value) <> "manual_text" Then Exit Sub
+    If Not ParamTable.IsTextColumn(CStr(Me.Cells(2, Target.Column).Value)) Then Exit Sub
     Cancel = True
     ParamTable.EditText Target
 End Sub

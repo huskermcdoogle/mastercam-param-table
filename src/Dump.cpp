@@ -2135,7 +2135,13 @@ namespace Dump
 		info (L"op_idn", false, false, GIdentity);
 		info (L"type", true, false, 0);
 		info (L"tool", false, false, 0);
-		info (L"comment", true, false, 0);
+		{
+		// The comment is a table column (it loads back) shown with the identity.
+		Column c;
+		c.name = L"comment";
+		c.text = true;
+		columns.push_back (c);
+		}
 		info (L"changes", false, false, 0);
 		info (L"tool_radius", false, true, 0);
 		info (L"tool_name", true, false, 0);
@@ -2148,7 +2154,7 @@ namespace Dump
 			order.push_back (f.name);
 		for (const std::wstring &name : Lathe::SheetColumns ())
 			{
-			bool inFront = false;
+			bool inFront = name == L"comment";		// already placed with the identity
 			for (const Front &f : kFront)
 				inFront = inFront || name == f.name;
 			if (!inFront)

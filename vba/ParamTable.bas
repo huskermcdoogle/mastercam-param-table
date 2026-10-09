@@ -919,30 +919,53 @@ Public Function TakesInput(ByVal c As Range) As Boolean
     If f = "FALSE" Then TakesInput = False
 End Function
 
+' The columns the text editor opens on (double-click, or the ribbon's Edit text).
+Public Function IsTextColumn(ByVal hdr As String) As Boolean
+    IsTextColumn = (hdr = "manual_text" Or hdr = "comment" Or hdr = "insp_comment")
+End Function
+
 Public Sub EditManualText()
     Dim c As Range
     If Not OnMain() Then Exit Sub
     Set c = ActiveCell
-    If CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value) <> "manual_text" Or c.Row < FIRST_ROW Then
-        MsgBox "Click a manual_text cell first.", vbInformation, TITLE
+    If Not IsTextColumn(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) Or c.Row < FIRST_ROW Then
+        MsgBox "Click a comment, inspection comment or manual entry text cell first.", vbInformation, TITLE
         Exit Sub
     End If
     EditText c
 End Sub
 
-' The editor window on one manual_text cell. True when the text was changed.
+' The most characters a cell takes, from its own rule (0 = none known).
+Private Function TextLimit(ByVal c As Range) As Long
+    On Error Resume Next
+    If c.Validation.Type = xlValidateTextLength Then TextLimit = CLng(c.Validation.Formula1)
+End Function
+
+' The editor window on one text cell. True when the text was changed.
 Public Function EditText(ByVal c As Range) As Boolean
-    Dim f As TextEditor, info As String, g As Variant
+    Dim f As TextEditor, info As String, g As Variant, hdr As String, what As String
+    hdr = CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)
     If Not TakesInput(c) Then
-        MsgBox "This row is not a manual entry.", vbInformation, TITLE
+        If hdr = "manual_text" Then
+            MsgBox "This row is not a manual entry.", vbInformation, TITLE
+        Else
+            MsgBox "This operation has no " & IIf(hdr = "comment", "comment", "tool inspection comment") & " to edit.", vbInformation, TITLE
+        End If
         Exit Function
     End If
-    g = ValueAt(c.Row, "manual_gcode")
     info = "op " & MainSheet.Cells(c.Row, 1).Value
-    If CStr(g) = "1006" Then info = info & "  -  output as CODE" Else If CStr(g) = "1005" Then info = info & "  -  output as a COMMENT"
-    info = info & "        (Ctrl+Enter = OK,  Esc = Cancel)"
     Set f = New TextEditor
-    f.LoadText CStr(c.Value), info
+    If hdr = "manual_text" Then
+        g = ValueAt(c.Row, "manual_gcode")
+        If CStr(g) = "1006" Then info = info & "  -  output as CODE" Else If CStr(g) = "1005" Then info = info & "  -  output as a COMMENT"
+        info = info & "        (Ctrl+Enter = OK,  Esc = Cancel)"
+        f.LoadText CStr(c.Value), info
+    Else
+        what = IIf(hdr = "comment", "operation comment", "tool inspection comment")
+        If hdr = "insp_comment" Then info = info & "  -  shown at each inspection stop; ROTATE / FLIP / CHANGE / INDEX makes it an insert flip"
+        info = info & "      (Enter = OK,  Esc = Cancel)"
+        f.LoadText CStr(c.Value), info, TextLimit(c), what, True
+    End If
     f.Show
     If f.Accepted Then
         If f.EditedText() <> CStr(c.Value) Then
@@ -954,10 +977,10 @@ Public Function EditText(ByVal c As Range) As Boolean
 End Function
 
 ' For the checks (no window): the counter and the limit, on given text.
-Public Function EditorSelfTest(ByVal text As String) As String
+Public Function EditorSelfTest(ByVal text As String, Optional ByVal maxLen As Long = 0, Optional ByVal oneLine As Boolean = False) As String
     Dim f As TextEditor
     Set f = New TextEditor
-    f.LoadText text, "test"
+    f.LoadText text, "test", maxLen, IIf(oneLine, "comment", ""), oneLine
     EditorSelfTest = f.CountText() & "|" & f.CanAccept() & "|" & Len(f.EditedText())
     Unload f
 End Function

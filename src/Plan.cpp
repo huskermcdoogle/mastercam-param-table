@@ -17,7 +17,7 @@ namespace Plan
 	bool IsInfoColumn (const std::wstring &name)
 		{
 		static const wchar_t *const info[] = {
-			L"tool", L"comment", L"description", L"tool_radius", L"tool_name",
+			L"tool", L"description", L"tool_radius", L"tool_name",
 			L"group_name", L"units", L"needs_regen", L"coolant_text", L"coolant_x", L"canned_text_raw", L"changes",
 			L"cycle_time", L"cycle_time_raw", L"travel_x_min", L"travel_x_max", L"travel_z_min",
 			L"travel_z_max", L"cut_length", L"rapid_length", L"feed_groups",

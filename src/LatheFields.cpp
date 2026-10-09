@@ -753,13 +753,22 @@ namespace Lathe
 
 	const std::vector<Table> &AllTables ()
 		{
-		static const std::vector<Table> tables = { MakeRough (), MakeFinish (),
-												   MakeDynamic (), MakeDrill (),
-												   MakeManual (), MakeFace (), MakePrimeTurning (),
-											   MakeGrooveLike (TP_LPLUNGE_ROUGH, L"PLUNGE ROUGH"),
-											   MakeGrooveLike (TP_LGROOVE, L"GROOVE"),
-											   MakeMillContour (), MakeMillDrill (),
-											   MakeDynamicMill (), MakeTransform () };
+		static const std::vector<Table> tables = [] ()
+			{
+			std::vector<Table> all = { MakeRough (), MakeFinish (),
+									   MakeDynamic (), MakeDrill (),
+									   MakeManual (), MakeFace (), MakePrimeTurning (),
+									   MakeGrooveLike (TP_LPLUNGE_ROUGH, L"PLUNGE ROUGH"),
+									   MakeGrooveLike (TP_LGROOVE, L"GROOVE"),
+									   MakeMillContour (), MakeMillDrill (),
+									   MakeDynamicMill (), MakeTransform () };
+			// The operation's comment (its name in the Operation Manager): every kind
+			// has one, on the operation itself. Last, so no group's range moves; the
+			// sheet shows it up front with the identity columns.
+			for (Table &t : all)
+				AddImpl (t, Base::Op, L"comment", Kind::Text, ACCO (comment), false, kNone, kNone, COMMENT_SIZE);
+			return all;
+			} ();
 		return tables;
 		}
 

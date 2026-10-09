@@ -23,6 +23,7 @@ the file, then writes one `.xlsx`:
 
 - **One row per operation**, in Operation Manager order; the most-used parameters first
   (feeds and speeds, depth of cut, stock to leave, coolant), the rest in collapsible groups.
+  The operation's comment is editable too, and loads back.
 - **Readable values.** A feed is its size plus `per rev` / `per min`; a speed is its size
   plus `CSS` / `RPM` and `CW` / `CCW`; coolant is the machine's own coolant names. Dropdowns
   wherever there is a fixed set of choices.
@@ -64,9 +65,9 @@ the file, then writes one `.xlsx`:
   or be refused before anything is written, revert cells, rows or everything to the dump, a
   Changes sheet listing every edit, a live speed and feed calculator filled from the row
   (SFM / RPM at a diameter, per rev / per minute, warns past max_ss), tick boxes for
-  coolants (each row checked against its own machine's list), a big resizable editor for
-  manual-entry text with a live count against the 3,111-character limit (double-click the
-  cell) - and, as you type, linked amount / percent pairs kept in step and gentle warnings in the status bar (CSS with no max RPM, a
+  coolants (each row checked against its own machine's list), an editor for operation
+  comments, tool inspection comments and manual-entry text with a live count against each
+  one's limit (double-click the cell) - and, as you type, linked amount / percent pairs kept in step and gentle warnings in the status bar (CSS with no max RPM, a
   per-minute feed that looks like a per-rev one). The sheet loads back the same without them.
   Planning tools on the same tab, each showing every op before -> after before it writes:
   - *Hit a target time* - pick ops or a tool, type the time you want (`12:30`) or a cut

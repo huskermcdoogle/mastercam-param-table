@@ -55,8 +55,8 @@
         <group id="ptPick" label="Pick">
           <button id="ptCoolant" label="Coolants" size="large" imageMso="SmartArtAddShape" onAction="RbCoolant"
                   supertip="Tick boxes for the coolants at one timing - click a coolant_before / with / after cell first (or select several and use Set selected)."/>
-          <button id="ptText" label="Manual text" size="large" imageMso="EditDocument" onAction="RbText"
-                  supertip="A big editor for a manual entry's text, with a live character count - click a manual_text cell first (or double-click it)."/>
+          <button id="ptText" label="Edit text" size="large" imageMso="EditDocument" onAction="RbText"
+                  supertip="An editor for an operation comment, a tool inspection comment or a manual entry's text, with a live character count against its limit - click the cell first (or double-click it)."/>
         </group>
       </tab>
     </tabs>

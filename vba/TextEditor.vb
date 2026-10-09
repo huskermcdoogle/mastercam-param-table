@@ -1,4 +1,7 @@
-' Parameter Table Tool - the manual-entry text editor (a UserForm named TextEditor).
+' Parameter Table Tool - the text editor (a UserForm named TextEditor): a manual entry's
+' text (many lines, 3,111 characters), or a one-line comment - the operation's, or the
+' tool inspection stop's - with its own limit. Ctrl+Enter is OK; on a one-line comment,
+' Enter is too.
 '
 ' tools\build_vba.ps1 creates the form with five named controls - txt, lblInfo, lblCount,
 ' btnOK, btnCancel - and puts this code behind it. Everything else (sizes, fonts, layout,
@@ -7,7 +10,8 @@ Option Explicit
 
 Public Accepted As Boolean
 
-Private Const LIMIT As Long = 3111          ' what the Manual Entry dialog holds
+Private LIMIT As Long                       ' characters the cell takes
+Private oneLine As Boolean                  ' a comment: no line breaks
 Private Const PAD As Single = 6
 
 #If VBA7 Then
@@ -24,6 +28,7 @@ Private Const PAD As Single = 6
 
 Private Sub UserForm_Initialize()
     Accepted = False
+    LIMIT = 3111                            ' what the Manual Entry dialog holds
     Me.Caption = "Parameter Table - manual entry text"
     Me.Width = 560
     Me.Height = 440
@@ -74,18 +79,34 @@ Private Sub Layout()
     btnCancel.Move w - bw - PAD, h - PAD - bh, bw, bh
 End Sub
 
-' What to edit, and a line of context above it.
-Public Sub LoadText(ByVal text As String, ByVal info As String)
-    ' Every line break as CR LF - what Mastercam's manual entry holds.
-    text = Replace(Replace(text, vbCrLf, vbLf), vbCr, vbLf)
-    txt.Text = Replace(text, vbLf, vbCrLf)
+' What to edit, and a line of context above it. A one-line comment (title, its limit)
+' gets a smaller window that wraps the text and takes no line breaks.
+Public Sub LoadText(ByVal text As String, ByVal info As String, Optional ByVal maxLen As Long = 0, _
+                    Optional ByVal title As String = "", Optional ByVal singleLine As Boolean = False)
+    If maxLen > 0 Then LIMIT = maxLen
+    If title <> "" Then Me.Caption = "Parameter Table - " & title
+    oneLine = singleLine
+    If oneLine Then
+        txt.WordWrap = True
+        txt.ScrollBars = fmScrollBarsVertical
+        txt.EnterKeyBehavior = False
+        btnOK.Default = True                ' Enter: OK
+        Me.Height = 170
+        Layout
+        text = Replace(Replace(Replace(text, vbCrLf, " "), vbCr, " "), vbLf, " ")
+    Else
+        ' Every line break as CR LF - what Mastercam's manual entry holds.
+        text = Replace(Replace(text, vbCrLf, vbLf), vbCr, vbLf)
+        text = Replace(text, vbLf, vbCrLf)
+    End If
+    txt.Text = text
     lblInfo.Caption = info
     UpdateCount
     txt.SelStart = 0
 End Sub
 
 Public Function EditedText() As String
-    EditedText = txt.Text
+    If oneLine Then EditedText = Replace(Replace(txt.Text, vbCr, ""), vbLf, "") Else EditedText = txt.Text
 End Function
 
 Public Function CountText() As String
@@ -112,10 +133,10 @@ End Sub
 ' refuse it, so it cannot be accepted here.
 Private Sub UpdateCount()
     Dim n As Long, lines As Long
-    n = Len(txt.Text)
+    n = Len(EditedText())
     If n > 0 Then lines = UBound(Split(txt.Text, vbLf)) + 1
-    lblCount.Caption = Format$(n, "#,##0") & " / " & Format$(LIMIT, "#,##0") & " characters,  " & _
-                       lines & IIf(lines = 1, " line", " lines")
+    lblCount.Caption = Format$(n, "#,##0") & " / " & Format$(LIMIT, "#,##0") & " characters"
+    If Not oneLine Then lblCount.Caption = lblCount.Caption & ",  " & lines & IIf(lines = 1, " line", " lines")
     If n > LIMIT Then
         lblCount.ForeColor = RGB(180, 35, 24)
         lblCount.Caption = lblCount.Caption & "  -  over the limit by " & Format$(n - LIMIT, "#,##0")
