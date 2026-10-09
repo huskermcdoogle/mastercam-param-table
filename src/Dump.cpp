@@ -137,6 +137,10 @@ namespace
 		Inspect::Result inspRes;
 
 		double toolDia = 0;			//!< for a drill's MRR
+
+		/// What the 2D stock simulation says the op removed (StockSim.h).
+		bool simOk = false;
+		double simRemoved = 0, simAirPct = 0;
 		};
 
 	Stats StatsOf (operation *pOp)
@@ -520,7 +524,7 @@ namespace
 		const int rawCol = colOf (L"cycle_time_raw");
 		s.untracked.assign (columns.size (), 0);
 		for (int c : { estCol, estText, changeCol, colOf (L"flips_est"), colOf (L"cut_seconds_est"),
-					   colOf (L"mrr"), colOf (L"mrr_avg"), colOf (L"removed_est"), colOf (L"flips_uncommented"),
+					   colOf (L"mrr"), colOf (L"mrr_avg"), colOf (L"mrr_engaged"), colOf (L"flips_uncommented"),
 					   colOf (L"flips_part"), colOf (L"edge_limit"), colOf (L"edge_after") })
 			if (c >= 0)
 				s.untracked[static_cast<size_t> (c)] = 1;
@@ -764,7 +768,7 @@ namespace
 		// op, leads, rapids and air included: mrr x cut time / op time. Removed =
 		// mrr x cut time - an estimate (it counts air cuts as cutting).
 		{
-		const int mrrCol = colOf (L"mrr"), avgCol = colOf (L"mrr_avg"), remCol = colOf (L"removed_est");
+		const int mrrCol = colOf (L"mrr");
 		const int basisCol = colOf (L"mrr_basis"), diaCol = colOf (L"cut_dia");
 		for (size_t d = 0; mrrCol >= 0 && d < rows.size () && d < stats.size (); ++d)
 			{
@@ -841,26 +845,6 @@ namespace
 			if (drill && diaCol >= 0)
 				s.rows[d + 1][static_cast<size_t> (diaCol)] = Csv::Tidy (dia);
 
-			const int cutEst = colOf (L"cut_seconds_est"), estCol = colOf (L"est_seconds"), rawCol = colOf (L"cycle_time_raw");
-			if (cutEst < 0 || estCol < 0 || rawCol < 0)
-				continue;
-			double cut0 = 0, tot0 = st.seconds;
-			Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], cut0);
-			const std::wstring mrrRef = letters (static_cast<size_t> (mrrCol)) + rowNo;
-			const std::wstring cutRef = letters (static_cast<size_t> (cutEst)) + rowNo;
-			const bool live = !s.formula[d][static_cast<size_t> (estCol)].empty ();
-			const std::wstring totRef = live ? letters (static_cast<size_t> (estCol)) + rowNo
-											 : letters (static_cast<size_t> (rawCol)) + rowNo;
-			if (avgCol >= 0 && tot0 > 0)
-				{
-				s.formula[d][static_cast<size_t> (avgCol)] = L"IFERROR(ROUND(" + mrrRef + L"*" + cutRef + L"/" + totRef + L",3),\"\")";
-				s.rows[d + 1][static_cast<size_t> (avgCol)] = Csv::Tidy (std::round (mrr * cut0 / tot0 * 1000.0) / 1000.0);
-				}
-			if (remCol >= 0)
-				{
-				s.formula[d][static_cast<size_t> (remCol)] = L"IFERROR(ROUND(" + mrrRef + L"*" + cutRef + L"/60,3),\"\")";
-				s.rows[d + 1][static_cast<size_t> (remCol)] = Csv::Tidy (std::round (mrr * cut0 / 60.0 * 1000.0) / 1000.0);
-				}
 			if (basisCol >= 0)
 				s.rows[d + 1][static_cast<size_t> (basisCol)] =
 					drill ? L"drill " + Csv::Tidy (dia) + L" dia x feed per minute"
@@ -868,6 +852,68 @@ namespace
 							+ Csv::Tidy (std::round (dia * 1000.0) / 1000.0) + L" dia"
 							+ (css && cap > 0 && speed * kSpeed / (pi * dia) > cap ? L" (capped by max_ss)" : L"")
 							+ (mm ? L" - cm3/min" : L" - in3/min");
+			}
+		}
+
+		// ---- WHAT EACH OP REMOVES, AND HOW FAST. The volume is the toolpath's: it
+		// does not change with the sheet's feeds and speeds (a depth-of-cut edit
+		// changes it only once the op is regenerated), so it is a fixed number -
+		// from the 2D stock simulation where that covers the op, else mrr x cut
+		// time at the dumped values. The RATES are live, from that volume and the
+		// live times:
+		//   mrr_avg      removed / op time            (rapids, leads and air in it)
+		//   mrr_engaged  removed / cut time not in air - set it beside mrr
+		{
+		const int remCol = colOf (L"removed"), fromCol = colOf (L"removed_from"), airCol = colOf (L"air_pct");
+		const int avgCol = colOf (L"mrr_avg"), engCol = colOf (L"mrr_engaged"), mrrCol = colOf (L"mrr");
+		const int cutEst = colOf (L"cut_seconds_est"), estCol = colOf (L"est_seconds"), rawCol = colOf (L"cycle_time_raw");
+		for (size_t d = 0; remCol >= 0 && cutEst >= 0 && estCol >= 0 && rawCol >= 0 && d < rows.size () && d < stats.size (); ++d)
+			{
+			const Stats &st = stats[d];
+			if (!st.path.ok)
+				continue;
+			std::vector<std::wstring> &row = s.rows[d + 1];
+			const std::wstring rowNo = std::to_wstring (d + 3);
+			auto cell = [&] (int c) { return letters (static_cast<size_t> (c)) + rowNo; };
+			double cut0 = 0, mrr0 = 0;
+			Csv::ParseDouble (row[static_cast<size_t> (cutEst)], cut0);
+			double removed = 0, air = 0;
+			std::wstring from;
+			if (st.simOk)
+				{
+				removed = st.simRemoved;
+				air = st.simAirPct;
+				from = L"stock simulation";
+				}
+			else if (mrrCol >= 0 && Csv::ParseDouble (row[static_cast<size_t> (mrrCol)], mrr0) && mrr0 > 0)
+				{
+				removed = mrr0 * cut0 / 60.0;
+				from = L"estimate: mrr x cut time (counts air as cutting)";
+				}
+			else
+				continue;
+			removed = std::round (removed * 1000.0) / 1000.0;
+			row[static_cast<size_t> (remCol)] = Csv::Tidy (removed);
+			if (fromCol >= 0)
+				row[static_cast<size_t> (fromCol)] = from;
+			if (airCol >= 0 && st.simOk)
+				row[static_cast<size_t> (airCol)] = Csv::Tidy (std::round (air * 10.0) / 10.0);
+
+			const bool live = !s.formula[d][static_cast<size_t> (estCol)].empty ();
+			const std::wstring tot = cell (live ? estCol : rawCol);
+			const double tot0 = st.seconds;
+			if (avgCol >= 0 && tot0 > 0)
+				{
+				s.formula[d][static_cast<size_t> (avgCol)] = L"IFERROR(ROUND(" + cell (remCol) + L"/" + tot + L"*60,3),\"\")";
+				row[static_cast<size_t> (avgCol)] = Csv::Tidy (std::round (removed / tot0 * 60.0 * 1000.0) / 1000.0);
+				}
+			if (engCol >= 0 && st.simOk && cut0 > 0 && air < 100)
+				{
+				s.formula[d][static_cast<size_t> (engCol)] = L"IFERROR(ROUND(" + cell (remCol) + L"/(" + cell (cutEst) + L"*(1-"
+															 + cell (airCol) + L"/100))*60,3),\"\")";
+				const double air1 = std::round (air * 10.0) / 10.0;
+				row[static_cast<size_t> (engCol)] = Csv::Tidy (std::round (removed / (cut0 * (1 - air1 / 100)) * 60.0 * 1000.0) / 1000.0);
+				}
 			}
 		}
 
@@ -1282,9 +1328,9 @@ namespace Dump
 			return 0;
 			}
 
-		// PROBE: material removed per op from a 2D stock simulation, to the log only.
-		if (Settings::Diag () & 4)
-			StockSim::Run (part);
+		// What each lathe op really removes: a 2D stock simulation of the toolpaths
+		// (StockSim.h). Its own detail goes to the log with diag bit 4.
+		const std::map<long, StockSim::Result> sim = StockSim::Run (part, (Settings::Diag () & 4) != 0);
 
 		// ---- EVERY OPERATION THIS TOOL KNOWS, in Operation Manager order (the
 		// order they run), and which of them are selected.
@@ -1462,8 +1508,11 @@ namespace Dump
 				info (L"edge_after", false, true, GFlips);
 				info (L"cut_dia", false, true, GMrr);
 				info (L"mrr", false, true, GMrr);
+				info (L"removed", false, true, GMrr);
+				info (L"removed_from", true, false, GMrr);
+				info (L"air_pct", false, true, GMrr);
 				info (L"mrr_avg", false, true, GMrr);
-				info (L"removed_est", false, true, GMrr);
+				info (L"mrr_engaged", false, true, GMrr);
 				info (L"mrr_basis", true, false, GMrr);
 				}
 			}
@@ -1527,6 +1576,13 @@ namespace Dump
 			Stats stats = tool ? StatsOf (pOp) : Stats ();
 			if (tool)
 				stats.toolDia = pOp->tl.dia;
+			if (const auto hit = sim.find (pOp->op_idn); hit != sim.end () && hit->second.ok)
+				{
+				// The raster works in the part's units: a metric part's mm^3 shown as cm^3.
+				stats.simOk = true;
+				stats.simRemoved = hit->second.removed / (pOp->tl.mm ? 1000.0 : 1.0);
+				stats.simAirPct = hit->second.airPct;
+				}
 			if (tool)
 				Util::Log (part, Paths::Describe (*pOp, stats.path, stats.seconds));
 			if (tool && stats.path.ok)

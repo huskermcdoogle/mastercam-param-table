@@ -10,10 +10,20 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
 
 namespace StockSim
 	{
+	/// One operation's result.
+	struct Result
+		{
+		double removed = 0;		//!< in^3 (cm^3 for a metric part) removed by the op
+		double airPct = 0;		//!< % of its feed time cutting nothing
+		bool ok = false;		//!< false: drill cycles, mill moves, or after a stock flip -
+								//!< what it removes is not (all) simulated
+		};
+
 	/// Simulate every lathe machine group's operations in Operation Manager
-	/// order and log one line per operation, plus the stock and tool shapes found.
-	void Run (const std::filesystem::path &part);
+	/// order: what each removes, by op_idn. `log` writes the probe's lines too.
+	std::map<long, Result> Run (const std::filesystem::path &part, bool log);
 	}

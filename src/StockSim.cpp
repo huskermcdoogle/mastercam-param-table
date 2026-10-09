@@ -22,6 +22,13 @@ namespace
 	{
 	using namespace StockRaster;
 
+	bool gLog = false;			// the probe's log lines (diag bit 4)
+	void LogIf (const std::filesystem::path &part, const std::wstring &line)
+		{
+		if (gLog)
+			Util::Log (part, line);
+		}
+
 	std::wstring F (double v, int places = 4)
 		{
 		wchar_t b[48];
@@ -144,7 +151,7 @@ namespace
 				+ L" Y(=bdy y) " + F (x0) + L".." + F (x1) + L", control point to hull "
 				+ F (SignedDistance (s.insert, { 0, 0 })) + L", nose centre (" + F (nc.z) + L"," + F (nc.x) + L") r "
 				+ F (nr) + (s.fromBoundary ? L"" : L" [NO BOUNDARY - nose circle used for both]");
-		Util::Log (part, line);
+		LogIf (part, line);
 		return s;
 		}
 
@@ -301,6 +308,7 @@ namespace
 		std::vector<Seg> segs;
 		long holes = 0;			//!< canned drill holes - not simulated
 		long otherType = 0;		//!< moves that are not lathe NCI (mill moves in an MT group)
+		bool afterFlip = false;	//!< after a stock flip / transfer - in the wrong frame
 		};
 
 	OpPath Read (operation &op)
@@ -377,8 +385,10 @@ namespace
 
 namespace StockSim
 	{
-	void Run (const std::filesystem::path &part)
+	std::map<long, Result> Run (const std::filesystem::path &part, bool log)
 		{
+		gLog = log;
+		std::map<long, Result> results;
 		const auto t0 = std::chrono::steady_clock::now ();
 		// Machine groups by id, and each op's root (machine) group.
 		std::map<long, op_group *> groups;
@@ -431,7 +441,7 @@ namespace StockSim
 			std::wstring head = L"stock sim group ";
 			if (g == nullptr)
 				{
-				Util::Log (part, head + L"(none found) - " + std::to_wstring (grp.second.size ()) + L" ops skipped");
+				LogIf (part, head + L"(none found) - " + std::to_wstring (grp.second.size ()) + L" ops skipped");
 				continue;
 				}
 			const group_pg3 &s3 = g->ogi.pg3;
@@ -450,25 +460,29 @@ namespace StockSim
 						+ F (b.margins[1]) + L"," + F (b.margins[2]) + L"," + F (b.margins[3])
 						+ L" useMargins " + std::to_wstring (b.useMargins) + L" show " + std::to_wstring (s3.show_stock[k]);
 				}
-			Util::Log (part, head);
+			LogIf (part, head);
 			if (g->product != PRODUCT_LATHE && g->product != PRODUCT_MT)
 				continue;
 
 			// The paths, and the tools' shapes.
 			std::vector<OpPath> paths;
+			bool flipped = false;
 			for (operation *op : grp.second)
 				{
 				const long code = static_cast<long> (op->opcode);
 				if (code == TP_LSTOCK_FLIP || code == TP_LSTOCK_XFER)
-					Util::Log (part, L"stock sim op " + std::to_wstring (op->op_idn) + L": STOCK "
+					flipped = true;
+				if (code == TP_LSTOCK_FLIP || code == TP_LSTOCK_XFER)
+					LogIf (part, L"stock sim op " + std::to_wstring (op->op_idn) + L": STOCK "
 									 + (code == TP_LSTOCK_FLIP ? L"FLIP" : L"TRANSFER")
 									 + L" - not followed; what comes after is in the wrong frame");
 				if (op->db.nci_flag)
 					{
-					Util::Log (part, L"stock sim op " + std::to_wstring (op->op_idn) + L": needs regen - skipped");
+					LogIf (part, L"stock sim op " + std::to_wstring (op->op_idn) + L": needs regen - skipped");
 					continue;
 					}
 				OpPath p = Read (*op);
+				p.afterFlip = flipped;
 				if (p.segs.empty () && p.holes == 0)
 					continue;
 				if (!shapes.count (op->tl.slot))
@@ -517,7 +531,7 @@ namespace StockSim
 				if (s3.lstock_id[k] <= 0)
 					continue;
 				const Bdry bd = ReadBoundary (s3.lstock_id[k]);
-				Util::Log (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" lstock_id[" + std::to_wstring (k)
+				LogIf (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" lstock_id[" + std::to_wstring (k)
 									 + L"]: " + bd.info);
 				if (!bd.ok || !outline.empty ())
 					continue;
@@ -537,7 +551,7 @@ namespace StockSim
 					const double zo = fz1 > fz0 ? (std::max) (0.0, (std::min) (cz1, fz1) - (std::max) (cz0, fz0)) / (fz1 - fz0) : 0;
 					const double ro = cr > 0 && rawR > 0 ? (std::min) (cr, rawR) / (std::max) (cr, rawR) : 0;
 					const double score = zo + ro;
-					Util::Log (part, L"stock sim   mapping " + std::wstring (m & 1 ? L"y->Z" : L"x->Z")
+					LogIf (part, L"stock sim   mapping " + std::wstring (m & 1 ? L"y->Z" : L"x->Z")
 										 + (m & 2 ? L" diameter" : L" radius") + L": Z " + F (cz0) + L".." + F (cz1)
 										 + L" R to " + F (cr) + L" = " + F (RevolvedVolume (c), 3) + L" in^3, score "
 										 + F (score, 3));
@@ -601,7 +615,7 @@ namespace StockSim
 			const double stockExact = !outline.empty () ? RevolvedVolume (outline)
 														: kPi * (odR * odR - idR * idR) * (zB - zA);
 			const double stockGrid = ins.Volume ();
-			Util::Log (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" stock from " + from + L": R "
+			LogIf (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" stock from " + from + L": R "
 								 + F (idR) + L".." + F (odR) + L" Z " + F (zA) + L".." + F (zB) + L" = " + F (stockExact, 3)
 								 + L" in^3 (raster " + F (stockGrid, 3) + L") | raster " + std::to_wstring (ins.nx) + L"x"
 								 + std::to_wstring (ins.nz) + L" cells of " + F (h) + L" | feed moves Z " + F (fz0) + L".."
@@ -671,10 +685,14 @@ namespace StockSim
 						mcPrev = v;
 						}
 					if (!mcLogged.count (ol))
-						Util::Log (part, L"stock sim   op " + std::to_wstring (p.op->op_idn) + L" bdry " + ob.info);
+						LogIf (part, L"stock sim   op " + std::to_wstring (p.op->op_idn) + L" bdry " + ob.info);
 					mcLogged.insert (ol);
 					}
-				Util::Log (part, L"stock sim op " + std::to_wstring (p.op->op_idn) + L" T"
+				Result &res = results[p.op->op_idn];
+				res.removed = ins.removedVol;
+				res.airPct = airT + cutT > 0 ? 100.0 * airT / (airT + cutT) : 0;
+				res.ok = p.holes == 0 && p.otherType == 0 && !p.afterFlip;
+				LogIf (part, L"stock sim op " + std::to_wstring (p.op->op_idn) + L" T"
 									 + std::to_wstring (p.op->tl.tlno) + L" \""
 									 + std::wstring (p.op->comment, wcsnlen (p.op->comment, COMMENT_SIZE))
 									 + L"\": removed " + F (ins.removedVol, 3) + L" in^3 (nose only "
@@ -690,13 +708,14 @@ namespace StockSim
 									 + (p.otherType ? L", " + std::to_wstring (p.otherType) + L" non-lathe moves skipped" : L"")
 									 + L" | " + F (secs * 1000, 0) + L" ms" + mc);
 				}
-			Util::Log (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" TOTAL removed " + F (totIns, 3)
+			LogIf (part, L"stock sim group " + std::to_wstring (g->grp_idn) + L" TOTAL removed " + F (totIns, 3)
 								 + L" in^3 (nose only " + F (totNose, 3) + L"), left " + F (ins.Volume (), 3)
 								 + L" in^3 of " + F (stockGrid, 3) + L" (nose only left " + F (nose.Volume (), 3)
 								 + L"), AIR " + F (totSwept > 0 ? 100.0 * totAir / totSwept : 0, 1) + L"% of feed time ("
 								 + Ms (totAir) + L" of " + Ms (totSwept) + L")");
 			}
-		Util::Log (part, L"stock sim done in "
+		LogIf (part, L"stock sim done in "
 							 + F (std::chrono::duration<double> (std::chrono::steady_clock::now () - t0).count (), 2) + L" s");
+		return results;
 		}
 	}
