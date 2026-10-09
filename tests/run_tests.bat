@@ -101,6 +101,14 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+echo === partconfig_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\partconfig_test.exe" ^
+    "%~dp0partconfig_test.cpp" "%~dp0..\src\PartConfig.cpp" "%~dp0..\src\Summary.cpp" "%~dp0..\src\Xlsx.cpp" "%~dp0..\src\XlsxRead.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\partconfig_test.exe" "%OUT%"
+    if errorlevel 1 set FAILED=1
+)
+
 echo === summary_test ===
 cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\summary_test.exe" ^
     "%~dp0summary_test.cpp" "%~dp0..\src\Summary.cpp" "%~dp0..\src\Xlsx.cpp" "%~dp0..\src\XlsxRead.cpp" "%~dp0..\src\Csv.cpp"

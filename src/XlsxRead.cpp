@@ -562,12 +562,9 @@ namespace Xlsx
 		return ReadNamedSheetBytes (bytes, std::wstring (), rows, sheetRow, why);
 		}
 
-	bool ReadNamedSheetBytes (const std::string &bytes, const std::wstring &sheetName,
-							  std::vector<std::vector<std::wstring>> &rows,
-							  std::vector<size_t> &sheetRow, std::wstring &why)
+	bool ReadGridBytes (const std::string &bytes, const std::wstring &sheetName, Grid &grid, std::wstring &why)
 		{
-		rows.clear ();
-		sheetRow.clear ();
+		grid.clear ();
 		std::map<std::string, std::string> parts;
 		if (!Unzip (bytes, parts, why))
 			return false;
@@ -610,7 +607,6 @@ namespace Xlsx
 		const std::string &x = sh->second;
 
 		// Every cell, by row number and column.
-		std::map<size_t, std::map<size_t, std::wstring>> grid;
 		size_t from = 0, rs = 0, re = 0, nextRow = 1;
 		while (FindTag (x, "row", from, rs, re))
 			{
@@ -675,6 +671,31 @@ namespace Xlsx
 					grid[rowNo][col] = value;
 				}
 			}
+
+		return true;
+		}
+
+	bool ReadGrid (const std::filesystem::path &file, const std::wstring &sheetName, Grid &grid, std::wstring &why)
+		{
+		std::ifstream in (file, std::ios::binary);
+		if (!in)
+			{
+			why = L"could not be opened";
+			return false;
+			}
+		const std::string bytes ((std::istreambuf_iterator<char> (in)), std::istreambuf_iterator<char> ());
+		return ReadGridBytes (bytes, sheetName, grid, why);
+		}
+
+	bool ReadNamedSheetBytes (const std::string &bytes, const std::wstring &sheetName,
+							  std::vector<std::vector<std::wstring>> &rows,
+							  std::vector<size_t> &sheetRow, std::wstring &why)
+		{
+		rows.clear ();
+		sheetRow.clear ();
+		Grid grid;
+		if (!ReadGridBytes (bytes, sheetName, grid, why))
+			return false;
 
 		// From the column-name row down.
 		size_t header = 0;

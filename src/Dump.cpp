@@ -14,6 +14,7 @@
 #include "DumpDialog.h"
 #include "Settings.h"
 #include "Inspect.h"
+#include "PartConfig.h"
 #include "MillMrr.h"
 #include "Xform.h"
 #include "DependentOperations_CH.h"
@@ -722,7 +723,7 @@ namespace
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
 					const std::vector<Stats> &stats, std::vector<Xlsx::Sheet::ToolRow> tools,
 					const std::vector<int> &toolOfRow, bool macros, const std::wstring &title,
-					const std::wstring &subtitle)
+					const std::wstring &subtitle, const PartConfig::Config &cfg)
 		{
 		Xlsx::Sheet s;
 		s.rows = out;
@@ -1585,6 +1586,8 @@ namespace
 						life0 = v.first;
 						}
 				life.text = inspects[k] ? Inspect::MinSec (life0) : L"";
+				if (const auto it = cfg.tools.find (tr.number); it != cfg.tools.end () && !it->second.edgeLife.empty ())
+					life.text = it->second.edgeLife;		// typed in an earlier dump (the part's .ptconfig)
 				life.editable = true;
 				life.textFormat = true;
 				tr.extra.push_back (life);
@@ -1611,7 +1614,23 @@ namespace
 															 head (L"Inserts / part") };
 				for (const std::wstring &h : Summary::CostHeads ())
 					heads.push_back (head (h.c_str ()));
+				heads.push_back (head (L"Parts per edge"));
 				s.toolsAfter.push_back (heads);
+				// An insert that outlasts a part: "parts per edge" typed in (column I)
+				// replaces the flips the stops give - 1 / parts per edge - and inserts
+				// per part go fractional; a batch still counts whole inserts.
+				auto partsCell = [] (const std::wstring &v)
+					{
+					Xlsx::Sheet::FreeCell c;
+					c.text = v;
+					c.editable = true;
+					return c;
+					};
+				auto remembered = [&] (const std::wstring &name) -> const PartConfig::Insert *
+					{
+					const auto it = cfg.inserts.find (name);
+					return it == cfg.inserts.end () ? nullptr : &it->second;
+					};
 				size_t i = 0;
 				for (const auto &kv : byInsert)
 					{
@@ -1635,31 +1654,65 @@ namespace
 					if (edges.text.empty ())
 						edges.text = EdgesGuess (kv.first);
 					edges.editable = true;
-					flips.formula = L"SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$" + lastTool + L")";
-					flips.text = Csv::Tidy (total);
+					const PartConfig::Insert *had = remembered (kv.first);
+					if (had != nullptr && !had->edges.empty ())
+						edges.text = had->edges;
+					double ppe = 0;
+					const bool perParts = had != nullptr && Csv::ParseDouble (had->partsPerEdge, ppe) && ppe > 0;
+					flips.formula = L"IF(N($I" + r + L")>0,1/$I" + r + L",SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$"
+									+ lastTool + L"))";
+					if (perParts)
+						total = 1.0 / ppe;
+					flips.text = Csv::Tidy (std::round (total * 1e6) / 1e6);
 					double e = 0;
-					inserts.formula = L"IF(N($D" + r + L")>0,ROUNDUP(ROUND($E" + r + L"/$D" + r + L",6),0),\"\")";
+					inserts.formula = L"IF(N($D" + r + L")>0,IF(N($I" + r + L")>0,ROUND($E" + r + L"/$D" + r
+									  + L",4),ROUNDUP(ROUND($E" + r + L"/$D" + r + L",6),0)),\"\")";
 					inserts.text = Csv::ParseDouble (edges.text, e) && e > 0
-									   ? Csv::Tidy (std::ceil (std::round (total / e * 1e6) / 1e6)) : std::wstring ();
+									   ? Csv::Tidy (perParts ? std::round (total / e * 1e4) / 1e4
+															 : std::ceil (std::round (total / e * 1e6) / 1e6))
+									   : std::wstring ();
 					std::vector<Xlsx::Sheet::FreeCell> row = { blank, name, used, edges, flips, inserts };
-					for (const Xlsx::Sheet::FreeCell &c : Summary::CostCells (tools.size () + 4 + i))
+					for (Xlsx::Sheet::FreeCell c : Summary::CostCells (tools.size () + 4 + i))
+						{
+						if (c.editable && had != nullptr && !had->cost.empty ())
+							c.text = had->cost;
 						row.push_back (c);
+						}
+					row.push_back (partsCell (had != nullptr ? had->partsPerEdge : std::wstring ()));
 					s.toolsAfter.push_back (row);
 					++i;
 					}
-				// Room for the inserts the names did not give.
-				for (int extra = 0; extra < 4; ++extra, ++i)
+				// Room for the inserts the names did not give - first the ones named in
+				// an earlier dump that no tool here is labelled with (they come back
+				// with what was typed for them), then blank ones.
+				std::vector<std::pair<std::wstring, const PartConfig::Insert *>> spare;
+				for (const auto &kv : cfg.inserts)
+					if (!byInsert.count (kv.first))
+						spare.push_back ({ kv.first, &kv.second });
+				for (size_t extra = 0; extra < (std::max) (spare.size (), static_cast<size_t> (0)) + 4; ++extra, ++i)
 					{
 					const std::wstring r = std::to_wstring (tools.size () + 4 + i);
+					const PartConfig::Insert *had = extra < spare.size () ? spare[extra].second : nullptr;
 					Xlsx::Sheet::FreeCell blank, name, used, edges, flips, inserts;
 					name.editable = true;
 					edges.editable = true;
-					flips.formula = L"IF($B" + r + L"=\"\",\"\",SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$"
-									+ lastTool + L"))";
-					inserts.formula = L"IF(N($D" + r + L")>0,ROUNDUP(ROUND(N($E" + r + L")/$D" + r + L",6),0),\"\")";
+					if (had != nullptr)
+						{
+						name.text = spare[extra].first;
+						edges.text = had->edges;
+						}
+					flips.formula = L"IF($B" + r + L"=\"\",\"\",IF(N($I" + r + L")>0,1/$I" + r + L",SUMIF($D$2:$D$" + lastTool
+									+ L",$B" + r + L",$E$2:$E$" + lastTool + L")))";
+					inserts.formula = L"IF(N($D" + r + L")>0,IF(N($I" + r + L")>0,ROUND(N($E" + r + L")/$D" + r
+									  + L",4),ROUNDUP(ROUND(N($E" + r + L")/$D" + r + L",6),0)),\"\")";
 					std::vector<Xlsx::Sheet::FreeCell> row = { blank, name, used, edges, flips, inserts };
-					for (const Xlsx::Sheet::FreeCell &c : Summary::CostCells (tools.size () + 4 + i))
+					for (Xlsx::Sheet::FreeCell c : Summary::CostCells (tools.size () + 4 + i))
+						{
+						if (c.editable && had != nullptr)
+							c.text = had->cost;
 						row.push_back (c);
+						}
+					row.push_back (partsCell (had != nullptr ? had->partsPerEdge : std::wstring ()));
 					s.toolsAfter.push_back (row);
 					}
 				}
@@ -1813,6 +1866,7 @@ namespace
 		Summary::Where where;
 		where.title = title;
 		where.subtitle = subtitle;
+		where.batchQty = cfg.batchQty;
 		Summary::Add (s, where);
 
 		return Xlsx::Write (file, s);
@@ -1938,6 +1992,24 @@ namespace Dump
 		if (chosen.empty ())
 			return 0;
 		const bool onlySelected = chosen.size () < all.size ();
+
+		// What was typed into this part's earlier dumps (edges, costs, edge life,
+		// batch ...): the part's .ptconfig, brought up to date from the newest
+		// earlier workbook - saved there is enough, it need not have been loaded.
+		const std::filesystem::path cfgFile = PartConfig::PathFor (part);
+		PartConfig::Config cfg = PartConfig::Load (cfgFile);
+		{
+		const std::filesystem::path newest = PartConfig::NewestDump (part, settings.folder);
+		std::error_code ec;
+		const bool newer = !newest.empty ()
+						   && (!std::filesystem::exists (cfgFile, ec)
+							   || std::filesystem::last_write_time (newest, ec) > std::filesystem::last_write_time (cfgFile, ec));
+		std::wstring why;
+		if (newer && PartConfig::Harvest (newest, cfg, why))
+			Util::Log (part, L"part config: took what was typed in " + newest.filename ().wstring ());
+		else if (newer)
+			Util::Log (part, L"part config: could not read " + newest.filename ().wstring () + L" - " + why);
+		}
 
 		// What each lathe op really removes: a 2D stock simulation of the toolpaths,
 		// or - switched off - Mastercam's own stock boundary before and after each op
@@ -2401,6 +2473,12 @@ namespace Dump
 							}
 						if (!label.empty ())
 							ins.text = label;
+						// The part's .ptconfig: what this dump labels it, and a name typed over
+						// an earlier dump's label wins.
+						PartConfig::Tool &remembered = cfg.tools[tr.number];
+						remembered.detected = ins.text;
+						if (!remembered.insert.empty ())
+							ins.text = remembered.insert;
 						Util::Log (part, L"tool " + tr.number + L" insert: " + (label.empty () ? L"(no geometry)" : label)
 										 + L" | code " + (code.text.empty () ? L"-" : code.text)
 										 + (info.grade.empty () ? L"" : L" | grade " + info.grade)
@@ -2437,7 +2515,7 @@ namespace Dump
 									  + (rows.size () == 1 ? L" operation" : L" operations") + (onlySelected ? L" (a selection)" : L"")
 									  + L" - " + part.wstring ();
 		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow, settings.macros,
-						L"Summary - " + part.filename ().wstring (), subtitle))
+						L"Summary - " + part.filename ().wstring (), subtitle, cfg))
 			{
 			Util::Say (L"Could not write " + file.wstring () + L"\r\n\r\nCheck the "
 					   L"folder can be written to, and try again.",
@@ -2466,6 +2544,8 @@ namespace Dump
 				   L"them. Hover a cell for what it is and what it takes.");
 
 		Settings::SetLastDump (file.wstring (), part.wstring ());
+		if (!PartConfig::Save (cfgFile, cfg))
+			Util::Log (part, L"part config: could not write " + cfgFile.wstring ());
 
 		// Straight into Excel - the next thing anyone does with it.
 		if (settings.openExcel)

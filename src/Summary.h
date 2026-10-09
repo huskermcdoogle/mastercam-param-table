@@ -28,6 +28,7 @@ namespace Summary
 		{
 		std::wstring title;			//!< the part, as a heading
 		std::wstring subtitle;		//!< when it was dumped, how many operations
+		std::wstring batchQty;		//!< remembered (the part's .ptconfig); "" = 1
 		};
 
 	/// Fill s.summary and s.summaryWidths from the sheet as it will be written:

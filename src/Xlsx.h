@@ -189,6 +189,12 @@ namespace Xlsx
 							  std::vector<std::vector<std::wstring>> &rows,
 							  std::vector<size_t> &sheetRow, std::wstring &why);
 
+	/// Any sheet's cells as they are, by Excel row number then column (0 = A) -
+	/// for sheets that are not laid out as rows of operations (Tools, Summary).
+	using Grid = std::map<size_t, std::map<size_t, std::wstring>>;
+	bool ReadGrid (const std::filesystem::path &file, const std::wstring &sheetName, Grid &grid, std::wstring &why);
+	bool ReadGridBytes (const std::string &bytes, const std::wstring &sheetName, Grid &grid, std::wstring &why);
+
 	/// Raw DEFLATE (RFC 1951) data to bytes. False when the data is damaged.
 	bool Inflate (const std::string &in, std::string &out);
 

@@ -10,6 +10,7 @@
 #include "Preview.h"
 #include "Settings.h"
 #include "Impact.h"
+#include "PartConfig.h"
 #include "Undo.h"
 
 #include <algorithm>
@@ -291,6 +292,15 @@ namespace Load
 				std::vector<size_t> dumpedRow;
 				if (!Xlsx::ReadNamedSheet (file, L"Dumped", dumped, dumpedRow, why))
 					dumped.clear ();
+				// What was typed for the part's inserts and tools (edges, costs, edge
+				// life, batch) goes into its .ptconfig, for the next dump to start from.
+				{
+				const std::filesystem::path cfgFile = PartConfig::PathFor (part);
+				PartConfig::Config cfg = PartConfig::Load (cfgFile);
+				std::wstring cfgWhy;
+				if (PartConfig::Harvest (file, cfg, cfgWhy) && PartConfig::Save (cfgFile, cfg))
+					Util::Log (part, L"part config: took what was typed in " + file.filename ().wstring ());
+				}
 				}
 			else
 				{

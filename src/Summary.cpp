@@ -213,7 +213,7 @@ namespace Summary
 		{
 		p.Add ({ Text (L"Batch", Cell::Section) });
 		const size_t qtyRow = p.Next ();
-		Cell qty = Text (L"1", Cell::Input);
+		Cell qty = Text (w.batchQty.empty () ? std::wstring (L"1") : w.batchQty, Cell::Input);
 		qty.editable = true;
 		p.Add ({ Blank (), Text (L"Batch quantity (type it in)"), qty });
 		const std::wstring q = L"$C$" + std::to_wstring (qtyRow);
