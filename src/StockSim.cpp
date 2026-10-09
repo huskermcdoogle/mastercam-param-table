@@ -252,6 +252,16 @@ namespace
 			}
 		double gap = 0;
 		r.raw = Chain (pieces, gap);
+		// The entities are stored times the scale (1000 on a real part: a 7.0 radius as 7000).
+		if (b.scale > 0)
+			{
+			for (P &p : r.raw)
+				{
+				p.z /= b.scale;
+				p.x /= b.scale;
+				}
+			gap /= b.scale;
+			}
 		double x0 = 1e300, x1 = -1e300, y0 = 1e300, y1 = -1e300;
 		for (const P &p : r.raw)
 			{
@@ -585,6 +595,7 @@ namespace StockSim
 
 			double totIns = 0, totNose = 0, totAir = 0, totSwept = 0;
 			std::set<long> mcLogged;
+			double mcPrev = stockExact;		// Mastercam's stock left so far, by its boundaries
 			for (const OpPath &p : paths)
 				{
 				const auto s0 = std::chrono::steady_clock::now ();
@@ -623,7 +634,11 @@ namespace StockSim
 						 + std::to_wstring (p.op->cmn_lathe.upd_cur_bdry) + L"/" + std::to_wstring (p.op->cmn_lathe.upd_subs_bdry);
 					const Bdry ob = ReadBoundary (ol);
 					if (ob.ok)
-						mc += L": " + F (RevolvedVolume (Mapped (ob.raw, swap, dia)), 3) + L" in^3";
+						{
+						const double v = RevolvedVolume (Mapped (ob.raw, swap, dia));
+						mc += L": " + F (v, 3) + L" in^3 left, removed " + F (mcPrev - v, 3) + L" in^3";
+						mcPrev = v;
+						}
 					if (!mcLogged.count (ol))
 						Util::Log (part, L"stock sim   op " + std::to_wstring (p.op->op_idn) + L" bdry " + ob.info);
 					mcLogged.insert (ol);
