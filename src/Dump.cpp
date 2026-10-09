@@ -504,10 +504,10 @@ namespace
 		{
 		wchar_t best = 0;
 		double off = 6.0;
-		for (const wchar_t c : std::wstring (L"CDEMVTSWHOP"))
+		for (const wchar_t c : std::wstring (L"CDEMVTSWHOP"))		// first wins a tie: C before W at 80
 			{
 			const double a = ShapeName (c).second;
-			if (a > 0 && std::fabs (a - angle) <= off)
+			if (a > 0 && std::fabs (a - angle) < off)
 				{
 				off = std::fabs (a - angle);
 				best = c;
@@ -573,8 +573,11 @@ namespace
 		{
 		if (!sim.ok)
 			return L"nose circle only";
-		return sim.round ? L"round " + Dim (sim.size) + L" dia"
-						 : L"polygon, nose " + Dim (std::round (sim.noseAngle)) + L"°, " + Dim (sim.size) + L" across";
+		const std::wstring made = L" [" + std::to_wstring (sim.lines) + L" lines, " + std::to_wstring (sim.arcs)
+								  + L" arcs, largest r" + Dim (sim.maxArcR) + L" over " + Dim (std::round (sim.maxArcSweep)) + L"°]";
+		return (sim.round ? L"round " + Dim (sim.size) + L" dia"
+						  : L"polygon, nose " + Dim (std::round (sim.noseAngle)) + L"°, " + Dim (sim.size) + L" across")
+			   + made;
 		}
 
 	/// Edges per insert from its ISO code: corners by the shape letter - C, D,

@@ -44,6 +44,8 @@ namespace
 		std::vector<P> insert;		//!< hull of the cut boundary
 		std::vector<P> nose;		//!< the corner-radius circle only
 		bool fromBoundary = false;
+		int lines = 0, arcs = 0;	//!< what the cut boundary is made of
+		double maxArcR = 0, maxArcSweep = 0;	//!< its largest arc (degrees)
 		};
 
 	Shape ShapeOf (long slot, const std::filesystem::path &part)
@@ -80,6 +82,7 @@ namespace
 					{
 					pts.push_back ({ e.u.li.e1[0], e.u.li.e1[1] });
 					pts.push_back ({ e.u.li.e2[0], e.u.li.e2[1] });
+					++s.lines;
 					d = L" L(" + F (e.u.li.e1[0]) + L"," + F (e.u.li.e1[1]) + L")-(" + F (e.u.li.e2[0]) + L","
 						+ F (e.u.li.e2[1]) + L")";
 					}
@@ -96,6 +99,12 @@ namespace
 					pts.push_back ({ a.ep1[0], a.ep1[1] });
 					pts.push_back ({ a.ep2[0], a.ep2[1] });
 					arcs.push_back ({ { a.c[0], a.c[1] }, a.r });
+					++s.arcs;
+					if (a.r > s.maxArcR)
+						{
+						s.maxArcR = a.r;
+						s.maxArcSweep = std::fabs (a.sw) * 180.0 / kPi;
+						}
 					d = L" A(c " + F (a.c[0]) + L"," + F (a.c[1]) + L" r " + F (a.r) + L" sa " + F (a.sa * 180 / kPi, 1)
 						+ L" sw " + F (a.sw * 180 / kPi, 1) + L" ep " + F (a.ep1[0]) + L"," + F (a.ep1[1]) + L" "
 						+ F (a.ep2[0]) + L"," + F (a.ep2[1]) + L" view " + std::to_wstring (a.view) + L")";
@@ -418,7 +427,16 @@ namespace StockSim
 			z0 = (std::min) (z0, p.z); z1 = (std::max) (z1, p.z);
 			x0 = (std::min) (x0, p.x); x1 = (std::max) (x1, p.x);
 			}
-		if (dMax > 0 && dMin / dMax > 0.97)
+		r.lines = sh.lines;
+		r.arcs = sh.arcs;
+		r.maxArcR = sh.maxArcR;
+		r.maxArcSweep = sh.maxArcSweep;
+		// Round: a big arc (a radius near half the size, sweeping a good part of a
+		// turn) and a hull that is close to a circle. Corner arcs alone - however
+		// round the hull looks - are not a round insert.
+		const double extent = (std::max) (z1 - z0, x1 - x0);
+		const bool bigArc = sh.maxArcR >= 0.35 * extent && sh.maxArcSweep >= 90;
+		if (dMax > 0 && dMin / dMax > 0.97 && bigArc)
 			{
 			r.round = true;
 			r.size = dMin + dMax;

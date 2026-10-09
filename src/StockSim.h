@@ -40,6 +40,8 @@ namespace StockSim
 		double size = 0;			//!< round: diameter; polygon: the larger extent
 		double noseAngle = 0;		//!< polygon: degrees at the nose
 		double noseRadius = 0;
+		int lines = 0, arcs = 0;	//!< the cut boundary: how many lines and arcs
+		double maxArcR = 0, maxArcSweep = 0;	//!< its largest arc: radius, sweep (degrees)
 		};
 	ToolShape ShapeOfTool (long slot);
 
