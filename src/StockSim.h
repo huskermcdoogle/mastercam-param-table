@@ -23,6 +23,9 @@ namespace StockSim
 								//!< what it removes is not (all) simulated
 		bool hasAir = false;	//!< airPct is known (simulated)
 		bool fromBoundary = false;	//!< removed is Mastercam's stock boundary difference
+		double simRemoved = -1;		//!< the simulation's own figure (-1: not simulated)
+		double mcRemoved = -1;		//!< Mastercam's: its stock boundary before less after (-1: none)
+		bool simOk = false;			//!< the simulation covered the op
 		};
 
 	/// Simulate every lathe machine group's operations in Operation Manager

@@ -40,6 +40,15 @@ namespace ToolPictures
 		return r;
 		}
 
+	std::wstring LatheMfgCode (long slot)
+		{
+		Cnc::Tool::TlMgr *mgr = Cnc::Tool::GetTlMgr ();
+		Cnc::Tool::ILToolCPtr tool;
+		if (mgr == nullptr || !mgr->Find (slot, tool) || !tool)
+			return std::wstring ();
+		return std::wstring (tool->GetMfgCode ().GetString ());
+		}
+
 	std::wstring LatheInsert (long slot)
 		{
 		Cnc::Tool::TlMgr *mgr = Cnc::Tool::GetTlMgr ();

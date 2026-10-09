@@ -139,8 +139,9 @@ namespace
 		double toolDia = 0;			//!< for a drill's MRR
 
 		/// What the 2D stock simulation says the op removed (StockSim.h).
-		bool simOk = false, simHasAir = false, simFromBoundary = false;
-		double simRemoved = 0, simAirPct = 0;
+		bool simOk = false, simHasAir = false, simFromBoundary = false, simBoundaryBad = false, simAgrees = true;
+		double simRemoved = 0, simAirPct = 0, simOwn = -1;
+		std::wstring simCheck;
 		};
 
 	Stats StatsOf (operation *pOp)
@@ -487,6 +488,8 @@ namespace
 		if (!in.ok)
 			return std::wstring ();
 		const std::wstring name = ShapeName (in.shape).first;
+		if (in.shape == 0 && in.ic <= 0 && in.width <= 0)
+			return std::wstring ();						// an empty record: the outline decides
 		if (in.shape == L'R')
 			return L"Round IC " + Dim (in.ic);
 		if (!name.empty () && in.ic > 0)
@@ -531,7 +534,7 @@ namespace
 	std::wstring ShapeCheck (const ToolPictures::InsertInfo &in, const StockSim::ToolShape &sim,
 							 const std::wstring &code)
 		{
-		if (!in.ok)
+		if (!in.ok || (in.shape == 0 && in.ic <= 0 && in.width <= 0))		// none, or an empty record (a probe)
 			{
 			const std::wstring iso = IsoInsertCode (code);
 			if (!sim.ok)
@@ -1080,8 +1083,12 @@ namespace
 			if (st.simOk)
 				{
 				removed = st.simRemoved;
-				air = st.simHasAir ? st.simAirPct : 0;
-				from = st.simFromBoundary ? L"Mastercam's stock boundaries" : L"stock simulation";
+				// The air share is the simulation's: shown only where its volume
+				// agrees with Mastercam's (or there is nothing to set it against).
+				air = st.simHasAir && st.simAgrees ? st.simAirPct : 0;
+				from = st.simFromBoundary ? L"Mastercam's stock boundaries"
+										  : st.simBoundaryBad ? L"stock simulation (Mastercam's boundary looks wrong)"
+															  : L"stock simulation";
 				}
 			else if (mrrCol >= 0 && Csv::ParseDouble (row[static_cast<size_t> (mrrCol)], mrr0) && mrr0 > 0)
 				{
@@ -1094,7 +1101,9 @@ namespace
 			row[static_cast<size_t> (remCol)] = Csv::Tidy (removed);
 			if (fromCol >= 0)
 				row[static_cast<size_t> (fromCol)] = from;
-			if (airCol >= 0 && st.simOk && st.simHasAir)
+			if (const int chk = colOf (L"removed_check"); chk >= 0)
+				row[static_cast<size_t> (chk)] = st.simCheck;
+			if (airCol >= 0 && st.simOk && st.simHasAir && st.simAgrees)
 				row[static_cast<size_t> (airCol)] = Csv::Tidy (std::round (air * 10.0) / 10.0);
 
 			const bool live = !s.formula[d][static_cast<size_t> (estCol)].empty ();
@@ -1105,7 +1114,7 @@ namespace
 				s.formula[d][static_cast<size_t> (avgCol)] = L"IFERROR(ROUND(" + cell (remCol) + L"/" + tot + L"*60,3),\"\")";
 				row[static_cast<size_t> (avgCol)] = Csv::Tidy (std::round (removed / tot0 * 60.0 * 1000.0) / 1000.0);
 				}
-			if (engCol >= 0 && st.simOk && st.simHasAir && cut0 > 0 && air < 100)
+			if (engCol >= 0 && st.simOk && st.simHasAir && st.simAgrees && cut0 > 0 && air < 100)
 				{
 				s.formula[d][static_cast<size_t> (engCol)] = L"IFERROR(ROUND(" + cell (remCol) + L"/(" + cell (cutEst) + L"*(1-"
 															 + cell (airCol) + L"/100))*60,3),\"\")";
@@ -1812,6 +1821,7 @@ namespace Dump
 				info (L"insp_mode", true, false, GFlips);
 				info (L"removed", false, true, GMrr);
 				info (L"removed_from", true, false, GMrr);
+				info (L"removed_check", true, false, GMrr);
 				info (L"mrr", false, true, GMrr);
 				info (L"mrr_engaged", false, true, GMrr);
 				info (L"mrr_avg", false, true, GMrr);
@@ -1885,14 +1895,50 @@ namespace Dump
 			Stats stats = tool ? StatsOf (pOp) : Stats ();
 			if (tool)
 				stats.toolDia = pOp->tl.dia;
-			if (const auto hit = sim.find (pOp->op_idn); hit != sim.end () && hit->second.ok)
+			if (const auto hit = sim.find (pOp->op_idn); hit != sim.end ())
 				{
-				// The raster works in the part's units: a metric part's mm^3 shown as cm^3.
-				stats.simOk = true;
-				stats.simRemoved = hit->second.removed / (pOp->tl.mm ? 1000.0 : 1.0);
-				stats.simAirPct = hit->second.airPct;
-				stats.simHasAir = hit->second.hasAir;
-				stats.simFromBoundary = hit->second.fromBoundary;
+				// What the op removes: MASTERCAM'S OWN stock boundaries before and
+				// after it where they look sound - what Mastercam itself works out -
+				// else the simulation. The two are compared: a big difference points
+				// at a tool whose outline is not its insert. (The raster works in the
+				// part's units: a metric part's mm^3 shown as cm^3.)
+				const StockSim::Result &h = hit->second;
+				const double k = pOp->tl.mm ? 1000.0 : 1.0;
+				const bool hasMc = h.mcRemoved != -1;
+				const bool simDone = h.simRemoved >= 0 && h.simOk;
+				// A boundary that goes backwards, or jumps far past what was swept, is
+				// one Mastercam has not kept up to date.
+				const bool mcSound = hasMc && h.mcRemoved >= -0.001
+									 && !(simDone && h.mcRemoved > 10 * h.simRemoved + 100);
+				if (mcSound || (h.fromBoundary && h.ok))
+					{
+					stats.simOk = true;
+					stats.simRemoved = (std::max) (0.0, h.mcRemoved) / k;
+					stats.simFromBoundary = true;
+					}
+				else if (simDone)
+					{
+					stats.simOk = true;
+					stats.simRemoved = h.simRemoved / k;
+					stats.simBoundaryBad = hasMc;
+					}
+				if (simDone)
+					{
+					stats.simOwn = h.simRemoved / k;
+					stats.simAirPct = h.airPct;
+					stats.simHasAir = h.hasAir;
+					}
+				if (mcSound && simDone)
+					{
+					const double a = h.simRemoved / k, b = h.mcRemoved / k;
+					stats.simAgrees = std::fabs (a - b) <= (std::max) (1.0, 0.2 * b);
+					stats.simCheck = stats.simAgrees
+						? L"simulation agrees (" + Csv::Tidy (std::round (a * 10) / 10) + L")"
+						: L"simulation " + Csv::Tidy (std::round (a * 10) / 10) + L" vs Mastercam "
+							  + Csv::Tidy (std::round (b * 10) / 10) + L" - check the tool's shape";
+					}
+				else if (stats.simBoundaryBad)
+					stats.simCheck = L"Mastercam's boundary here looks wrong - simulation used";
 				}
 			if (tool)
 				Util::Log (part, Paths::Describe (*pOp, stats.path, stats.seconds));
@@ -2067,8 +2113,15 @@ namespace Dump
 						std::wstring low;
 						for (wchar_t c : ins.text)
 							low += static_cast<wchar_t> (std::towlower (c));
+						// A generic name: the tool's manufacturer code (a 3D tool's
+						// order code), else an ISO code in the tool's own name.
 						if (low.empty () || low == L"insert" || low == L"default")
-							ins.text = IsoInsertCode (tr.name);
+							{
+							std::wstring mfg = ToolPictures::LatheMfgCode (slot);
+							while (!mfg.empty () && mfg.back () == L' ')
+								mfg.pop_back ();
+							ins.text = !mfg.empty () ? mfg : IsoInsertCode (tr.name);
+							}
 						const ToolPictures::InsertInfo info = ToolPictures::LatheInsertInfo (slot);
 						const StockSim::ToolShape sim = StockSim::ShapeOfTool (slot);
 						code.text = ins.text;

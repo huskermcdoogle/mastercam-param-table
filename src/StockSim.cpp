@@ -759,8 +759,11 @@ namespace StockSim
 					mcLogged.insert (ol);
 					}
 				Result &res = results[p.op->op_idn];
+				res.mcRemoved = mcRemoved;
 				if (simulate)
 					{
+					res.simRemoved = ins.removedVol;
+					res.simOk = p.holes == 0 && p.otherType == 0 && !p.afterFlip;
 					res.removed = ins.removedVol;
 					res.airPct = airT + cutT > 0 ? 100.0 * airT / (airT + cutT) : 0;
 					res.hasAir = true;

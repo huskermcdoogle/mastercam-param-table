@@ -148,6 +148,7 @@ namespace ColumnHelp
 			{ L"mrr",            L"Metal removal rate while cutting, LIVE, in3/min (cm3/min metric): 12 x SFM x feed per rev x depth of cut; a drill: pi D^2/4 x feed per minute. Follows speed, feed and depth edits." },
 			{ L"removed",        L"Material the op removes (in3, cm3 metric) - fixed by its toolpath, so feed and speed edits do not change it (a depth edit does only once the op is regenerated). From a 2D stock simulation where it covers the op, else mrr x cut time - see removed_from." },
 			{ L"removed_from",   L"Where removed comes from: the stock simulation (the toolpath swept through the stock), or an estimate (mrr x cut time, which counts air as cutting). Drill cycles, mill moves and ops after a stock flip are not simulated." },
+			{ L"removed_check",  L"The stock simulation set against Mastercam's own stock boundaries: 'agrees', or both figures when they differ by more than 20% - usually a tool whose outline in Mastercam is not its real insert." },
 			{ L"air_pct",        L"Share of the op's feed time cutting nothing (stock simulation)." },
 			{ L"mrr_avg",        L"Actual MRR over the whole operation, LIVE: removed / op time - rapids, leads and air cuts included. Follows feed and speed edits through the estimate." },
 			{ L"mrr_engaged",    L"Actual MRR while in metal, LIVE: removed / (cut time less its air share). Set it beside mrr (theoretical) - a big gap says the depth or engagement is not what the parameters suggest." },

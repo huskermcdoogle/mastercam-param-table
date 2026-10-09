@@ -18,6 +18,9 @@ namespace ToolPictures
 	/// The insert name of the lathe tool in this slot ("" when none).
 	std::wstring LatheInsert (long slot);
 
+	/// The lathe tool's manufacturer code (a 3D tool's order code; "" when blank).
+	std::wstring LatheMfgCode (long slot);
+
 	/// The lathe tool's main insert as the tool manager defines it.
 	struct InsertInfo
 		{
