@@ -223,21 +223,47 @@ namespace
 
 				place (m_opsHead, pad, y, inner, lineH);
 				y += lineH;
-				// All | None | Selected in OM ..... [kind v] Tick | Untick
+				// Two rows of buttons, each sized to its words:
+				//   All | None | Selected in Operation Manager (n)
+				//   Kind: [ROUGH (4)  v] Tick kind | Untick kind
+				auto widthOf = [&] (CWnd &c)
+					{
+					CString text;
+					c.GetWindowText (text);
+					CClientDC dc (this);
+					CFont *old = dc.SelectObject (&m_font);
+					const int cx = dc.GetTextExtent (text).cx;
+					dc.SelectObject (old);
+					return cx + u * 2;
+					};
 				int x = pad + u;
-				const int smallW = u * 4, mgrW = u * 14, kindW = u * 10, tickW = u * 5, untickW = u * 6;
-				place (m_allBtn, x, y, smallW, editH);
-				x += smallW + gap / 2;
-				place (m_noneBtn, x, y, smallW, editH);
-				x += smallW + gap / 2;
-				place (m_mgrBtn, x, y, mgrW, editH);
-				int rx = w - pad - untickW;
-				place (m_kindOff, rx, y, untickW, editH);
-				rx -= tickW + gap / 2;
-				place (m_kindOn, rx, y, tickW, editH);
-				rx -= kindW + gap / 2;
+				for (CButton *b : { &m_allBtn, &m_noneBtn, &m_mgrBtn })
+					{
+					const int bw = (std::max) (u * 4, widthOf (*b));
+					place (*b, x, y, bw, editH);
+					x += bw + gap / 2;
+					}
+				y += editH + gap / 2;
+				x = pad + u;
+				int kindW = u * 8;
+				for (int i = 0; i < m_kind.GetCount (); ++i)
+					{
+					CString item;
+					m_kind.GetLBText (i, item);
+					CClientDC dc (this);
+					CFont *old = dc.SelectObject (&m_font);
+					kindW = (std::max) (kindW, static_cast<int> (dc.GetTextExtent (item).cx) + u * 3);
+					dc.SelectObject (old);
+					}
 				if (!measureOnly)
-					m_kind.MoveWindow (rx, y, kindW, editH + u * 12);
+					m_kind.MoveWindow (x, y, kindW, editH + u * 12);
+				x += kindW + gap / 2;
+				for (CButton *b : { &m_kindOn, &m_kindOff })
+					{
+					const int bw = widthOf (*b);
+					place (*b, x, y, bw, editH);
+					x += bw + gap / 2;
+					}
 				y += editH + gap / 2;
 				place (m_tree, pad + u, y, inner - u, m_treeH);
 				y += m_treeH + gap / 2;
