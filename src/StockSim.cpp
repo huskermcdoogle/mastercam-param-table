@@ -385,7 +385,7 @@ namespace
 
 namespace StockSim
 	{
-	std::map<long, Result> Run (const std::filesystem::path &part, bool log)
+	std::map<long, Result> Run (const std::filesystem::path &part, bool log, bool simulate)
 		{
 		gLog = log;
 		std::map<long, Result> results;
@@ -632,7 +632,8 @@ namespace StockSim
 				nose.BeginOp ();
 				double rapidIn = 0, cutT = 0, airT = 0, cutL = 0, airL = 0;
 				long feeds = 0;
-				for (const Seg &s : p.segs)
+				static const std::vector<Seg> none;
+				for (const Seg &s : simulate ? p.segs : none)
 					{
 					if (!s.feed)
 						{
@@ -671,6 +672,7 @@ namespace StockSim
 				const double swept = ins.airArea + ins.removedArea;
 				// The op's own stock boundary, as Mastercam keeps it (lathe ops).
 				std::wstring mc;
+				double mcRemoved = -1;
 				const long ol = p.op->cmn_lathe.lstock_id;
 				if (ol > 0 || p.op->cmn_lathe.rstock_id > 0)
 					{
@@ -682,6 +684,7 @@ namespace StockSim
 						{
 						const double v = RevolvedVolume (Mapped (ob.raw, swap, dia));
 						mc += L": " + F (v, 3) + L" in^3 left, removed " + F (mcPrev - v, 3) + L" in^3";
+						mcRemoved = mcPrev - v;
 						mcPrev = v;
 						}
 					if (!mcLogged.count (ol))
@@ -689,9 +692,20 @@ namespace StockSim
 					mcLogged.insert (ol);
 					}
 				Result &res = results[p.op->op_idn];
-				res.removed = ins.removedVol;
-				res.airPct = airT + cutT > 0 ? 100.0 * airT / (airT + cutT) : 0;
-				res.ok = p.holes == 0 && p.otherType == 0 && !p.afterFlip;
+				if (simulate)
+					{
+					res.removed = ins.removedVol;
+					res.airPct = airT + cutT > 0 ? 100.0 * airT / (airT + cutT) : 0;
+					res.hasAir = true;
+					res.ok = p.holes == 0 && p.otherType == 0 && !p.afterFlip;
+					}
+				else
+					{
+					// No simulation: Mastercam's own stock boundary before and after the op.
+					res.removed = mcRemoved;
+					res.fromBoundary = true;
+					res.ok = mcRemoved >= 0 && !p.afterFlip;
+					}
 				LogIf (part, L"stock sim op " + std::to_wstring (p.op->op_idn) + L" T"
 									 + std::to_wstring (p.op->tl.tlno) + L" \""
 									 + std::wstring (p.op->comment, wcsnlen (p.op->comment, COMMENT_SIZE))

@@ -16,6 +16,7 @@ namespace Settings
 		bool openExcel = true;
 		bool pictures = true;
 		bool macros = false;			//!< write an .xlsm with the ribbon tab and its commands
+		bool stockSim = true;			//!< simulate the stock for removed volume (else Mastercam's boundaries)
 		std::wstring skipKinds;			//!< "|ROUGH|FACE|" - kinds left unticked
 		};
 

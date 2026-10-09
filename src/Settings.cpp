@@ -46,6 +46,7 @@ namespace Settings
 		d.openExcel = GetFlag (L"OpenExcel", true);
 		d.pictures = GetFlag (L"ToolPictures", true);
 		d.macros = GetFlag (L"Macros", false);
+		d.stockSim = GetFlag (L"StockSim", true);
 		d.skipKinds = GetText (L"SkipKinds", L"");
 		return d;
 		}
@@ -57,6 +58,7 @@ namespace Settings
 		SetFlag (L"OpenExcel", d.openExcel);
 		SetFlag (L"ToolPictures", d.pictures);
 		SetFlag (L"Macros", d.macros);
+		SetFlag (L"StockSim", d.stockSim);
 		SetText (L"SkipKinds", d.skipKinds);
 		}
 

@@ -74,6 +74,10 @@ int main (int argc, char **argv)
 
 	// A Tools page with live columns and an inserts table under it, and a column
 	// formatted as Text (what keeps a typed 9:00 from becoming a time of day).
+	// The percent is a calculated column that follows the stepover: untracked, so
+	// it is not an edit - drawn blue when it has moved.
+	s.untracked.assign (16, 0);
+	s.untracked[12] = 1;
 	s.textFormat.assign (16, 0);
 	s.textFormat[15] = 1;
 	{

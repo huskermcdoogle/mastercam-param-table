@@ -101,15 +101,15 @@ namespace
 		L"Identity", L"Feeds and speeds", L"Depth of cut", L"Stock to leave", L"Coolant",
 		L"Toolpath", L"Home position", L"Reference points", L"Planes", L"Filter",
 		L"Where it sits (read-only)", L"Tool inspection", L"Toolpath stats (read-only)",
-		L"Insert flips (read-only)", L"Material removal (estimated, read-only)" };
+		L"Insert flips (read-only)", L"Material removal (read-only)", L"Working numbers (read-only)" };
 	enum { GIdentity, GFeeds, GDepth, GStock, GCoolant, GToolpath,
-		   GHome, GRef, GPlanes, GFilter, GWhere, GInspect, GStats, GFlips, GMrr };
+		   GHome, GRef, GPlanes, GFilter, GWhere, GInspect, GStats, GFlips, GMrr, GCalc };
 
 	/// Groups with a +/- of their own, and the ones that start folded away -
 	/// rarely edited, still one click from view.
-	const int kOutlined[] = { GFeeds, GDepth, GStock, GCoolant, GStats, GFlips, GMrr, GToolpath, GHome,
+	const int kOutlined[] = { GFeeds, GDepth, GStock, GCoolant, GStats, GFlips, GMrr, GCalc, GToolpath, GHome,
 							  GRef, GPlanes, GFilter, GWhere, GInspect };
-	const int kCollapsed[] = { GRef, GFilter, GWhere, GInspect };
+	const int kCollapsed[] = { GRef, GFilter, GWhere, GInspect, GCalc };
 
 	/// Seconds as h:mm:ss.
 	std::wstring Hms (double seconds)
@@ -139,7 +139,7 @@ namespace
 		double toolDia = 0;			//!< for a drill's MRR
 
 		/// What the 2D stock simulation says the op removed (StockSim.h).
-		bool simOk = false;
+		bool simOk = false, simHasAir = false, simFromBoundary = false;
 		double simRemoved = 0, simAirPct = 0;
 		};
 
@@ -401,6 +401,19 @@ namespace
 		return s;
 		}
 
+	/// The column that sets a roughing op's depth of cut (or stepover), whose
+	/// change scales its cutting time; nullptr for kinds that do not rough.
+	const wchar_t *DepthColumn (const std::wstring &type)
+		{
+		if (type == L"ROUGH" || type == L"PRIME")
+			return L"step";
+		if (type == L"DYNAMIC" || type == L"DYNAMIC MILL")
+			return L"stepover";
+		if (type == L"FACE" || type == L"GROOVE" || type == L"PLUNGE ROUGH" || type == L"CONTOUR ROUGH")
+			return L"rough_step";
+		return nullptr;
+		}
+
 	/// A sheet cell's time in SECONDS, whatever was typed: "9:00", "1:02:30", 540,
 	/// or a value Excel turned into a time of day.
 	std::wstring SecondsOf (const std::wstring &c)
@@ -525,7 +538,7 @@ namespace
 		s.untracked.assign (columns.size (), 0);
 		for (int c : { estCol, estText, changeCol, colOf (L"flips_est"), colOf (L"cut_seconds_est"),
 					   colOf (L"mrr"), colOf (L"mrr_avg"), colOf (L"mrr_engaged"), colOf (L"flips_uncommented"),
-					   colOf (L"flips_part"), colOf (L"edge_limit"), colOf (L"edge_after") })
+					   colOf (L"flips_part"), colOf (L"edge_limit"), colOf (L"edge_after"), colOf (L"est_note") })
 			if (c >= 0)
 				s.untracked[static_cast<size_t> (c)] = 1;
 
@@ -656,6 +669,26 @@ namespace
 				}
 			if (formula.empty () || formula.size () >= 7800)
 				continue;
+
+			// DEPTH OF CUT: the sheet cannot change the path, but a roughing op's
+			// cutting time goes close to inversely with its depth (twice the step,
+			// about half the passes) - so a depth edit scales the model's part of the
+			// estimate by old / new depth, until the op is regenerated.
+			const wchar_t *depth = DepthColumn (t.schema.type);
+			double depth0 = 0;
+			if (depth != nullptr && has (depth) && num (depth, depth0) && depth0 > 0)
+				{
+				const std::wstring at = ref (depth);
+				const size_t cut = formula.find (L'+', 1);		// after Mastercam's part (which may be negative)
+				if (cut != std::wstring::npos)
+					formula = formula.substr (0, cut) + L"+(" + formula.substr (cut + 1) + L")*IF(N(" + at + L")>0,"
+							  + Csv::FormatDouble (depth0) + L"/" + at + L",1)";
+				const int noteCol = colOf (L"est_note");
+				if (noteCol >= 0)
+					s.formula[d][static_cast<size_t> (noteCol)] =
+						L"IF(N(" + at + L")<>" + Csv::FormatDouble (depth0)
+						+ L",\"" + std::wstring (depth) + L" changed - estimate until the op is regenerated\",\"\")";
+				}
 
 			const std::wstring est = letters (static_cast<size_t> (estCol)) + rowNo;
 			s.formula[d][static_cast<size_t> (estCol)] = formula;
@@ -882,8 +915,8 @@ namespace
 			if (st.simOk)
 				{
 				removed = st.simRemoved;
-				air = st.simAirPct;
-				from = L"stock simulation";
+				air = st.simHasAir ? st.simAirPct : 0;
+				from = st.simFromBoundary ? L"Mastercam's stock boundaries" : L"stock simulation";
 				}
 			else if (mrrCol >= 0 && Csv::ParseDouble (row[static_cast<size_t> (mrrCol)], mrr0) && mrr0 > 0)
 				{
@@ -896,7 +929,7 @@ namespace
 			row[static_cast<size_t> (remCol)] = Csv::Tidy (removed);
 			if (fromCol >= 0)
 				row[static_cast<size_t> (fromCol)] = from;
-			if (airCol >= 0 && st.simOk)
+			if (airCol >= 0 && st.simOk && st.simHasAir)
 				row[static_cast<size_t> (airCol)] = Csv::Tidy (std::round (air * 10.0) / 10.0);
 
 			const bool live = !s.formula[d][static_cast<size_t> (estCol)].empty ();
@@ -907,7 +940,7 @@ namespace
 				s.formula[d][static_cast<size_t> (avgCol)] = L"IFERROR(ROUND(" + cell (remCol) + L"/" + tot + L"*60,3),\"\")";
 				row[static_cast<size_t> (avgCol)] = Csv::Tidy (std::round (removed / tot0 * 60.0 * 1000.0) / 1000.0);
 				}
-			if (engCol >= 0 && st.simOk && cut0 > 0 && air < 100)
+			if (engCol >= 0 && st.simOk && st.simHasAir && cut0 > 0 && air < 100)
 				{
 				s.formula[d][static_cast<size_t> (engCol)] = L"IFERROR(ROUND(" + cell (remCol) + L"/(" + cell (cutEst) + L"*(1-"
 															 + cell (airCol) + L"/100))*60,3),\"\")";
@@ -1149,6 +1182,77 @@ namespace
 					++i;
 					}
 				}
+
+			// PART TOTALS, as dumped and now: the effect of the edits on the whole
+			// part. "As dumped" sums the hidden Dumped sheet; "Now" the live sheet.
+			const int estSecCol = colOf (L"est_seconds"), remCol = colOf (L"removed");
+			if (estSecCol >= 0)
+				{
+				auto head = [] (const wchar_t *t)
+					{
+					Xlsx::Sheet::FreeCell h;
+					h.text = t;
+					h.head = true;
+					return h;
+					};
+				auto sumOf = [&] (int c, bool dumped)
+					{
+					const std::wstring l = letters (static_cast<size_t> (c));
+					return L"SUM(" + std::wstring (dumped ? L"Dumped!" : L"'Lathe params'!") + L"$" + l + L"$3:$" + l
+						   + L"$" + last + L")";
+					};
+				double est0 = 0, cut0 = 0, flips0 = 0, rem0 = 0;
+				for (size_t d = 0; d < rows.size (); ++d)
+					{
+					double v = 0;
+					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (estSecCol)], v)) est0 += v;
+					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], v)) cut0 += v;
+					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (partCol)], v)) flips0 += v;
+					if (remCol >= 0 && Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (remCol)], v)) rem0 += v;
+					}
+				auto timeRow = [&] (const wchar_t *what, int c, double v0)
+					{
+					Xlsx::Sheet::FreeCell a, label, was, now, change;
+					label.text = what;
+					const std::wstring w = sumOf (c, true), n = sumOf (c, false);
+					was.formula = L"TEXT(" + w + L"/86400,\"[h]:mm:ss\")";
+					was.text = Hms (v0);
+					now.formula = L"TEXT(" + n + L"/86400,\"[h]:mm:ss\")";
+					now.text = Hms (v0);
+					change.formula = L"IF(ROUND(" + n + L"-" + w + L",0)<0,\"-\",\"+\")&TEXT(ABS(ROUND(" + n + L"-" + w
+									 + L",0))/86400,\"[h]:mm:ss\")";
+					change.text = L"+0:00:00";
+					return std::vector<Xlsx::Sheet::FreeCell> { a, label, was, now, change };
+					};
+				auto numRow = [&] (const wchar_t *what, const std::wstring &w, const std::wstring &n, double v0)
+					{
+					Xlsx::Sheet::FreeCell a, label, was, now, change;
+					label.text = what;
+					was.formula = L"ROUND(" + w + L",2)";
+					was.text = Csv::Tidy (std::round (v0 * 100.0) / 100.0);
+					now.formula = L"ROUND(" + n + L",2)";
+					now.text = was.text;
+					change.formula = L"ROUND(" + n + L"-(" + w + L"),2)";
+					change.text = L"0";
+					return std::vector<Xlsx::Sheet::FreeCell> { a, label, was, now, change };
+					};
+				s.toolsAfter.push_back ({});
+				s.toolsAfter.push_back ({ head (L"Part totals"), head (L"What"), head (L"As dumped"), head (L"Now"),
+										  head (L"Change") });
+				s.toolsAfter.push_back (timeRow (L"Cycle time (estimate)", estSecCol, est0));
+				s.toolsAfter.push_back (timeRow (L"Cutting time", cutEst, cut0));
+				s.toolsAfter.push_back (numRow (L"Insert flips per part", sumOf (partCol, true), sumOf (partCol, false), flips0));
+				if (remCol >= 0)
+					{
+					s.toolsAfter.push_back (numRow (L"Material removed (fixed by the toolpaths)", sumOf (remCol, true),
+													sumOf (remCol, false), rem0));
+					const double mrr0 = est0 > 0 ? rem0 / est0 * 60.0 : 0;
+					s.toolsAfter.push_back (numRow (L"Average removal rate over the cycle (per min)",
+													L"IFERROR(" + sumOf (remCol, true) + L"/" + sumOf (estSecCol, true) + L"*60,0)",
+													L"IFERROR(" + sumOf (remCol, false) + L"/" + sumOf (estSecCol, false) + L"*60,0)",
+													mrr0));
+					}
+				}
 			}
 		}
 		s.tools = tools;
@@ -1328,9 +1432,6 @@ namespace Dump
 			return 0;
 			}
 
-		// What each lathe op really removes: a 2D stock simulation of the toolpaths
-		// (StockSim.h). Its own detail goes to the log with diag bit 4.
-		const std::map<long, StockSim::Result> sim = StockSim::Run (part, (Settings::Diag () & 4) != 0);
 
 		// ---- EVERY OPERATION THIS TOOL KNOWS, in Operation Manager order (the
 		// order they run), and which of them are selected.
@@ -1387,39 +1488,46 @@ namespace Dump
 			return 0;
 			}
 
-		// ---- ASK, IN A WINDOW: selected or all, which kinds, where it goes and
-		// what it is called. All of it remembered for next time.
+		// ---- ASK, IN A WINDOW: which operations (ticked in a tree of toolpath
+		// groups - to start, what is selected in the Operation Manager, else all),
+		// where it goes and what it is called. All but the ticks remembered.
 		Settings::Dump settings = Settings::LoadDump ();
-		std::vector<DumpDialog::Kind> kinds;
-		for (const auto &kv : allByType)
+		std::vector<DumpDialog::Op> ops;
+		for (const Found &f : all)
 			{
-			DumpDialog::Kind k;
-			k.name = kv.first;
-			k.all = kv.second;
-			const auto sel = selByType.find (kv.first);
-			k.selected = sel == selByType.end () ? 0 : sel->second;
-			k.on = settings.skipKinds.find (L"|" + kv.first + L"|") == std::wstring::npos;
-			kinds.push_back (k);
+			DumpDialog::Op o;
+			o.idn = f.op->op_idn;
+			o.group = f.op->cmn.grp_idn;
+			o.groupName = GroupName (f.op->cmn.grp_idn);
+			o.kind = f.t->schema.type;
+			o.text = L"op " + std::to_wstring (f.op->op_idn) + L"    " + f.t->schema.type
+					 + (HasTool (*f.t) ? L"    T" + std::to_wstring (f.op->tl.tlno) : std::wstring ())
+					 + L"    " + Comment (f.op) + (f.op->db.nci_flag ? L"    [needs regen]" : L"");
+			o.selectedInMgr = f.op->db.select_flag;
+			o.on = selected.empty () || o.selectedInMgr;
+			ops.push_back (o);
 			}
-		bool onlySelected = !selected.empty ();
-		if (!DumpDialog::Show (part.wstring (), kinds, skippedLine, onlySelected, settings))
+		if (!DumpDialog::Show (part.wstring (), ops, skippedLine, settings))
 			return 0;
 		Settings::SaveDump (settings);
 
-		std::set<std::wstring> kindOn;
-		for (const DumpDialog::Kind &k : kinds)
-			if (k.on)
-				kindOn.insert (k.name);
 		std::vector<Found> chosen;
 		std::map<std::wstring, int> byType;
-		for (const Found &f : onlySelected ? selected : all)
-			if (kindOn.count (f.t->schema.type))
+		for (size_t i = 0; i < all.size () && i < ops.size (); ++i)
+			if (ops[i].on)
 				{
-				chosen.push_back (f);
-				++byType[f.t->schema.type];
+				chosen.push_back (all[i]);
+				++byType[all[i].t->schema.type];
 				}
 		if (chosen.empty ())
 			return 0;
+		const bool onlySelected = chosen.size () < all.size ();
+
+		// What each lathe op really removes: a 2D stock simulation of the toolpaths,
+		// or - switched off - Mastercam's own stock boundary before and after each op
+		// (StockSim.h). The simulation's detail goes to the log with diag bit 4.
+		const std::map<long, StockSim::Result> sim =
+			StockSim::Run (part, (Settings::Diag () & 4) != 0, settings.stockSim);
 		const std::vector<Found> &rows = chosen;
 
 		// ---- THE COLUMNS. Identity, then the reader's context, then only the
@@ -1484,36 +1592,39 @@ namespace Dump
 			if (name == L"coolant")
 				{
 				info (L"canned_text_raw", true, false, c.group);
+				// What a person reads first in each group, then the detail; the
+				// numbers the formulas work with are together, folded away.
 				info (L"cycle_time", true, false, GStats);
-				info (L"cycle_time_raw", false, true, GStats);
+				info (L"est_cycle_time", true, false, GStats);
+				info (L"time_change", true, false, GStats);
+				info (L"est_note", true, false, GStats);
+				info (L"cut_length", false, true, GStats);
+				info (L"rapid_length", false, true, GStats);
 				info (L"travel_x_min", false, true, GStats);
 				info (L"travel_x_max", false, true, GStats);
 				info (L"travel_z_min", false, true, GStats);
 				info (L"travel_z_max", false, true, GStats);
-				info (L"cut_length", false, true, GStats);
-				info (L"rapid_length", false, true, GStats);
 				info (L"feed_groups", true, false, GStats);
-				info (L"est_cycle_time", true, false, GStats);
-				info (L"time_change", true, false, GStats);
-				info (L"est_seconds", false, true, GStats);
+				info (L"flips_part", false, false, GFlips);
 				info (L"flips", false, false, GFlips);
 				info (L"flips_est", false, true, GFlips);
+				info (L"flips_uncommented", false, false, GFlips);
 				info (L"flips_why", true, false, GFlips);
 				info (L"flip_longest", true, false, GFlips);
 				info (L"insp_mode", true, false, GFlips);
-				info (L"cut_seconds_est", false, true, GFlips);
-				info (L"flips_uncommented", false, false, GFlips);
-				info (L"flips_part", false, false, GFlips);
-				info (L"edge_limit", false, true, GFlips);
-				info (L"edge_after", false, true, GFlips);
-				info (L"cut_dia", false, true, GMrr);
-				info (L"mrr", false, true, GMrr);
 				info (L"removed", false, true, GMrr);
 				info (L"removed_from", true, false, GMrr);
-				info (L"air_pct", false, true, GMrr);
-				info (L"mrr_avg", false, true, GMrr);
+				info (L"mrr", false, true, GMrr);
 				info (L"mrr_engaged", false, true, GMrr);
+				info (L"mrr_avg", false, true, GMrr);
+				info (L"air_pct", false, true, GMrr);
+				info (L"cut_dia", false, true, GMrr);
 				info (L"mrr_basis", true, false, GMrr);
+				info (L"cycle_time_raw", false, true, GCalc);
+				info (L"est_seconds", false, true, GCalc);
+				info (L"cut_seconds_est", false, true, GCalc);
+				info (L"edge_limit", false, true, GCalc);
+				info (L"edge_after", false, true, GCalc);
 				}
 			}
 
@@ -1582,6 +1693,8 @@ namespace Dump
 				stats.simOk = true;
 				stats.simRemoved = hit->second.removed / (pOp->tl.mm ? 1000.0 : 1.0);
 				stats.simAirPct = hit->second.airPct;
+				stats.simHasAir = hit->second.hasAir;
+				stats.simFromBoundary = hit->second.fromBoundary;
 				}
 			if (tool)
 				Util::Log (part, Paths::Describe (*pOp, stats.path, stats.seconds));

@@ -21,9 +21,13 @@ namespace StockSim
 		double airPct = 0;		//!< % of its feed time cutting nothing
 		bool ok = false;		//!< false: drill cycles, mill moves, or after a stock flip -
 								//!< what it removes is not (all) simulated
+		bool hasAir = false;	//!< airPct is known (simulated)
+		bool fromBoundary = false;	//!< removed is Mastercam's stock boundary difference
 		};
 
 	/// Simulate every lathe machine group's operations in Operation Manager
 	/// order: what each removes, by op_idn. `log` writes the probe's lines too.
-	std::map<long, Result> Run (const std::filesystem::path &part, bool log);
+	/// simulate = false: no sweeping - each op's removed volume is the difference
+	/// of Mastercam's own stock boundaries before and after it (quick; no air share).
+	std::map<long, Result> Run (const std::filesystem::path &part, bool log, bool simulate);
 	}

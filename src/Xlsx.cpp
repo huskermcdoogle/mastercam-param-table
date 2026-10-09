@@ -208,12 +208,15 @@ namespace Xlsx
 					}
 				o += "</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" "
 					 "xfId=\"0\" builtinId=\"0\"/></cellStyles>"
-					 // 0: an edited cell; 1: the edit count of a row with edits
-					 "<dxfs count=\"2\">"
+					 // 0: an edited cell; 1: the edit count of a row with edits;
+					 // 2: a calculated cell that has moved with the edits
+					 "<dxfs count=\"3\">"
 					 "<dxf><font><b/><color rgb=\"FF6B3E00\"/></font><fill><patternFill patternType=\"solid\">"
 					 "<bgColor rgb=\"FFFFE08A\"/></patternFill></fill></dxf>"
 					 "<dxf><font><b/><color rgb=\"FF9A3412\"/></font><fill><patternFill patternType=\"solid\">"
 					 "<bgColor rgb=\"FFFFD3A6\"/></patternFill></fill></dxf>"
+					 "<dxf><font><b/><color rgb=\"FF1E3A8A\"/></font><fill><patternFill patternType=\"solid\">"
+					 "<bgColor rgb=\"FFDBEAFE\"/></patternFill></fill></dxf>"
 					 "</dxfs></styleSheet>";
 				return o;
 				}
@@ -557,6 +560,20 @@ namespace Xlsx
 					  + "\"><cfRule type=\"expression\" dxfId=\"0\" priority=\""
 					  + std::to_string (priority++) + "\"><formula>" + a + "3&lt;&gt;INDEX("
 					  + dumpedCol (run.first, true) + "," + match (3) + ")</formula></cfRule>"
+					  "</conditionalFormatting>";
+				}
+			// Calculated columns that follow the edits (the estimate, flips, MRR):
+			// blue where they have moved from the dump - the effect of the edits.
+			for (size_t c = 0; c < nCols; ++c)
+				{
+				if (c == changesCol || !flag (s.untracked, c))
+					continue;
+				const std::string a = ColName (c), cur = a + "3";
+				const std::string was = "INDEX(" + dumpedCol (c, true) + "," + match (3) + ")";
+				sd += "<conditionalFormatting sqref=\"" + a + "3:" + a + std::to_string (lastRow)
+					  + "\"><cfRule type=\"expression\" dxfId=\"2\" priority=\"" + std::to_string (priority++)
+					  + "\"><formula>IFERROR(IF(ISNUMBER(" + cur + "),ROUND(" + cur + ",6)&lt;&gt;ROUND(N(" + was
+					  + "),6)," + cur + "&amp;\"\"&lt;&gt;" + was + "&amp;\"\"),FALSE)</formula></cfRule>"
 					  "</conditionalFormatting>";
 				}
 			if (changesCol < nCols)

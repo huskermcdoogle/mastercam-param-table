@@ -28,6 +28,16 @@ try {
     "opened: $($xl.Windows.Item(1).Caption)  sheets: " + (($wb.Worksheets | ForEach-Object { $_.Name }) -join ', ') +
         "  modules: " + (($wb.VBProject.VBComponents | ForEach-Object { $_.Name }) -join ', ')
 
+    # A calculated (untracked) cell that moves with an edit is drawn blue.
+    $before = $ws.Range("M3").DisplayFormat.Interior.Color
+    $ws.Range("L3").Value2 = 0.3
+    $xl.Calculate()
+    $after = $ws.Range("M3").DisplayFormat.Interior.Color
+    Check ($after -eq 16706267 -and $before -ne $after) "a calculated cell that moved is blue ($before -> $after)"
+    $ws.Range("L3").Value2 = 0.25
+    $xl.Calculate()
+    Check ($ws.Range("M3").DisplayFormat.Interior.Color -eq $before) "and back to plain when the edit is undone"
+
     # Two-way link: amount -> percent (the formula), percent typed -> amount.
     $ws.Range("L3").Value2 = 0.2
     Check ([math]::Abs($ws.Range("M3").Value2 - 40) -lt 1e-9) "stepover 0.25 -> 0.2 gives percent 40 (got $($ws.Range('M3').Value2))"

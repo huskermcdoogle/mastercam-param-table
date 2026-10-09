@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <ctime>
 #include <filesystem>
+#include <map>
 
 namespace
 	{
@@ -15,18 +16,17 @@ namespace
 
 	enum
 		{
-		IdTitle = 2001, IdSummary, IdOpsHead, IdAll, IdSelected, IdKinds, IdSkipped,
-		IdFolderHead, IdFolder, IdBrowse, IdBeside, IdNameHead, IdPattern, IdPreview,
-		IdTokens, IdOpen, IdPictures, IdMacros
+		IdTitle = 2001, IdSummary, IdOpsHead, IdTree, IdAll, IdNone, IdMgr, IdKind, IdKindOn, IdKindOff,
+		IdSkipped, IdFolderHead, IdFolder, IdBrowse, IdBeside, IdNameHead, IdPattern, IdPreview,
+		IdTokens, IdOpen, IdPictures, IdMacros, IdStockSim
 		};
 
 	class Dlg : public CDialog
 		{
 		public:
-			Dlg (const std::wstring &part, std::vector<DumpDialog::Kind> &kinds, const std::wstring &skipped,
-				 bool &selectedOnly, Settings::Dump &settings, CWnd *parent)
-				: m_part (part), m_kinds (kinds), m_skipped (skipped), m_selectedOnly (selectedOnly),
-				  m_settings (settings), m_parent (parent)
+			Dlg (const std::wstring &part, std::vector<DumpDialog::Op> &ops, const std::wstring &skipped,
+				 Settings::Dump &settings, CWnd *parent)
+				: m_part (part), m_ops (ops), m_skipped (skipped), m_settings (settings), m_parent (parent)
 				{
 				}
 
@@ -78,6 +78,11 @@ namespace
 							  CRect (), this, id);
 					c.SetFont (&f);
 					};
+				auto button = [&] (CButton &b, const wchar_t *text, int id, DWORD style)
+					{
+					b.Create (text, WS_CHILD | WS_VISIBLE | WS_TABSTOP | style, CRect (), this, id);
+					b.SetFont (&m_font);
+					};
 				label (m_title, L"Dump lathe parameters", IdTitle, m_big);
 				label (m_summary, std::filesystem::path (m_part).filename ().wstring (), IdSummary, m_font);
 				label (m_opsHead, L"Operations", IdOpsHead, m_bold);
@@ -89,86 +94,109 @@ namespace
 				label (m_tokens, L"Tokens:  {part}  {date}  {time}  {scope}  {ops}    "
 								 L"An existing file is never overwritten.", IdTokens, m_font);
 
-				int all = 0, sel = 0;
-				for (const DumpDialog::Kind &k : m_kinds)
+				// ---- The operations: a tree of toolpath groups, a tick box each.
+				int selectedInMgr = 0;
+				for (const DumpDialog::Op &o : m_ops)
+					selectedInMgr += o.selectedInMgr;
+				button (m_allBtn, L"All", IdAll, BS_PUSHBUTTON);
+				button (m_noneBtn, L"None", IdNone, BS_PUSHBUTTON);
+				button (m_mgrBtn, (L"Selected in Operation Manager (" + std::to_wstring (selectedInMgr) + L")").c_str (),
+						IdMgr, BS_PUSHBUTTON);
+				m_mgrBtn.EnableWindow (selectedInMgr > 0);
+				m_kind.Create (WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST, CRect (0, 0, 10, 300),
+							   this, IdKind);
+				m_kind.SetFont (&m_font);
+				std::map<std::wstring, int> kinds;
+				for (const DumpDialog::Op &o : m_ops)
+					++kinds[o.kind];
+				for (const auto &kv : kinds)
 					{
-					all += k.all;
-					sel += k.selected;
+					const int at = m_kind.AddString ((kv.first + L"  (" + std::to_wstring (kv.second) + L")").c_str ());
+					m_kindNames.push_back (kv.first);
+					m_kind.SetItemData (at, static_cast<DWORD_PTR> (m_kindNames.size () - 1));
 					}
-				m_all.Create ((L"All operations in the part  (" + std::to_wstring (all) + L")").c_str (),
-							  WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_AUTORADIOBUTTON, CRect (), this, IdAll);
-				m_sel.Create ((L"Only the ones selected in the Operation Manager  (" + std::to_wstring (sel) + L")").c_str (),
-							  WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, CRect (), this, IdSelected);
-				m_all.SetFont (&m_font);
-				m_sel.SetFont (&m_font);
-				if (sel == 0)
-					{
-					m_sel.EnableWindow (FALSE);
-					m_selectedOnly = false;
-					}
-				(m_selectedOnly ? m_sel : m_all).SetCheck (BST_CHECKED);
+				m_kind.SetCurSel (0);
+				button (m_kindOn, L"Tick kind", IdKindOn, BS_PUSHBUTTON);
+				button (m_kindOff, L"Untick kind", IdKindOff, BS_PUSHBUTTON);
 
-				m_list.Create (WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | LVS_REPORT | LVS_SINGLESEL
-								   | LVS_NOSORTHEADER, CRect (), this, IdKinds);
-				m_list.SetExtendedStyle (LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
-				m_list.SetFont (&m_font);
-				m_rowImages.Create (1, m_u * 3 / 2, ILC_COLOR, 1, 0);
-				m_list.SetImageList (&m_rowImages, LVSIL_SMALL);
-				m_list.InsertColumn (0, L"Kind", LVCFMT_LEFT, m_u * 12);
-				m_list.InsertColumn (1, L"In the part", LVCFMT_RIGHT, m_u * 6);
-				m_list.InsertColumn (2, L"Selected", LVCFMT_RIGHT, m_u * 6);
+				m_tree.Create (WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | TVS_HASBUTTONS | TVS_HASLINES
+								   | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_FULLROWSELECT,
+							   CRect (), this, IdTree);
+				// Tick boxes have to be switched on after the tree exists.
+				m_tree.ModifyStyle (0, TVS_CHECKBOXES);
+				m_tree.SetFont (&m_font);
 				m_filling = true;
-				for (size_t i = 0; i < m_kinds.size (); ++i)
+				std::map<long, HTREEITEM> groupItem;
+				for (size_t i = 0; i < m_ops.size (); ++i)
 					{
-					const int at = m_list.InsertItem (static_cast<int> (i), m_kinds[i].name.c_str ());
-					m_list.SetItemText (at, 1, std::to_wstring (m_kinds[i].all).c_str ());
-					m_list.SetItemText (at, 2, std::to_wstring (m_kinds[i].selected).c_str ());
-					m_list.SetCheck (at, m_kinds[i].on);
+					const DumpDialog::Op &o = m_ops[i];
+					HTREEITEM g;
+					const auto it = groupItem.find (o.group);
+					if (it == groupItem.end ())
+						{
+						g = m_tree.InsertItem ((o.groupName.empty () ? L"(no group)" : o.groupName).c_str ());
+						m_tree.SetItemData (g, static_cast<DWORD_PTR> (-1));
+						groupItem[o.group] = g;
+						m_groups.push_back (g);
+						}
+					else
+						g = it->second;
+					HTREEITEM h = m_tree.InsertItem (o.text.c_str (), g);
+					m_tree.SetItemData (h, static_cast<DWORD_PTR> (i));
+					m_items.push_back (h);
 					}
+				for (HTREEITEM g : m_groups)
+					m_tree.Expand (g, TVE_EXPAND);
+				for (size_t i = 0; i < m_ops.size (); ++i)
+					m_tree.SetCheck (m_items[i], m_ops[i].on);
+				SyncGroups ();
 				m_filling = false;
+				if (!m_items.empty ())
+					m_tree.EnsureVisible (m_tree.GetRootItem ());
 
+				// ---- Where, what name, options.
 				const std::wstring partFolder = std::filesystem::path (m_part).parent_path ().wstring ();
 				m_folder.Create (WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, CRect (), this, IdFolder);
 				m_folder.SetFont (&m_font);
 				m_folder.SetWindowText ((m_settings.folder.empty () ? partFolder : m_settings.folder).c_str ());
-				m_browse.Create (L"Browse...", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON, CRect (), this, IdBrowse);
-				m_browse.SetFont (&m_font);
-				m_beside.Create (L"Beside the part", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON, CRect (), this, IdBeside);
-				m_beside.SetFont (&m_font);
+				button (m_browse, L"Browse...", IdBrowse, BS_PUSHBUTTON);
+				button (m_beside, L"Beside the part", IdBeside, BS_PUSHBUTTON);
 
 				m_pattern.Create (WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_AUTOHSCROLL, CRect (), this, IdPattern);
 				m_pattern.SetFont (&m_font);
 				m_pattern.SetWindowText ((m_settings.pattern.empty () ? FileRules::kDefaultPattern
 																		: m_settings.pattern).c_str ());
 
-				m_open.Create (L"Open in Excel when done", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX,
-							   CRect (), this, IdOpen);
-				m_open.SetFont (&m_font);
+				button (m_open, L"Open in Excel when done", IdOpen, BS_AUTOCHECKBOX);
 				m_open.SetCheck (m_settings.openExcel ? BST_CHECKED : BST_UNCHECKED);
-				m_pics.Create (L"Add a Tools sheet with tool pictures (lathe tools)",
-							   WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, CRect (), this, IdPictures);
-				m_pics.SetFont (&m_font);
+				button (m_pics, L"Tool pictures on the Tools sheet (lathe tools)", IdPictures, BS_AUTOCHECKBOX);
 				m_pics.SetCheck (m_settings.pictures ? BST_CHECKED : BST_UNCHECKED);
-				m_macros.Create (L"Include macros (.xlsm): a Parameter Table ribbon tab - bulk edit, "
-								 L"revert, change list, calculators",
-								 WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, CRect (), this, IdMacros);
-				m_macros.SetFont (&m_font);
+				button (m_sim, L"Simulate the stock to measure what each op removes (lathe) - off: Mastercam's "
+							   L"own stock boundaries", IdStockSim, BS_AUTOCHECKBOX);
+				m_sim.SetCheck (m_settings.stockSim ? BST_CHECKED : BST_UNCHECKED);
+				button (m_macros, L"Include macros (.xlsm): a Parameter Table ribbon tab - bulk edit, "
+								  L"revert, change list, calculators", IdMacros, BS_AUTOCHECKBOX);
 				m_macros.SetCheck (m_settings.macros ? BST_CHECKED : BST_UNCHECKED);
 
-				m_ok.Create (L"Dump", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON, CRect (), this, IDOK);
+				button (m_ok, L"Dump", IDOK, BS_DEFPUSHBUTTON);
 				m_ok.SetFont (&m_bold);
-				m_cancel.Create (L"Cancel", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON, CRect (), this, IDCANCEL);
-				m_cancel.SetFont (&m_font);
+				button (m_cancel, L"Cancel", IDCANCEL, BS_PUSHBUTTON);
 
-				// Size: wide enough for the list and the path, tall enough for all of it.
-				const int rows = static_cast<int> ((std::min) (m_kinds.size (), static_cast<size_t> (9)));
-				m_listH = (rows + 1) * (m_u * 3 / 2) + m_u;
-				const int w = m_u * 38;
-				const int h = Layout (w, true);
-				CRect wr (0, 0, w, h);
-				CalcWindowRect (&wr);
+				// Size: wide enough for the tree and the path, tall enough for all of it.
 				CRect work;
 				SystemParametersInfo (SPI_GETWORKAREA, 0, &work, 0);
+				const int rowH = m_tree.GetItemHeight ();
+				const int rows = static_cast<int> ((std::min) (m_ops.size () + m_groups.size (), static_cast<size_t> (16)));
+				m_treeH = (std::max) (6, rows) * rowH + rowH;
+				const int w = m_u * 42;
+				int h = Layout (w, true);
+				if (h > work.Height () * 9 / 10)
+					{
+					m_treeH -= h - work.Height () * 9 / 10;
+					h = Layout (w, true);
+					}
+				CRect wr (0, 0, w, h);
+				CalcWindowRect (&wr);
 				SetWindowPos (nullptr, work.left + (work.Width () - wr.Width ()) / 2,
 							  work.top + (work.Height () - wr.Height ()) / 2, wr.Width (), wr.Height (), SWP_NOZORDER);
 				Layout (w, false);
@@ -195,12 +223,24 @@ namespace
 
 				place (m_opsHead, pad, y, inner, lineH);
 				y += lineH;
-				place (m_all, pad + u, y, inner - u, lineH);
-				y += lineH;
-				place (m_sel, pad + u, y, inner - u, lineH);
-				y += lineH + gap / 2;
-				place (m_list, pad + u, y, inner - u, m_listH);
-				y += m_listH + gap / 2;
+				// All | None | Selected in OM ..... [kind v] Tick | Untick
+				int x = pad + u;
+				const int smallW = u * 4, mgrW = u * 14, kindW = u * 10, tickW = u * 5, untickW = u * 6;
+				place (m_allBtn, x, y, smallW, editH);
+				x += smallW + gap / 2;
+				place (m_noneBtn, x, y, smallW, editH);
+				x += smallW + gap / 2;
+				place (m_mgrBtn, x, y, mgrW, editH);
+				int rx = w - pad - untickW;
+				place (m_kindOff, rx, y, untickW, editH);
+				rx -= tickW + gap / 2;
+				place (m_kindOn, rx, y, tickW, editH);
+				rx -= kindW + gap / 2;
+				if (!measureOnly)
+					m_kind.MoveWindow (rx, y, kindW, editH + u * 12);
+				y += editH + gap / 2;
+				place (m_tree, pad + u, y, inner - u, m_treeH);
+				y += m_treeH + gap / 2;
 				if (!m_skipped.empty ())
 					{
 					place (m_skippedCtl, pad + u, y, inner - u, lineH);
@@ -225,12 +265,12 @@ namespace
 				place (m_tokens, pad + u, y, inner - u, lineH);
 				y += lineH + gap;
 
-				place (m_open, pad, y, inner, lineH);
-				y += lineH;
-				place (m_pics, pad, y, inner, lineH);
-				y += lineH;
-				place (m_macros, pad, y, inner, lineH);
-				y += lineH + gap;
+				for (CButton *b : { &m_open, &m_pics, &m_sim, &m_macros })
+					{
+					place (*b, pad, y, inner, lineH);
+					y += lineH;
+					}
+				y += gap;
 
 				const int okW = u * 13, cW = u * 7;
 				place (m_ok, w - pad - okW - gap - cW, y, okW, btnH);
@@ -242,11 +282,45 @@ namespace
 			int Count () const
 				{
 				int n = 0;
-				for (int i = 0; i < m_list.GetItemCount (); ++i)
-					if (m_list.GetCheck (i))
-						n += m_sel.GetCheck () == BST_CHECKED ? m_kinds[static_cast<size_t> (i)].selected
-															  : m_kinds[static_cast<size_t> (i)].all;
+				for (HTREEITEM h : m_items)
+					n += m_tree.GetCheck (h) ? 1 : 0;
 				return n;
+				}
+
+			bool AllSelectedInMgr () const
+				{
+				int sel = 0, ticked = 0, match = 0;
+				for (size_t i = 0; i < m_items.size (); ++i)
+					{
+					const bool t = m_tree.GetCheck (m_items[i]) != FALSE;
+					sel += m_ops[i].selectedInMgr;
+					ticked += t;
+					match += t && m_ops[i].selectedInMgr;
+					}
+				return sel > 0 && ticked == sel && match == sel;
+				}
+
+			/// A group is ticked when all of its operations are.
+			void SyncGroups ()
+				{
+				for (HTREEITEM g : m_groups)
+					{
+					bool all = true;
+					for (HTREEITEM c = m_tree.GetChildItem (g); c != nullptr; c = m_tree.GetNextSiblingItem (c))
+						all = all && m_tree.GetCheck (c);
+					m_tree.SetCheck (g, all);
+					}
+				}
+
+			void SetWhere (bool (*want) (const DumpDialog::Op &, const std::wstring &), const std::wstring &arg, bool on)
+				{
+				m_filling = true;
+				for (size_t i = 0; i < m_items.size (); ++i)
+					if (want (m_ops[i], arg))
+						m_tree.SetCheck (m_items[i], on);
+				SyncGroups ();
+				m_filling = false;
+				Update ();
 				}
 
 			/// The button and the file name preview follow every change.
@@ -264,7 +338,7 @@ namespace
 				m_folder.GetWindowText (folder);
 				const std::wstring name = FileRules::Name (pat.GetString (),
 														   std::filesystem::path (m_part).stem ().wstring (),
-														   std::time (nullptr), m_sel.GetCheck () == BST_CHECKED,
+														   std::time (nullptr), n < static_cast<int> (m_items.size ()),
 														   static_cast<size_t> (n),
 														   m_macros.GetCheck () == BST_CHECKED ? L".xlsm" : L".xlsx");
 				std::error_code ec;
@@ -292,17 +366,61 @@ namespace
 				m_settings.openExcel = m_open.GetCheck () == BST_CHECKED;
 				m_settings.pictures = m_pics.GetCheck () == BST_CHECKED;
 				m_settings.macros = m_macros.GetCheck () == BST_CHECKED;
-				m_settings.skipKinds.clear ();
-				for (int i = 0; i < m_list.GetItemCount (); ++i)
-					{
-					m_kinds[static_cast<size_t> (i)].on = m_list.GetCheck (i) != FALSE;
-					if (!m_kinds[static_cast<size_t> (i)].on)
-						m_settings.skipKinds += L"|" + m_kinds[static_cast<size_t> (i)].name;
-					}
-				if (!m_settings.skipKinds.empty ())
-					m_settings.skipKinds += L"|";
-				m_selectedOnly = m_sel.GetCheck () == BST_CHECKED;
+				m_settings.stockSim = m_sim.GetCheck () == BST_CHECKED;
+				for (size_t i = 0; i < m_items.size (); ++i)
+					m_ops[i].on = m_tree.GetCheck (m_items[i]) != FALSE;
 				CDialog::OnOK ();
+				}
+
+			afx_msg void OnAll ()
+				{
+				SetWhere ([] (const DumpDialog::Op &, const std::wstring &) { return true; }, L"", true);
+				}
+
+			afx_msg void OnNone ()
+				{
+				SetWhere ([] (const DumpDialog::Op &, const std::wstring &) { return true; }, L"", false);
+				}
+
+			afx_msg void OnMgr ()
+				{
+				m_filling = true;
+				for (size_t i = 0; i < m_items.size (); ++i)
+					m_tree.SetCheck (m_items[i], m_ops[i].selectedInMgr);
+				SyncGroups ();
+				m_filling = false;
+				Update ();
+				}
+
+			afx_msg void OnKind (bool on)
+				{
+				const int sel = m_kind.GetCurSel ();
+				if (sel < 0)
+					return;
+				const std::wstring kind = m_kindNames[static_cast<size_t> (m_kind.GetItemData (sel))];
+				SetWhere ([] (const DumpDialog::Op &o, const std::wstring &k) { return o.kind == k; }, kind, on);
+				}
+			afx_msg void OnKindOn () { OnKind (true); }
+			afx_msg void OnKindOff () { OnKind (false); }
+
+			/// A tick changed: a group passes it to its operations; an operation's
+			/// group follows its operations.
+			afx_msg void OnTreeChanged (NMHDR *nm, LRESULT *result)
+				{
+				*result = 0;
+				if (m_filling)
+					return;
+				const NMTVITEMCHANGE *c = reinterpret_cast<const NMTVITEMCHANGE *> (nm);
+				if (((c->uStateNew ^ c->uStateOld) & TVIS_STATEIMAGEMASK) == 0)
+					return;
+				m_filling = true;
+				const bool on = m_tree.GetCheck (c->hItem) != FALSE;
+				if (m_tree.GetItemData (c->hItem) == static_cast<DWORD_PTR> (-1))
+					for (HTREEITEM k = m_tree.GetChildItem (c->hItem); k != nullptr; k = m_tree.GetNextSiblingItem (k))
+						m_tree.SetCheck (k, on);
+				SyncGroups ();
+				m_filling = false;
+				Update ();
 				}
 
 			afx_msg void OnBrowse ()
@@ -323,12 +441,6 @@ namespace
 
 			afx_msg void OnChange () { Update (); }
 
-			afx_msg void OnItemChanged (NMHDR *, LRESULT *result)
-				{
-				*result = 0;
-				Update ();
-				}
-
 			afx_msg HBRUSH OnCtlColor (CDC *dc, CWnd *wnd, UINT ctl)
 				{
 				HBRUSH br = CDialog::OnCtlColor (dc, wnd, ctl);
@@ -346,43 +458,49 @@ namespace
 
 		private:
 			std::wstring m_part;
-			std::vector<DumpDialog::Kind> &m_kinds;
+			std::vector<DumpDialog::Op> &m_ops;
 			std::wstring m_skipped;
-			bool &m_selectedOnly;
 			Settings::Dump &m_settings;
 			CWnd *m_parent = nullptr;
 			std::vector<WORD> m_tpl;
-			int m_u = 16, m_bigH = 24, m_listH = 100;
+			int m_u = 16, m_bigH = 24, m_treeH = 200;
 			bool m_filling = false, m_previewOk = true;
+
+			std::vector<HTREEITEM> m_items;		// one per op, as m_ops
+			std::vector<HTREEITEM> m_groups;
+			std::vector<std::wstring> m_kindNames;
 
 			CFont m_font, m_bold, m_big;
 			CStatic m_title, m_summary, m_opsHead, m_folderHead, m_nameHead, m_skippedCtl, m_preview, m_tokens;
-			CButton m_all, m_sel, m_browse, m_beside, m_open, m_pics, m_macros, m_ok, m_cancel;
-			CListCtrl m_list;
-			CImageList m_rowImages;
+			CButton m_allBtn, m_noneBtn, m_mgrBtn, m_kindOn, m_kindOff;
+			CButton m_browse, m_beside, m_open, m_pics, m_sim, m_macros, m_ok, m_cancel;
+			CComboBox m_kind;
+			CTreeCtrl m_tree;
 			CEdit m_folder, m_pattern;
 		};
 
 	BEGIN_MESSAGE_MAP (Dlg, CDialog)
 		ON_BN_CLICKED (IdBrowse, &Dlg::OnBrowse)
 		ON_BN_CLICKED (IdBeside, &Dlg::OnBeside)
-		ON_BN_CLICKED (IdAll, &Dlg::OnChange)
-		ON_BN_CLICKED (IdSelected, &Dlg::OnChange)
+		ON_BN_CLICKED (IdAll, &Dlg::OnAll)
+		ON_BN_CLICKED (IdNone, &Dlg::OnNone)
+		ON_BN_CLICKED (IdMgr, &Dlg::OnMgr)
+		ON_BN_CLICKED (IdKindOn, &Dlg::OnKindOn)
+		ON_BN_CLICKED (IdKindOff, &Dlg::OnKindOff)
 		ON_EN_CHANGE (IdPattern, &Dlg::OnChange)
 		ON_EN_CHANGE (IdFolder, &Dlg::OnChange)
 		ON_BN_CLICKED (IdMacros, &Dlg::OnChange)
-		ON_NOTIFY (LVN_ITEMCHANGED, IdKinds, &Dlg::OnItemChanged)
+		ON_NOTIFY (TVN_ITEMCHANGED, IdTree, &Dlg::OnTreeChanged)
 		ON_WM_CTLCOLOR ()
 	END_MESSAGE_MAP ()
 	}
 
 namespace DumpDialog
 	{
-	bool Show (const std::wstring &partFile, std::vector<Kind> &kinds, const std::wstring &skipped,
-			   bool &selectedOnly, Settings::Dump &settings)
+	bool Show (const std::wstring &partFile, std::vector<Op> &ops, const std::wstring &skipped,
+			   Settings::Dump &settings)
 		{
-		Dlg dlg (partFile, kinds, skipped, selectedOnly, settings,
-				 CWnd::FromHandle (get_MainFrame ()->GetSafeHwnd ()));
+		Dlg dlg (partFile, ops, skipped, settings, CWnd::FromHandle (get_MainFrame ()->GetSafeHwnd ()));
 		return dlg.Run () == IDOK;
 		}
 	}
