@@ -612,6 +612,29 @@ namespace
 		return 0;
 		}
 
+	/// A grooving insert's width from the names around it: "5mm", "3.5 mm",
+	/// "W0.125" - "" when none says.
+	std::wstring GrooveWidth (const std::wstring &names)
+		{
+		std::wstring u;
+		for (wchar_t c : names)
+			u += static_cast<wchar_t> (std::towlower (c));
+		for (size_t i = 0; i < u.size (); ++i)
+			{
+			if (!std::iswdigit (u[i]) || (i > 0 && (std::iswalnum (u[i - 1]) || u[i - 1] == L'.')))
+				continue;
+			size_t e = i;
+			while (e < u.size () && (std::iswdigit (u[e]) || u[e] == L'.'))
+				++e;
+			size_t m = e;
+			while (m < u.size () && u[m] == L' ')
+				++m;
+			if (u.compare (m, 2, L"mm") == 0)
+				return u.substr (i, e - i) + L"mm";
+			}
+		return std::wstring ();
+		}
+
 	/// The insert's own data against the shape the stock simulation sweeps; with
 	/// no insert data, an ISO code in the names against it.
 	std::wstring ShapeCheck (const ToolPictures::InsertInfo &in, const StockSim::ToolShape &sim,
@@ -671,7 +694,7 @@ namespace
 		std::wstring up;
 		for (wchar_t c : insert)
 			up += static_cast<wchar_t> (std::towupper (c));
-		if (up.rfind (L"PRIMETURNING", 0) == 0)
+		if (up.rfind (L"PRIMETURNING", 0) == 0 || up.rfind (L"GROOVE", 0) == 0)
 			return std::wstring ();			// not ISO: typed in
 		if (up.find (L"ROUND") != std::wstring::npos)
 			return L"8";
@@ -2287,10 +2310,12 @@ namespace Dump
 			{
 			std::map<long, size_t> bySlot;
 			// The tools that prime turn: their inserts are PrimeTurning ones, not ISO.
-			std::set<long> primeSlots;
+			std::set<long> primeSlots, grooveSlots;
 			for (const Found &f : rows)
 				if (f.t->schema.type == L"PRIME")
 					primeSlots.insert (f.op->tl.slot);
+				else if (f.t->schema.type == L"GROOVE" || f.t->schema.type == L"PLUNGE ROUGH")
+					grooveSlots.insert (f.op->tl.slot);
 			for (size_t d = 0; d < rows.size (); ++d)
 				{
 				const operation *o = rows[d].op;
@@ -2354,6 +2379,16 @@ namespace Dump
 						check.text = ShapeCheck (info, sim, code.text);
 						// A tool that prime turns carries a PrimeTurning insert - not an ISO
 						// shape: its type (A / B) from the names, its nose radius from the outline.
+						// A tool that grooves or plunge roughs carries a grooving insert - not an
+						// ISO turning shape: its width from the names, its nose radius from the outline.
+						if (grooveSlots.count (slot) && !primeSlots.count (slot))
+							{
+							const std::wstring w = GrooveWidth (tr.name + L" " + code.text + L" " + ToolPictures::LatheInsert (slot));
+							label = L"Groove" + (w.empty () ? std::wstring () : L" " + w)
+									+ (sim.ok && sim.noseRadius > 0 ? L" r" + Dim (sim.noseRadius) : std::wstring ());
+							check.text = L"grooving insert" + (w.empty () ? std::wstring (L" (width not in the names)") : L" " + w)
+										 + (sim.ok ? L" - outline " + Dim (sim.size) + L" across" : std::wstring ());
+							}
 						if (primeSlots.count (slot))
 							{
 							const wchar_t type = PrimeType (tr.name + L" " + code.text + L" " + ToolPictures::LatheInsert (slot));
