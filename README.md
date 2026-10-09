@@ -32,7 +32,7 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
   moves as you edit feed, speed, CSS/RPM, max spindle speed or feed mode on that row. The model
   walks the toolpath (lines and arcs, CSS turned to RPM at each diameter, the max-RPM cap, each
   section's own spindle setting) and reproduces Mastercam's cycle time to within seconds.
-- **A Tools sheet** with each lathe tool's picture, linked from the `tool` column.
+- **A Tools sheet** with each tool's picture, linked from the `tool` column.
 - **Optional macros** (an `.xlsm`, off unless ticked): a *Parameter Table* ribbon tab -
   set / scale / copy across selected cells in a window that shows how many cells will change
   or be refused before anything is written, revert cells, rows or everything to the dump, a
@@ -51,8 +51,9 @@ refused row with the reason. **Apply** writes; **Cancel** writes nothing.
 ### Operation kinds
 
 Lathe: rough, finish, dynamic rough, prime turning, face, groove, plunge rough, drill,
-manual entry. Mill (live tooling): contour, drill, 2D dynamic / peel mill. Other kinds are
-listed by the dump as "not read yet".
+manual entry. Mill (live tooling): contour, drill, 2D dynamic / peel mill. Transforms
+(mirror / rotate / translate) are listed read-only: kind, copies, source ops, and their own
+NCI's time. Other kinds are listed by the dump as "not read yet".
 
 ## Safety rules (what a load may change)
 
@@ -90,7 +91,8 @@ toolset built it. The add-in uses only Mastercam's own DLLs, MFC and Windows - n
   radians - the tooltip says so).
 - The time estimate leaves out rapids, dwells and tool changes (they are in the calibration,
   so the estimate starts at Mastercam's figure; only the feed-and-speed part moves).
-- Mill tool pictures are not drawn yet.
+- A contour's `mrr` assumes a full slot (the tool's whole width) unless multi passes say
+  otherwise - an upper bound; a dynamic mill's uses its stepover.
 
 ## Build
 

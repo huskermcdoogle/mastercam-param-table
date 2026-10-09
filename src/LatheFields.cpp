@@ -721,6 +721,34 @@ namespace Lathe
 			t.inspectStart = t.schema.cols.size ();
 			return t;
 			}
+
+		/// TRANSFORM (mirror / rotate / translate of other operations): shown,
+		/// never written - every column read-only. It has no tool or feeds of its
+		/// own (they are its source operations'), so no operation-level set. The
+		/// kind-specific numbers sit in a union, readable only once the type is
+		/// known - the dump words them itself (Xform.h).
+		Table MakeTransform ()
+			{
+			using S = prm_xform;
+			Table t;
+			t.opcode = TP_XFORM;
+			t.schema.type = L"TRANSFORM";
+
+			Add (t, L"xf_type",            Kind::ShortWord, ACC (S, xf_type), true);
+			WordList (t, { L"none", L"mirror", L"rotate", L"translate" });
+			Add (t, L"xf_make_ops",        Kind::Bool,  ACC (S, make_ops), true);
+			Add (t, L"xf_source_geom",     Kind::Bool,  ACC (S, sourceGeom), true);
+			Add (t, L"xf_keep_source",     Kind::Bool,  ACC (S, keep_xf), true);
+			Add (t, L"xf_create_orig",     Kind::Bool,  ACC (S, create_orig), true);
+			Add (t, L"xf_no_post_source",  Kind::Bool,  ACC (S, dont_post_source_ops), true);
+			Add (t, L"xf_sub_pgm",         Kind::Bool,  ACC (S, sub_pgm), true);
+			Add (t, L"xf_woff_mode",       Kind::Short, ACC (S, woff_mode), true);
+			Add (t, L"xf_woff_start",      Kind::Long,  ACC (S, woff_start), true);
+
+			t.opLevelStart = t.schema.cols.size ();
+			t.inspectStart = t.schema.cols.size ();
+			return t;
+			}
 		}
 
 	const std::vector<Table> &AllTables ()
@@ -731,7 +759,7 @@ namespace Lathe
 											   MakeGrooveLike (TP_LPLUNGE_ROUGH, L"PLUNGE ROUGH"),
 											   MakeGrooveLike (TP_LGROOVE, L"GROOVE"),
 											   MakeMillContour (), MakeMillDrill (),
-											   MakeDynamicMill () };
+											   MakeDynamicMill (), MakeTransform () };
 		return tables;
 		}
 
@@ -798,6 +826,7 @@ namespace Lathe
 			case TP_CONTOUR:              return &op.u.prm_cntr;
 			case TP_DRILL:                return &op.u.prm_drl;
 			case TP_2D_HMM:               return &op.u.hmm_2d;
+			case TP_XFORM:                return &op.u.prm_xf;
 			}
 		return nullptr;
 		}

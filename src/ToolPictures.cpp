@@ -8,6 +8,8 @@
 #include "TlInsert_CH.h"
 #include "TlToolGrade_CH.h"
 #include "SetupSheet_CH.h"
+#include "TlToolMill_CH.h"
+#include "ITlBitmapFactory_CH.h"
 
 #include <atlimage.h>
 #include <filesystem>
@@ -17,6 +19,10 @@
 
 namespace ToolPictures
 	{
+	/// A picture as PNG bytes - through a temp file, which is what CImage saves
+	/// to dependably - and its size in pixels.
+	bool ToPng (CImage &img, long slot, std::string &png, int &width, int &height, std::wstring &why);
+
 	InsertInfo LatheInsertInfo (long slot)
 		{
 		InsertInfo r;
@@ -89,6 +95,92 @@ namespace ToolPictures
 			why = L"could not read " + bmp;
 			return false;
 			}
+		return ToPng (img, slot, png, width, height, why);
+		}
+
+	bool MillTool (long slot, std::string &png, int &width, int &height, std::wstring &why)
+		{
+		png.clear ();
+		width = height = 0;
+		// Anything the tool manager throws is a tool with no picture, never a
+		// dump that stops.
+		try
+			{
+			Cnc::Tool::TlMgr *mgr = Cnc::Tool::GetTlMgr ();
+			if (mgr == nullptr)
+				{
+				why = L"no tool manager";
+				return false;
+				}
+			// Through the MILL slot table: a lathe tool can have the same slot number.
+			std::shared_ptr<const Cnc::Tool::TlToolMill> tool;
+			if (!mgr->Find (mgr->IDBySlot (slot), tool) || !tool)
+				{
+				why = L"not a mill tool";
+				return false;
+				}
+
+			// THE TOOL MANAGER'S OWN BITMAP FACTORY, not the setup sheet's
+			// WriteMillToolImage: setup-sheet code reports on operations, and on a
+			// part with two tools sharing a number it asks about them - once per
+			// call. The factory only draws the tool.
+			const Cnc::Tool::ITlBitmapFactoryPtr factory = Cnc::Tool::CreateITlBitmapFactory ();
+			if (!factory)
+				{
+				why = L"no tool bitmap factory";
+				return false;
+				}
+			Cnc::Tool::ITlBitmapFactory::ToolParams params;
+			params.size = Cnc::Tool::ITlBitmapFactory::Size::SetupSheet;
+			params.backgroundColor = RGB (255, 255, 255);
+			const std::unique_ptr<CBitmap> bmp = factory->Create (*tool, params);
+			BITMAP bm = {};
+			if (!bmp || bmp->GetSafeHandle () == nullptr || !bmp->GetBitmap (&bm)
+				|| bm.bmWidth <= 0 || bm.bmHeight <= 0)
+				{
+				why = L"Mastercam drew no picture";
+				return false;
+				}
+
+			// Copied onto a white 24-bit image: the factory's bitmap may carry an
+			// alpha channel of zeros, which a PNG would show as nothing at all.
+			CImage img;
+			if (!img.Create (bm.bmWidth, bm.bmHeight, 24))
+				{
+				why = L"could not make the picture";
+				return false;
+				}
+			bool copied = false;
+			const HDC dst = img.GetDC ();
+			const HDC src = CreateCompatibleDC (dst);
+			if (src != nullptr)
+				{
+				const HGDIOBJ old = SelectObject (src, bmp->GetSafeHandle ());
+				const RECT all = { 0, 0, bm.bmWidth, bm.bmHeight };
+				FillRect (dst, &all, static_cast<HBRUSH> (GetStockObject (WHITE_BRUSH)));
+				copied = BitBlt (dst, 0, 0, bm.bmWidth, bm.bmHeight, src, 0, 0, SRCCOPY) != FALSE;
+				SelectObject (src, old);
+				DeleteDC (src);
+				}
+			img.ReleaseDC ();
+			if (!copied)
+				{
+				why = L"could not copy the picture";
+				return false;
+				}
+			return ToPng (img, slot, png, width, height, why);
+			}
+		catch (...)
+			{
+			png.clear ();
+			width = height = 0;
+			why = L"the tool manager failed drawing it";
+			return false;
+			}
+		}
+
+	bool ToPng (CImage &img, long slot, std::string &png, int &width, int &height, std::wstring &why)
+		{
 		width = img.GetWidth ();
 		height = img.GetHeight ();
 
