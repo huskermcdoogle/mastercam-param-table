@@ -496,11 +496,54 @@ namespace
 		return std::wstring ();
 		}
 
-	/// The insert's own data against the shape the stock simulation sweeps.
-	std::wstring ShapeCheck (const ToolPictures::InsertInfo &in, const StockSim::ToolShape &sim)
+	/// The ISO shape whose nose angle is nearest a measured one (within 6°), or 0.
+	wchar_t NearestShape (double angle)
+		{
+		wchar_t best = 0;
+		double off = 6.0;
+		for (const wchar_t c : std::wstring (L"CDEMVTSWHOP"))
+			{
+			const double a = ShapeName (c).second;
+			if (a > 0 && std::fabs (a - angle) <= off)
+				{
+				off = std::fabs (a - angle);
+				best = c;
+				}
+			}
+		return best;
+		}
+
+	/// The insert as its cutting OUTLINE says (a 3D tool, no insert data): "Round
+	/// 1.069", "C 80° r0.031", else "polygon 91° r0.016".
+	std::wstring OutlineLabel (const StockSim::ToolShape &sim)
+		{
+		if (!sim.ok)
+			return std::wstring ();
+		if (sim.round)
+			return L"Round " + Dim (sim.size);
+		const wchar_t c = NearestShape (sim.noseAngle);
+		const std::wstring r = sim.noseRadius > 0 ? L" r" + Dim (sim.noseRadius) : L"";
+		return (c ? ShapeName (c).first : L"polygon " + Dim (std::round (sim.noseAngle)) + L"°") + r;
+		}
+
+	/// The insert's own data against the shape the stock simulation sweeps; with
+	/// no insert data, an ISO code in the names against it.
+	std::wstring ShapeCheck (const ToolPictures::InsertInfo &in, const StockSim::ToolShape &sim,
+							 const std::wstring &code)
 		{
 		if (!in.ok)
-			return L"no insert data in the tool";
+			{
+			const std::wstring iso = IsoInsertCode (code);
+			if (!sim.ok)
+				return L"no insert data, no outline";
+			if (iso.empty ())
+				return L"no insert data - grouped by its cutting outline";
+			ToolPictures::InsertInfo fromCode;
+			fromCode.ok = true;
+			fromCode.shape = iso[0];
+			const std::wstring c = ShapeCheck (fromCode, sim, std::wstring ());
+			return c == L"ok" ? L"ok (outline matches " + iso + L")" : c + L" (by the code " + iso + L")";
+			}
 		if (!sim.ok)
 			return L"simulation has no outline - nose circle only";
 		const auto [name, angle] = ShapeName (in.shape);
@@ -2029,11 +2072,13 @@ namespace Dump
 						const ToolPictures::InsertInfo info = ToolPictures::LatheInsertInfo (slot);
 						const StockSim::ToolShape sim = StockSim::ShapeOfTool (slot);
 						code.text = ins.text;
-						const std::wstring label = InsertLabel (info);
+						std::wstring label = InsertLabel (info);
+						if (label.empty ())
+							label = OutlineLabel (sim);		// a 3D tool: what its cutting outline is
 						if (!label.empty ())
 							ins.text = label;
 						simShape.text = SimShapeText (sim);
-						check.text = ShapeCheck (info, sim);
+						check.text = ShapeCheck (info, sim, code.text);
 						Util::Log (part, L"tool " + tr.number + L" insert: " + (label.empty () ? L"(no geometry)" : label)
 										 + L" | code " + (code.text.empty () ? L"-" : code.text)
 										 + (info.grade.empty () ? L"" : L" | grade " + info.grade)

@@ -240,45 +240,56 @@ namespace Lathe
 
 		/// The tool inspection block. The same struct sits in all three
 		/// parameter types, so it is declared once.
+		/// The tool inspection columns, for a struct holding prm_ltool_inspect at PATH.
+		#define ADD_INSPECT(S, PATH) \
+			Add (t, L"insp_do_stop",       Kind::Bool,  ACC (S, PATH.do_stop)); \
+			Add (t, L"insp_retract_type",  Kind::Byte,  ACC (S, PATH.stop_retract_type), \
+				 false, 0, 1); \
+			Add (t, L"insp_pt_x",          Kind::Double, ACC (S, PATH.stop_pt[0])); \
+			Add (t, L"insp_pt_y",          Kind::Double, ACC (S, PATH.stop_pt[1])); \
+			Add (t, L"insp_pt_z",          Kind::Double, ACC (S, PATH.stop_pt[2])); \
+			Add (t, L"insp_move_x",        Kind::Bool,  ACC (S, PATH.stop_do_xyz[0])); \
+			Add (t, L"insp_move_y",        Kind::Bool,  ACC (S, PATH.stop_do_xyz[1])); \
+			Add (t, L"insp_move_z",        Kind::Bool,  ACC (S, PATH.stop_do_xyz[2])); \
+			Add (t, L"insp_use_ref_pts",   Kind::Bool,  ACC (S, PATH.stop_use_ref_pts)); \
+			Add (t, L"insp_abs_retract",   Kind::Bool,  ACC (S, PATH.stop_abs_retract)); \
+			Add (t, L"insp_each_groove",   Kind::Bool,  ACC (S, PATH.stop_after_each_groove)); \
+			Add (t, L"insp_each_depth",    Kind::Bool,  ACC (S, PATH.stop_after_each_depth)); \
+			Add (t, L"insp_first_cut",     Kind::Bool,  ACC (S, PATH.stop_after_first_cut)); \
+			Add (t, L"insp_n_cuts_on",     Kind::Bool,  ACC (S, PATH.stop_after_number_of_cuts)); \
+			Add (t, L"insp_n_cuts",        Kind::Int,   ACC (S, PATH.stop_cuts), \
+				 false, 0, 9999); \
+			Add (t, L"insp_time_on",       Kind::Bool,  ACC (S, PATH.stop_after_time)); \
+			Add (t, L"insp_time",          Kind::MinSec, ACC (S, PATH.stop_time)); \
+			Add (t, L"insp_dist_on",       Kind::Bool,  ACC (S, PATH.stop_after_distance)); \
+			Add (t, L"insp_dist",          Kind::Double, ACC (S, PATH.stop_distance), \
+				 false, 0.0); \
+			Add (t, L"insp_comment_on",    Kind::Bool,  ACC (S, PATH.stop_do_comment)); \
+			Add (t, L"insp_comment",       Kind::Text,  ACC (S, PATH.stop_comment), \
+				 false, kNone, kNone, \
+				 sizeof (static_cast<S *> (nullptr)->PATH.stop_comment) / sizeof (TCHAR)); \
+			Add (t, L"insp_between_cuts",  Kind::Bool,  ACC (S, PATH.stop_between_cuts)); \
+			Add (t, L"insp_lead_dist",     Kind::Double, ACC (S, PATH.lead_distance), \
+				 false, 0.0); \
+			Add (t, L"insp_min_cut",       Kind::Double, ACC (S, PATH.min_cut), \
+				 false, 0.0); \
+			Add (t, L"insp_use_lead_in_out", Kind::Bool, ACC (S, PATH.use_lead_in_out)); \
+			Add (t, L"insp_each_section",  Kind::Bool,  ACC (S, PATH.stopAfterEachSection)); \
+			Add (t, L"insp_sections",      Kind::Short, ACC (S, PATH.numberOfSections), \
+				 false, 0, 999); \
+			Add (t, L"insp_at_end",        Kind::Bool,  ACC (S, PATH.stopAfterOperation));
+
 		template <class S>
 		void AddInspect (Table &t)
 			{
-			Add (t, L"insp_do_stop",       Kind::Bool,  ACC (S, inspect.do_stop));
-			Add (t, L"insp_retract_type",  Kind::Byte,  ACC (S, inspect.stop_retract_type),
-				 false, 0, 1);
-			Add (t, L"insp_pt_x",          Kind::Double, ACC (S, inspect.stop_pt[0]));
-			Add (t, L"insp_pt_y",          Kind::Double, ACC (S, inspect.stop_pt[1]));
-			Add (t, L"insp_pt_z",          Kind::Double, ACC (S, inspect.stop_pt[2]));
-			Add (t, L"insp_move_x",        Kind::Bool,  ACC (S, inspect.stop_do_xyz[0]));
-			Add (t, L"insp_move_y",        Kind::Bool,  ACC (S, inspect.stop_do_xyz[1]));
-			Add (t, L"insp_move_z",        Kind::Bool,  ACC (S, inspect.stop_do_xyz[2]));
-			Add (t, L"insp_use_ref_pts",   Kind::Bool,  ACC (S, inspect.stop_use_ref_pts));
-			Add (t, L"insp_abs_retract",   Kind::Bool,  ACC (S, inspect.stop_abs_retract));
-			Add (t, L"insp_each_groove",   Kind::Bool,  ACC (S, inspect.stop_after_each_groove));
-			Add (t, L"insp_each_depth",    Kind::Bool,  ACC (S, inspect.stop_after_each_depth));
-			Add (t, L"insp_first_cut",     Kind::Bool,  ACC (S, inspect.stop_after_first_cut));
-			Add (t, L"insp_n_cuts_on",     Kind::Bool,  ACC (S, inspect.stop_after_number_of_cuts));
-			Add (t, L"insp_n_cuts",        Kind::Int,   ACC (S, inspect.stop_cuts),
-				 false, 0, 9999);
-			Add (t, L"insp_time_on",       Kind::Bool,  ACC (S, inspect.stop_after_time));
-			Add (t, L"insp_time",          Kind::MinSec, ACC (S, inspect.stop_time));
-			Add (t, L"insp_dist_on",       Kind::Bool,  ACC (S, inspect.stop_after_distance));
-			Add (t, L"insp_dist",          Kind::Double, ACC (S, inspect.stop_distance),
-				 false, 0.0);
-			Add (t, L"insp_comment_on",    Kind::Bool,  ACC (S, inspect.stop_do_comment));
-			Add (t, L"insp_comment",       Kind::Text,  ACC (S, inspect.stop_comment),
-				 false, kNone, kNone,
-				 sizeof (static_cast<S *> (nullptr)->inspect.stop_comment) / sizeof (TCHAR));
-			Add (t, L"insp_between_cuts",  Kind::Bool,  ACC (S, inspect.stop_between_cuts));
-			Add (t, L"insp_lead_dist",     Kind::Double, ACC (S, inspect.lead_distance),
-				 false, 0.0);
-			Add (t, L"insp_min_cut",       Kind::Double, ACC (S, inspect.min_cut),
-				 false, 0.0);
-			Add (t, L"insp_use_lead_in_out", Kind::Bool, ACC (S, inspect.use_lead_in_out));
-			Add (t, L"insp_each_section",  Kind::Bool,  ACC (S, inspect.stopAfterEachSection));
-			Add (t, L"insp_sections",      Kind::Short, ACC (S, inspect.numberOfSections),
-				 false, 0, 999);
-			Add (t, L"insp_at_end",        Kind::Bool,  ACC (S, inspect.stopAfterOperation));
+			ADD_INSPECT (S, inspect);
+			}
+
+		/// Prime turning: its roughing passes' inspection (where the stops are).
+		template <class S>
+		void AddInspectPrime (Table &t)
+			{
+			ADD_INSPECT (S, rough.inspect);
 			}
 
 		Table MakeRough ()
@@ -612,6 +623,7 @@ namespace Lathe
 			t.opLevelStart = t.schema.cols.size ();
 			AddOpLevel (t);
 			t.inspectStart = t.schema.cols.size ();	// no inspection columns for this kind
+			AddInspectPrime<S> (t);
 			return t;
 			}
 		}
