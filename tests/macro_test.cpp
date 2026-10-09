@@ -72,6 +72,41 @@ int main (int argc, char **argv)
 	s.validations.push_back (v);
 	}
 
+	// A Tools page with live columns and an inserts table under it, and a column
+	// formatted as Text (what keeps a typed 9:00 from becoming a time of day).
+	s.textFormat.assign (16, 0);
+	s.textFormat[15] = 1;
+	{
+	Xlsx::Sheet::ToolRow t1, t3;
+	t1.number = L"1";
+	t1.name = L"OD ROUGH";
+	t1.usedBy = L"op 2";
+	t3.number = L"3";
+	t3.name = L"OD FINISH";
+	t3.usedBy = L"op 7";
+	Xlsx::Sheet::FreeCell ins, flips;
+	ins.text = L"CNMG 432";
+	flips.formula = L"SUMIF('Lathe params'!$C$3:$C$4,$A2,'Lathe params'!$I$3:$I$4)";
+	flips.text = L"200";
+	t1.extra = { ins, flips };
+	flips.formula = L"SUMIF('Lathe params'!$C$3:$C$4,$A3,'Lathe params'!$I$3:$I$4)";
+	flips.text = L"300";
+	t3.extra = { ins, flips };
+	s.tools = { t1, t3 };
+	s.toolExtraHeads = { L"Insert", L"Flips / part" };
+	Xlsx::Sheet::FreeCell h, name, edges, total, per;
+	h.head = true;
+	h.text = L"Insert";
+	name.text = L"CNMG 432";
+	edges.text = L"4";
+	edges.editable = true;
+	total.formula = L"SUMIF($D$2:$D$3,$B6,$E$2:$E$3)";
+	total.text = L"500";
+	per.formula = L"IF(N($C6)>0,ROUND($D6/$C6,2),\"\")";
+	per.text = L"125";
+	s.toolsAfter = { { Xlsx::Sheet::FreeCell (), h }, { Xlsx::Sheet::FreeCell (), name, edges, total, per } };
+	}
+
 	s.vbaProject = slurp (argv[2]);
 	s.ribbonXml = slurp (argv[3]);
 	if (s.vbaProject.empty () || s.ribbonXml.empty ())

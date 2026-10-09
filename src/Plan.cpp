@@ -21,7 +21,8 @@ namespace Plan
 			L"group_name", L"units", L"needs_regen", L"coolant_text", L"coolant_x", L"canned_text_raw", L"changes",
 			L"cycle_time", L"cycle_time_raw", L"travel_x_min", L"travel_x_max", L"travel_z_min",
 			L"travel_z_max", L"cut_length", L"rapid_length", L"feed_groups",
-			L"est_cycle_time", L"time_change", L"est_seconds" };
+			L"est_cycle_time", L"time_change", L"est_seconds",
+			L"flips", L"flips_est", L"flips_why", L"flip_longest", L"insp_mode", L"cut_seconds_est" };
 		for (const wchar_t *n : info)
 			if (name == n)
 				return true;

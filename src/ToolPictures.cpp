@@ -3,6 +3,7 @@
 #include "ToolPictures.h"
 #include "TlServices_CH.h"
 #include "TlMgr_CH.h"
+#include "ILTool_CH.h"
 #include "SetupSheet_CH.h"
 
 #include <atlimage.h>
@@ -12,6 +13,16 @@
 
 namespace ToolPictures
 	{
+	std::wstring LatheInsert (long slot)
+		{
+		Cnc::Tool::TlMgr *mgr = Cnc::Tool::GetTlMgr ();
+		Cnc::Tool::ILToolCPtr tool;
+		if (mgr == nullptr || !mgr->Find (slot, tool) || !tool)
+			return std::wstring ();
+		const CString name = tool->GetInsertName ();
+		return std::wstring (name.GetString ());
+		}
+
 	bool LatheTool (long slot, std::string &png, int &width, int &height, std::wstring &why)
 		{
 		png.clear ();

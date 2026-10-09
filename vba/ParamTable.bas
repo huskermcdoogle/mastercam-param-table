@@ -60,7 +60,7 @@ End Function
 ' Calculated columns - their value follows edits elsewhere and is not an edit itself.
 Private Function Untracked(ByVal header As String) As Boolean
     Select Case header
-        Case "changes", "est_seconds", "est_cycle_time", "time_change": Untracked = True
+        Case "changes", "est_seconds", "est_cycle_time", "time_change", "flips_est", "cut_seconds_est": Untracked = True
     End Select
 End Function
 

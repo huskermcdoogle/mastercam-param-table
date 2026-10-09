@@ -30,3 +30,6 @@ tests/*.xlsm
 !tests/fixtures/*.xlsx
 tests/~$*
 res/*POST*/
+
+# Anything dropped in from the work machine - never published
+tests/temp/

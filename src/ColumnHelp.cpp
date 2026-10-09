@@ -127,6 +127,19 @@ namespace ColumnHelp
 			{ L"tplane_id",  L"Tool plane ID. Shown, never written." },
 			{ L"wcs_id",     L"Work coordinate system ID. Shown, never written." },
 			{ L"group_id",   L"Toolpath group ID. Shown, never written." },
+
+			// Tool inspection and insert flips
+			{ L"insp_time",      L"Tool inspection: feed time between stops, as minutes:seconds (9:00) - or seconds (540)." },
+			{ L"insp_dist",      L"Tool inspection: cut length between stops." },
+			{ L"insp_between_cuts", L"1 = stop only between cuts (the real interval runs over the setting); 0 = stop mid-cut." },
+			{ L"insp_min_cut",   L"Mid-cut stops: a pass with less than this left is finished first." },
+			{ L"insp_at_end",    L"Tool inspection stop at the end of the operation." },
+			{ L"flips",          L"Insert flips in the toolpath as it is: inspection stops whose comment changes the insert (CHANGE/ROTATE INSERT)." },
+			{ L"flips_est",      L"Insert flips per part, LIVE: follows feeds, speeds and the inspection settings. Equal to flips until something changes." },
+			{ L"flips_why",      L"Why each flip happened: time, distance, cuts (number of cuts, first cut, each depth) or end of the operation." },
+			{ L"flip_longest",   L"The most feed time between flips (or from the start / to the end) - the longest any edge cuts." },
+			{ L"insp_mode",      L"How stops are placed: between cuts only, or mid-cut (finishing a pass that is nearly done)." },
+			{ L"cut_seconds_est", L"Feed time in seconds, LIVE - the cutting part of the estimate; the Tools page sums it per tool." },
 			};
 		const auto it = help.find (name);
 		if (it != help.end ())

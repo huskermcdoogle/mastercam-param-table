@@ -143,16 +143,21 @@ namespace Xlsx
 			{
 			struct Key
 				{
-				int fill, font;
+				int fill, font, fmt;
 				bool operator< (const Key &o) const
-					{ return fill != o.fill ? fill < o.fill : font < o.font; }
+					{
+					if (fill != o.fill) return fill < o.fill;
+					if (font != o.font) return font < o.font;
+					return fmt < o.fmt;
+					}
 				};
 			std::map<Key, int> ids;
 			std::vector<Key> order;
 			Styles () { Get (0, 0); }
-			int Get (int fill, int font)
+			/// fmt: a built-in number format - 0 General, 49 Text.
+			int Get (int fill, int font, int fmt = 0)
 				{
-				const Key k = { fill, font };
+				const Key k = { fill, font, fmt };
 				auto it = ids.find (k);
 				if (it != ids.end ())
 					return it->second;
@@ -190,9 +195,11 @@ namespace Xlsx
 				o += std::to_string (order.size ()) + "\">";
 				for (const Key &k : order)
 					{
-					o += "<xf numFmtId=\"0\" fontId=\"" + std::to_string (k.font)
+					o += "<xf numFmtId=\"" + std::to_string (k.fmt) + "\" fontId=\"" + std::to_string (k.font)
 						 + "\" fillId=\"" + std::to_string (k.fill)
 						 + "\" borderId=\"0\" xfId=\"0\"";
+					if (k.fmt != 0)
+						o += " applyNumberFormat=\"1\"";
 					if (k.fill != 0)
 						o += " applyFill=\"1\"";
 					if (k.font != 0)
@@ -507,7 +514,8 @@ namespace Xlsx
 				const std::wstring fx = r - 1 < s.formula.size () && c < s.formula[r - 1].size ()
 											? s.formula[r - 1][c] : std::wstring ();
 				const bool derived = !fx.empty () && IsPlainNumber (t);
-				const int style = na || ro || derived ? st.Get (FGrey, 2) : st.Get (kind, 0);
+				const int style = na || ro || derived ? st.Get (FGrey, 2)
+														: st.Get (kind, 0, flag (s.textFormat, c) ? 49 : 0);
 				if (track && c == changesCol)
 					sd += "<c r=\"" + ColName (c) + std::to_string (xr) + "\" s=\""
 						  + std::to_string (st.Get (FGrey, 1)) + "\"><f>" + changesFormula (xr)
@@ -654,16 +662,22 @@ namespace Xlsx
 			const int boxW = 220, boxH = 145;		// the picture's room, pixels
 			const std::string ns = "xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
 								   "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"";
+			const size_t nExtra = s.toolExtraHeads.size ();
+			const size_t picCol = 3 + nExtra;
 			toolsXml = decl + "<worksheet " + ns + ">"
 					   "<sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"1\" topLeftCell=\"A2\" "
 					   "activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews>"
 					   "<sheetFormatPr defaultRowHeight=\"15\"/><cols>"
 					   "<col min=\"1\" max=\"1\" width=\"8\" customWidth=\"1\"/>"
 					   "<col min=\"2\" max=\"2\" width=\"40\" customWidth=\"1\"/>"
-					   "<col min=\"3\" max=\"3\" width=\"30\" customWidth=\"1\"/>"
-					   "<col min=\"4\" max=\"4\" width=\"33\" customWidth=\"1\"/>"
-					   "</cols><sheetData>";
+					   "<col min=\"3\" max=\"3\" width=\"30\" customWidth=\"1\"/>";
+			if (nExtra > 0)
+				toolsXml += "<col min=\"4\" max=\"" + std::to_string (3 + nExtra)
+							+ "\" width=\"16\" customWidth=\"1\"/>";
+			toolsXml += "<col min=\"" + std::to_string (picCol + 1) + "\" max=\"" + std::to_string (picCol + 1)
+						+ "\" width=\"33\" customWidth=\"1\"/></cols><sheetData>";
 			const int head = st.Get (FGroup0, 1);
+			const int grey = st.Get (FGrey, 2);
 			auto cell = [&] (size_t r, size_t c, const std::wstring &t, int style)
 				{
 				std::string o = "<c r=\"" + ColName (c) + std::to_string (r) + "\" s=\"" + std::to_string (style) + "\"";
@@ -671,8 +685,23 @@ namespace Xlsx
 					return o + "/>";
 				return o + " t=\"inlineStr\"><is><t xml:space=\"preserve\">" + Esc (t) + "</t></is></c>";
 				};
+			auto freeCell = [&] (size_t r, size_t c, const Sheet::FreeCell &f)
+				{
+				const int style = f.head ? head : f.editable ? 0 : grey;
+				const std::string at = "<c r=\"" + ColName (c) + std::to_string (r) + "\" s=\"" + std::to_string (style) + "\"";
+				if (!f.formula.empty ())
+					return IsPlainNumber (f.text)
+							   ? at + "><f>" + Esc (f.formula) + "</f><v>" + Esc (f.text) + "</v></c>"
+							   : at + " t=\"str\"><f>" + Esc (f.formula) + "</f><v>" + Esc (f.text) + "</v></c>";
+				if (!f.head && !f.text.empty () && IsPlainNumber (f.text))
+					return at + "><v>" + Esc (f.text) + "</v></c>";
+				return cell (r, c, f.text, style);
+				};
 			toolsXml += "<row r=\"1\">" + cell (1, 0, L"Tool", head) + cell (1, 1, L"Name", head)
-						+ cell (1, 2, L"Used by", head) + cell (1, 3, L"Picture", head) + "</row>";
+						+ cell (1, 2, L"Used by", head);
+			for (size_t e = 0; e < nExtra; ++e)
+				toolsXml += cell (1, 3 + e, s.toolExtraHeads[e], head);
+			toolsXml += cell (1, picCol, L"Picture", head) + "</row>";
 
 			std::string anchors;
 			for (size_t k = 0; k < s.tools.size (); ++k)
@@ -682,8 +711,10 @@ namespace Xlsx
 				const bool pic = !t.png.empty () && t.width > 0 && t.height > 0;
 				toolsXml += "<row r=\"" + std::to_string (r) + "\""
 							+ std::string (pic ? " ht=\"115\" customHeight=\"1\"" : "") + ">"
-							+ cell (r, 0, t.number, 0) + cell (r, 1, t.name, 0) + cell (r, 2, t.usedBy, 0)
-							+ "</row>";
+							+ cell (r, 0, t.number, 0) + cell (r, 1, t.name, 0) + cell (r, 2, t.usedBy, 0);
+				for (size_t e = 0; e < t.extra.size () && e < nExtra; ++e)
+					toolsXml += freeCell (r, 3 + e, t.extra[e]);
+				toolsXml += "</row>";
 				if (!pic)
 					continue;
 				const size_t n = media.size () + 1;
@@ -692,7 +723,7 @@ namespace Xlsx
 												  static_cast<double> (boxH) / t.height);
 				const long long cx = static_cast<long long> (t.width * scale * 9525.0);
 				const long long cy = static_cast<long long> (t.height * scale * 9525.0);
-				anchors += "<xdr:oneCellAnchor><xdr:from><xdr:col>3</xdr:col><xdr:colOff>38100</xdr:colOff>"
+				anchors += "<xdr:oneCellAnchor><xdr:from><xdr:col>" + std::to_string (picCol) + "</xdr:col><xdr:colOff>38100</xdr:colOff>"
 						   "<xdr:row>" + std::to_string (r - 1) + "</xdr:row><xdr:rowOff>38100</xdr:rowOff></xdr:from>"
 						   "<xdr:ext cx=\"" + std::to_string (cx) + "\" cy=\"" + std::to_string (cy) + "\"/>"
 						   "<xdr:pic><xdr:nvPicPr><xdr:cNvPr id=\"" + std::to_string (n + 1) + "\" name=\"Tool "
@@ -703,6 +734,14 @@ namespace Xlsx
 				drawingRels += "<Relationship Id=\"rId" + std::to_string (n) + "\" Type=\"http://schemas.openxmlformats.org/"
 							   "officeDocument/2006/relationships/image\" Target=\"../media/image" + std::to_string (n)
 							   + ".png\"/>";
+				}
+			for (size_t k = 0; k < s.toolsAfter.size (); ++k)
+				{
+				const size_t r = s.tools.size () + 3 + k;
+				toolsXml += "<row r=\"" + std::to_string (r) + "\">";
+				for (size_t c = 0; c < s.toolsAfter[k].size (); ++c)
+					toolsXml += freeCell (r, c, s.toolsAfter[k][c]);
+				toolsXml += "</row>";
 				}
 			toolsXml += "</sheetData>";
 			if (!media.empty ())

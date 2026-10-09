@@ -1,4 +1,4 @@
-﻿<#
+<#
     Real-Excel check of the workbook macros: opens macro_sample.xlsm (tests\macro_test.exe)
     with macros enabled and drives them - two-way links, cross-checks, the cell rules on
     bulk writes, scale, copy, the change list and revert.
@@ -118,6 +118,15 @@ try {
     Check ($t -like "3820|*Above this row's max_ss*") "a small diameter goes past max_ss and says so ('$t')"
     $t = $xl.Run("ParamTable.CalcSelfTest", $ws.Range("G3"), "txtDia=14;txtRpm=100")
     Check ($t -like "100|366.5|0.01|1.0|*") "typing RPM gives the surface speed back ('$t')"
+
+    # The Tools page: live sums from the main sheet, the inserts table under it.
+    $tl = $wb.Worksheets.Item("Tools")
+    $xl.Calculate()
+    Check ($tl.Range("E2").Value2 -eq 200 -and $tl.Range("E3").Value2 -eq 300) "Tools page sums per tool ($($tl.Range('E2').Value2), $($tl.Range('E3').Value2))"
+    Check ($tl.Range("D6").Value2 -eq 500 -and $tl.Range("E6").Value2 -eq 125) "inserts table: 500 per part, 125 inserts at 4 edges ($($tl.Range('D6').Value2), $($tl.Range('E6').Value2))"
+    $tl.Range("C6").Value2 = 2
+    Check ($tl.Range("E6").Value2 -eq 250) "2 edges per insert: 250 inserts ($($tl.Range('E6').Value2))"
+    Check ($ws.Range("P4").NumberFormat -eq "@") "a Text-formatted column keeps what is typed ($($ws.Range('P4').NumberFormat))"
 
     # Calculators.
     $rpm = $xl.Run("ParamTable.RpmFromSurface", 14, 200, $false)

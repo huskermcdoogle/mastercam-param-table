@@ -68,6 +68,14 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+echo === inspect_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\inspect_test.exe" ^
+    "%~dp0inspect_test.cpp" "%~dp0..\src\Inspect.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\inspect_test.exe"
+    if errorlevel 1 set FAILED=1
+)
+
 echo === filerules_test ===
 cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\filerules_test.exe" ^
     "%~dp0filerules_test.cpp" "%~dp0..\src\FileRules.cpp"

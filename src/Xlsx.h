@@ -35,6 +35,10 @@ namespace Xlsx
 		/// Per column: always a string, never a number (comment, type ...).
 		std::vector<char> text;
 
+		/// Per column: the cells are formatted as Text, so what is TYPED stays as
+		/// typed - "9:00" is not turned into a time of day.
+		std::vector<char> textFormat;
+
 		/// Per DATA row, per column: the column does not apply to this row's
 		/// kind of operation (blank in the CSV) - drawn grey.
 		std::vector<std::vector<char>> notApplicable;
@@ -83,13 +87,27 @@ namespace Xlsx
 
 		/// THE TOOLS PAGE: one row per tool, with its picture when there is one.
 		/// Empty = no Tools sheet.
+		/// A cell of the Tools page beyond the fixed columns: text, or a number,
+		/// or a formula (no leading '=') with `text` its cached result.
+		struct FreeCell
+			{
+			std::wstring text;
+			std::wstring formula;
+			bool head = false;			//!< drawn as a heading
+			bool editable = false;		//!< drawn as a cell to type in (not grey)
+			};
 		struct ToolRow
 			{
 			std::wstring number, name, usedBy;
+			std::vector<FreeCell> extra;	//!< after "Used by", headed by toolExtraHeads
 			std::string png;			//!< PNG bytes, or empty
 			int width = 0, height = 0;	//!< the picture's pixels
 			};
 		std::vector<ToolRow> tools;
+		std::vector<std::wstring> toolExtraHeads;
+
+		/// Rows written under the tools, after one blank row (a summary table).
+		std::vector<std::vector<FreeCell>> toolsAfter;
 
 		/// Main-sheet cells that link to a Tools row: (A1 cell, index into tools).
 		std::vector<std::pair<std::string, size_t>> toolLinks;

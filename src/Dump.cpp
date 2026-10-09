@@ -11,6 +11,9 @@
 #include "Estimate.h"
 #include "DumpDialog.h"
 #include "Settings.h"
+#include "Inspect.h"
+
+#include <cwctype>
 #include "FileRules.h"
 #include "ToolPictures.h"
 #include "resource.h"
@@ -96,13 +99,14 @@ namespace
 	const std::vector<std::wstring> kGroupNames = {
 		L"Identity", L"Feeds and speeds", L"Depth of cut", L"Stock to leave", L"Coolant",
 		L"Toolpath", L"Home position", L"Reference points", L"Planes", L"Filter",
-		L"Where it sits (read-only)", L"Tool inspection", L"Toolpath stats (read-only)" };
+		L"Where it sits (read-only)", L"Tool inspection", L"Toolpath stats (read-only)",
+		L"Insert flips (read-only)" };
 	enum { GIdentity, GFeeds, GDepth, GStock, GCoolant, GToolpath,
-		   GHome, GRef, GPlanes, GFilter, GWhere, GInspect, GStats };
+		   GHome, GRef, GPlanes, GFilter, GWhere, GInspect, GStats, GFlips };
 
 	/// Groups with a +/- of their own, and the ones that start folded away -
 	/// rarely edited, still one click from view.
-	const int kOutlined[] = { GFeeds, GDepth, GStock, GCoolant, GStats, GToolpath, GHome,
+	const int kOutlined[] = { GFeeds, GDepth, GStock, GCoolant, GStats, GFlips, GToolpath, GHome,
 							  GRef, GPlanes, GFilter, GWhere, GInspect };
 	const int kCollapsed[] = { GRef, GFilter, GWhere, GInspect };
 
@@ -125,6 +129,11 @@ namespace
 		std::wstring time, timeRaw, xMin, xMax, zMin, zMax, cut, rapid;
 		double seconds = 0;
 		Paths::Totals path;
+
+		/// Tool inspection: the op's settings and what its NCI did with them.
+		bool inspOk = false;
+		Inspect::Settings insp;
+		Inspect::Result inspRes;
 		};
 
 	Stats StatsOf (operation *pOp)
@@ -385,9 +394,34 @@ namespace
 		return s;
 		}
 
+	/// A sheet cell's time in SECONDS, whatever was typed: "9:00", "1:02:30", 540,
+	/// or a value Excel turned into a time of day.
+	std::wstring SecondsOf (const std::wstring &c)
+		{
+		return L"IF(ISNUMBER(" + c + L"),IF(" + c + L"<1," + c + L"*86400," + c + L"),IFERROR(IF(LEN(" + c
+			   + L")-LEN(SUBSTITUTE(" + c + L",\":\",\"\"))=1,TIMEVALUE(\"0:\"&" + c + L"),TIMEVALUE(" + c
+			   + L"))*86400,VALUE(" + c + L")))";
+		}
+
+	/// Edges per insert, guessed from its name: a CNMG has four, a V-bottom two,
+	/// a round about eight (fewer with heavy wear). Typed over on the sheet.
+	std::wstring EdgesGuess (const std::wstring &insert)
+		{
+		std::wstring u;
+		for (wchar_t c : insert)
+			u += static_cast<wchar_t> (std::towupper (c));
+		if (u.find (L"CNMG") != std::wstring::npos || u.find (L"CNMA") != std::wstring::npos)
+			return L"4";
+		if (u.find (L"ROUND") != std::wstring::npos || u.rfind (L"RC", 0) == 0 || u.rfind (L"RN", 0) == 0)
+			return L"8";
+		if (u.find (L"V") != std::wstring::npos)
+			return L"2";
+		return std::wstring ();
+		}
+
 	bool WriteXlsx (const std::filesystem::path &file, const std::vector<Csv::Row> &out,
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
-					const std::vector<Stats> &stats, const std::vector<Xlsx::Sheet::ToolRow> &tools,
+					const std::vector<Stats> &stats, std::vector<Xlsx::Sheet::ToolRow> tools,
 					const std::vector<int> &toolOfRow, bool macros)
 		{
 		Xlsx::Sheet s;
@@ -411,6 +445,7 @@ namespace
 			s.group.push_back (c.group);
 			s.readOnly.push_back (c.readOnly);
 			s.text.push_back (c.text);
+			s.textFormat.push_back (c.name == L"insp_time");	// "9:00" stays "9:00"
 			}
 
 		for (const Found &f : rows)
@@ -466,6 +501,10 @@ namespace
 				}
 			}
 
+		// The model's feed seconds at the dumped values, per row with a live estimate
+		// (NaN: none) - what the insert-flip estimate scales from.
+		std::vector<double> modelOf (rows.size (), std::nan (""));
+
 		// ---- THE LIVE ESTIMATE. Per operation: Mastercam's own time, minus what
 		// the model says at the dumped values, plus the model at the sheet's
 		// CURRENT values - so it starts equal to Mastercam's figure and moves
@@ -477,7 +516,7 @@ namespace
 		const int changeCol = colOf (L"time_change");
 		const int rawCol = colOf (L"cycle_time_raw");
 		s.untracked.assign (columns.size (), 0);
-		for (int c : { estCol, estText, changeCol })
+		for (int c : { estCol, estText, changeCol, colOf (L"flips_est"), colOf (L"cut_seconds_est") })
 			if (c >= 0)
 				s.untracked[static_cast<size_t> (c)] = 1;
 
@@ -531,9 +570,10 @@ namespace
 
 			std::vector<Estimate::Group> groups = st.path.groups;
 			std::wstring formula;
+			double model = 0;
 			for (int attempt = 0; attempt < 3; ++attempt)
 				{
-				double model = 0;
+				model = 0;
 				std::wstring terms;
 				for (const Estimate::Group &g : groups)
 					{
@@ -610,6 +650,7 @@ namespace
 
 			const std::wstring est = letters (static_cast<size_t> (estCol)) + rowNo;
 			s.formula[d][static_cast<size_t> (estCol)] = formula;
+			modelOf[d] = model;
 			if (estText >= 0)
 				s.formula[d][static_cast<size_t> (estText)] =
 					L"IF(ISNUMBER(" + est + L"),TEXT(" + est + L"/86400,\"[h]:mm:ss\"),\"\")";
@@ -622,6 +663,176 @@ namespace
 				}
 			}
 		}
+
+		// ---- INSERT FLIPS, LIVE. Feed time now = the live estimate less Mastercam's
+		// figure plus the model at the dumped values - the model at the sheet's
+		// CURRENT values. Each cause of a flip scales on its own, calibrated so the
+		// dumped values give the NCI's own count exactly:
+		//   time      INT(feed now / interval * c), c = interval0 * (n + 0.5) / feed0 -
+		//             the real interval runs over the setting (stops wait for a gap
+		//             between cuts), and c carries that over; n + 0.5 keeps the
+		//             count from flipping on a hair's change.
+		//   distance  the same on cut length, which feeds and speeds do not change.
+		//   end, cuts as dumped; the end stop follows its switch.
+		// Time is on but nothing stopped (a long cut with no gap)? It stays at 0.
+		{
+		const int flipsEst = colOf (L"flips_est");
+		const int cutEst = colOf (L"cut_seconds_est");
+		const int rawCol = colOf (L"cycle_time_raw");
+		const int estCol = colOf (L"est_seconds");
+		auto full = [] (double v)
+			{
+			wchar_t buf[40];
+			swprintf_s (buf, L"%.12g", v);
+			return std::wstring (buf);
+			};
+		for (size_t d = 0; d < rows.size () && d < stats.size (); ++d)
+			{
+			const Stats &st = stats[d];
+			if (!st.path.ok)
+				continue;
+			const Lathe::Table &t = *rows[d].t;
+			const std::wstring rowNo = std::to_wstring (d + 3);
+			auto has = [&] (const wchar_t *name)
+				{ return colOf (name) >= 0 && Lathe::IndexOf (t, name) >= 0; };
+			auto ref = [&] (const wchar_t *name)
+				{ return letters (static_cast<size_t> (colOf (name))) + rowNo; };
+
+			const bool live = !std::isnan (modelOf[d]) && rawCol >= 0 && estCol >= 0;
+			const double feed0 = live ? modelOf[d] : st.path.feedSeconds;
+			const std::wstring feedNow = live ? L"(" + letters (static_cast<size_t> (estCol)) + rowNo + L"-"
+													+ letters (static_cast<size_t> (rawCol)) + rowNo + L"+"
+													+ full (modelOf[d]) + L")"
+											  : full (feed0);
+			if (cutEst >= 0 && live)
+				{
+				s.formula[d][static_cast<size_t> (cutEst)] = feedNow.substr (1, feedNow.size () - 2);
+				s.rows[d + 1][static_cast<size_t> (cutEst)] = Csv::Tidy (feed0);
+				}
+
+			const Inspect::Settings &is = st.insp;
+			const Inspect::Result &r = st.inspRes;
+			if (flipsEst < 0 || !st.inspOk || !is.doStop || !has (L"insp_do_stop"))
+				continue;
+			if (r.flips == 0 && !Inspect::IsFlip (is.comment))
+				continue;						// its stops are not flips: 0 whatever changes
+
+			std::wstring terms = std::to_wstring (r.other);
+			if (has (L"insp_time_on") && has (L"insp_time") && feed0 > 0)
+				{
+				double c = 1;
+				if (r.byTime > 0)
+					c = is.time * (r.byTime + 0.5) / feed0;
+				else if (is.timeOn && is.time > 0 && feed0 >= is.time)
+					c = 0;
+				if (c > 0)
+					terms += L"+IF(" + ref (L"insp_time_on") + L"=1,IFERROR(INT(" + feedNow + L"/"
+							 + SecondsOf (ref (L"insp_time")) + L"*" + full (c) + L"),0),0)";
+				}
+			if (has (L"insp_dist_on") && has (L"insp_dist") && st.path.cutLength > 0)
+				{
+				const double len = st.path.cutLength;
+				double c = 1;
+				if (r.byDist > 0)
+					c = is.dist * (r.byDist + 0.5) / len;
+				else if (is.distOn && is.dist > 0 && len >= is.dist)
+					c = 0;
+				if (c > 0)
+					terms += L"+IF(" + ref (L"insp_dist_on") + L"=1,IFERROR(INT(" + full (len) + L"/"
+							 + ref (L"insp_dist") + L"*" + full (c) + L"),0),0)";
+				}
+			if (has (L"insp_at_end"))
+				{
+				const int e = r.atEnd > 0 ? 1 : (is.atEnd ? 0 : 1);
+				if (e > 0)
+					terms += L"+IF(" + ref (L"insp_at_end") + L"=1,1,0)";
+				}
+			s.formula[d][static_cast<size_t> (flipsEst)] = L"IF(" + ref (L"insp_do_stop") + L"=1," + terms + L",0)";
+			}
+
+		// ---- THE TOOLS PAGE: per tool, its insert and - live - flips and cut time
+		// per part, summed from the main sheet by tool number; then per insert.
+		const int toolCol = colOf (L"tool");
+		if (!tools.empty () && toolCol >= 0 && flipsEst >= 0 && cutEst >= 0)
+			{
+			const std::wstring last = std::to_wstring (rows.size () + 2);
+			auto range = [&] (int c)
+				{
+				const std::wstring l = letters (static_cast<size_t> (c));
+				return L"'Lathe params'!$" + l + L"$3:$" + l + L"$" + last;
+				};
+			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips" };
+			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
+			for (size_t d = 0; d < rows.size () && d < stats.size (); ++d)
+				if (d < toolOfRow.size () && toolOfRow[d] >= 0)
+					{
+					const size_t k = static_cast<size_t> (toolOfRow[d]);
+					flipsOf[k] += stats[d].inspRes.flips;
+					double v = 0;
+					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], v))
+						cutOf[k] += v;
+					longOf[k] = (std::max) (longOf[k], stats[d].inspRes.longest);
+					}
+			std::map<std::wstring, std::vector<size_t>> byInsert;
+			for (size_t k = 0; k < tools.size (); ++k)
+				{
+				Xlsx::Sheet::ToolRow &tr = tools[k];
+				tr.extra.resize (1);
+				const std::wstring row = std::to_wstring (k + 2);
+				Xlsx::Sheet::FreeCell f, c, l;
+				f.formula = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (flipsEst) + L")";
+				f.text = Csv::Tidy (flipsOf[k]);
+				c.formula = L"TEXT(SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst)
+							+ L")/86400,\"[h]:mm:ss\")";
+				c.text = Hms (cutOf[k]);
+				l.text = longOf[k] > 0 ? Inspect::MinSec (longOf[k]) : std::wstring ();
+				tr.extra.push_back (f);
+				tr.extra.push_back (c);
+				tr.extra.push_back (l);
+				if (!tr.extra[0].text.empty ())
+					byInsert[tr.extra[0].text].push_back (k);
+				}
+			if (!byInsert.empty ())
+				{
+				// Below the tools: per insert. The tool rows' column D is the insert
+				// and E the flips, so each insert sums its tools by name.
+				const std::wstring lastTool = std::to_wstring (tools.size () + 1);
+				auto head = [] (const wchar_t *t)
+					{
+					Xlsx::Sheet::FreeCell h;
+					h.text = t;
+					h.head = true;
+					return h;
+					};
+				s.toolsAfter.push_back ({ head (L"Inserts"), head (L"Insert"), head (L"Used by"),
+										  head (L"Edges per insert"), head (L"Flips / part"), head (L"Inserts / part") });
+				size_t i = 0;
+				for (const auto &kv : byInsert)
+					{
+					const std::wstring r = std::to_wstring (tools.size () + 4 + i);
+					Xlsx::Sheet::FreeCell blank, name, used, edges, flips, inserts;
+					name.text = kv.first;
+					double total = 0;
+					for (size_t k : kv.second)
+						{
+						used.text += (used.text.empty () ? L"T" : L", T") + tools[k].number;
+						total += flipsOf[k];
+						}
+					edges.text = EdgesGuess (kv.first);
+					edges.editable = true;
+					flips.formula = L"SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$" + lastTool + L")";
+					flips.text = Csv::Tidy (total);
+					double e = 0;
+					inserts.formula = L"IF(N($D" + r + L")>0,ROUND($E" + r + L"/$D" + r + L",2),\"\")";
+					inserts.text = Csv::ParseDouble (edges.text, e) && e > 0
+									   ? Csv::Tidy (std::round (total / e * 100.0) / 100.0) : std::wstring ();
+					s.toolsAfter.push_back ({ blank, name, used, edges, flips, inserts });
+					++i;
+					}
+				}
+			}
+		}
+		s.tools = tools;
 
 		// ---- WHAT EVERY CELL ACCEPTS, checked by Excel as it is typed, with a
 		// tooltip saying what the column is. The rules are the load's own limits,
@@ -961,6 +1172,12 @@ namespace Dump
 				info (L"est_cycle_time", true, false, GStats);
 				info (L"time_change", true, false, GStats);
 				info (L"est_seconds", false, true, GStats);
+				info (L"flips", false, false, GFlips);
+				info (L"flips_est", false, true, GFlips);
+				info (L"flips_why", true, false, GFlips);
+				info (L"flip_longest", true, false, GFlips);
+				info (L"insp_mode", true, false, GFlips);
+				info (L"cut_seconds_est", false, true, GFlips);
 				}
 			}
 
@@ -1020,9 +1237,47 @@ namespace Dump
 				++radiusHow[static_cast<int> (how)];
 				}
 
-			const Stats stats = tool ? StatsOf (pOp) : Stats ();
+			Stats stats = tool ? StatsOf (pOp) : Stats ();
 			if (tool)
 				Util::Log (part, Paths::Describe (*pOp, stats.path, stats.seconds));
+			if (tool && stats.path.ok)
+				{
+				// Tool inspection: the settings, then what the NCI did and why.
+				Inspect::Settings &is = stats.insp;
+				auto on = [&] (const wchar_t *name) { return read (name) == L"1"; };
+				auto number = [&] (const wchar_t *name)
+					{
+					double v = 0;
+					Csv::ParseDouble (read (name), v);
+					return v;
+					};
+				stats.inspOk = Lathe::IndexOf (t, L"insp_do_stop") >= 0;
+				if (stats.inspOk)
+					{
+					is.doStop = on (L"insp_do_stop");
+					is.timeOn = on (L"insp_time_on");
+					is.distOn = on (L"insp_dist_on");
+					is.cutsOn = on (L"insp_n_cuts_on");
+					is.firstCut = on (L"insp_first_cut");
+					is.eachDepth = on (L"insp_each_depth");
+					is.eachGroove = on (L"insp_each_groove");
+					is.eachSection = on (L"insp_each_section");
+					is.atEnd = on (L"insp_at_end");
+					is.betweenCuts = on (L"insp_between_cuts");
+					is.commentOn = on (L"insp_comment_on");
+					Inspect::ParseMinSec (read (L"insp_time"), is.time);
+					is.dist = number (L"insp_dist");
+					is.minCut = number (L"insp_min_cut");
+					is.cuts = static_cast<long> (number (L"insp_n_cuts"));
+					is.sections = static_cast<long> (number (L"insp_sections"));
+					is.comment = read (L"insp_comment");
+					}
+				else
+					is.betweenCuts = true;
+				stats.inspRes = Inspect::Explain (is, stats.path);
+				if (is.doStop || stats.inspRes.stops > 0)
+					Util::Log (part, Inspect::Describe (pOp->op_idn, is, stats.inspRes));
+				}
 			rowStats.push_back (stats);
 
 			Csv::Row row;
@@ -1077,6 +1332,16 @@ namespace Dump
 					v = L"+0:00:00";
 				else if (c.name == L"est_seconds" && stats.path.ok && stats.seconds > 0)
 					v = stats.timeRaw;
+				else if ((c.name == L"flips" || c.name == L"flips_est") && stats.path.ok)
+					v = std::to_wstring (stats.inspRes.flips);
+				else if (c.name == L"flips_why" && stats.path.ok)
+					v = stats.inspRes.why;
+				else if (c.name == L"flip_longest" && stats.inspRes.flips > 0)
+					v = Inspect::MinSec (stats.inspRes.longest);
+				else if (c.name == L"insp_mode" && stats.inspOk && stats.insp.doStop)
+					v = stats.inspRes.mode;
+				else if (c.name == L"cut_seconds_est" && stats.path.ok)
+					v = Csv::Tidy (stats.path.feedSeconds);
 
 				// Mastercam's arithmetic noise off the last digits. Well inside
 				// what a load counts as the same value, so nothing untouched
@@ -1095,7 +1360,6 @@ namespace Dump
 		// The tool pictures, one per tool, when asked for.
 		std::vector<Xlsx::Sheet::ToolRow> tools;
 		std::vector<int> toolOfRow (rows.size (), -1);
-		if (settings.pictures)
 			{
 			std::map<long, size_t> bySlot;
 			for (size_t d = 0; d < rows.size (); ++d)
@@ -1117,11 +1381,17 @@ namespace Dump
 					tr.number = std::to_wstring (o->tl.tlno);
 					tr.name = std::wstring (o->tl.comment, wcsnlen (o->tl.comment, COMMENT_SIZE));
 					std::wstring why = L"a mill tool - no picture yet";
-					if (!latheKind || !ToolPictures::LatheTool (slot, tr.png, tr.width, tr.height, why))
+					if (settings.pictures
+						&& (!latheKind || !ToolPictures::LatheTool (slot, tr.png, tr.width, tr.height, why)))
 						{
 						tr.png.clear ();
 						Util::Log (part, L"tool " + tr.number + L": no picture - " + why);
 						}
+					// The insert, for counting flips per insert (lathe tools only, as above).
+					Xlsx::Sheet::FreeCell ins;
+					if (latheKind)
+						ins.text = ToolPictures::LatheInsert (slot);
+					tr.extra.push_back (ins);
 					k = tools.size ();
 					tools.push_back (tr);
 					bySlot[slot] = k;

@@ -2,6 +2,7 @@
 #include "MastercamSdk.h"
 #include "LatheFields.h"
 #include "Coolant.h"
+#include "Inspect.h"
 #include "Csv.h"
 
 #include <algorithm>
@@ -47,6 +48,11 @@ namespace Lathe
 				case Kind::CoolantV9:
 					c.type = Plan::Type::Text;
 					c.choices = Coolant::ChoicesV9 ();
+					break;
+				case Kind::MinSec:
+					c.type = Plan::Type::Text;
+					c.hi = 12.0;
+					c.check = &Inspect::CheckMinSec;
 					break;
 				case Kind::DoubleSize: c.type = Plan::Type::Double; break;
 				case Kind::LongSize:   c.type = Plan::Type::Long;   break;
@@ -255,8 +261,7 @@ namespace Lathe
 			Add (t, L"insp_n_cuts",        Kind::Int,   ACC (S, inspect.stop_cuts),
 				 false, 0, 9999);
 			Add (t, L"insp_time_on",       Kind::Bool,  ACC (S, inspect.stop_after_time));
-			Add (t, L"insp_time",          Kind::Double, ACC (S, inspect.stop_time),
-				 false, 0.0);
+			Add (t, L"insp_time",          Kind::MinSec, ACC (S, inspect.stop_time));
 			Add (t, L"insp_dist_on",       Kind::Bool,  ACC (S, inspect.stop_after_distance));
 			Add (t, L"insp_dist",          Kind::Double, ACC (S, inspect.stop_distance),
 				 false, 0.0);
@@ -806,6 +811,8 @@ namespace Lathe
 				return Coolant::Describe (*static_cast<const operation *> (op), b.arg);
 			case Kind::CoolantV9:
 				return Coolant::DescribeV9 (*static_cast<short *> (p));
+			case Kind::MinSec:
+				return Inspect::MinSec (*static_cast<double *> (p));
 			case Kind::DoubleSize:
 				return Csv::FormatDouble (std::fabs (*static_cast<double *> (p)));
 			case Kind::DoubleSign:
@@ -891,6 +898,14 @@ namespace Lathe
 				{
 				std::wstring why;
 				return Coolant::ApplyV9 (*static_cast<operation *> (op), text, why);
+				}
+			case Kind::MinSec:
+				{
+				double v = 0;
+				if (!Inspect::ParseMinSec (text, v))
+					return false;
+				*static_cast<double *> (p) = v;
+				return true;
 				}
 			case Kind::DoubleSize:
 				{

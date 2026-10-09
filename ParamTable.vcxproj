@@ -142,6 +142,9 @@
     <ClCompile Include="src\XlsxRead.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Inspect.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\Plan.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -164,6 +167,7 @@
     <ClInclude Include="src\LatheFields.h" />
     <ClInclude Include="src\Csv.h" />
     <ClInclude Include="src\Plan.h" />
+    <ClInclude Include="src\Inspect.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\ParamTable.rc" />
