@@ -11,7 +11,15 @@ what each change does to the cycle time before you load it.
 ## What it does
 
 **Dump** - a window asks which operations (all, or only those selected in the Operation
-Manager; by kind), where to save and what to call the file, then writes one `.xlsx`:
+Manager; by kind; or found by typing part of a comment, tool, type or op number - and ticks
+can be saved under a name per part and picked again later), where to save and what to call
+the file, then writes one `.xlsx`:
+
+- **A Summary page first** - the one it opens on, all live: the part's cycle time, cutting
+  time, insert flips, material removed and removal rate as dumped and now; a batch quantity
+  with its cycle time and insert cost; the ten longest operations (with their share of the
+  part), the tools that flip inserts most, and the operations that cut the most air. Click an
+  op number to jump to its row.
 
 - **One row per operation**, in Operation Manager order; the most-used parameters first
   (feeds and speeds, depth of cut, stock to leave, coolant), the rest in collapsible groups.
@@ -32,7 +40,8 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
   moves as you edit feed, speed, CSS/RPM, max spindle speed or feed mode on that row. The model
   walks the toolpath (lines and arcs, CSS turned to RPM at each diameter, the max-RPM cap, each
   section's own spindle setting) and reproduces Mastercam's cycle time to within seconds.
-- **A Tools sheet** with each lathe tool's picture, linked from the `tool` column.
+- **A Tools sheet** with each lathe tool's picture, linked from the `tool` column, and an
+  inserts table: edges and cost per insert typed in, inserts and insert cost per part live.
 - **Optional macros** (an `.xlsm`, off unless ticked): a *Parameter Table* ribbon tab -
   set / scale / copy across selected cells in a window that shows how many cells will change
   or be refused before anything is written, revert cells, rows or everything to the dump, a
@@ -105,7 +114,8 @@ tests\run_tests.bat
 
 `tests\run_tests.bat` builds and runs the SDK-free tests (CSV, load rules, workbook writer and
 reader - including its own DEFLATE - file naming, and the estimate formula);
-`tools\check_estimate.ps1` checks the estimate formula in real Excel.
+`tools\check_estimate.ps1` checks the estimate formula in real Excel, `tools\check_summary.ps1`
+the Summary page.
 
 The macros are plain text in `vba\`; `tools\build_vba.ps1` compiles them with Excel into
 `res\vbaProject.bin` (needs *Trust access to the VBA project object model*), which the add-in

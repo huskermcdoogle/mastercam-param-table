@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "Settings.h"
 #include "FileRules.h"
+#include "Pick.h"
+
+#include <algorithm>
 
 namespace
 	{
@@ -94,6 +97,52 @@ namespace Settings
 		if (RegGetValueW (HKEY_CURRENT_USER, kKey, L"Diag", RRF_RT_REG_DWORD, nullptr, &v, &size) != ERROR_SUCCESS)
 			return 0;
 		return v;
+		}
+
+	namespace
+		{
+		std::wstring SelectionsKey (const std::wstring &partFile)
+			{
+			return std::wstring (kKey) + L"\\Selections\\" + Pick::PartKey (partFile);
+			}
+		}
+
+	std::vector<std::pair<std::wstring, std::vector<long>>> Selections (const std::wstring &partFile)
+		{
+		std::vector<std::pair<std::wstring, std::vector<long>>> out;
+		HKEY key = nullptr;
+		if (RegOpenKeyExW (HKEY_CURRENT_USER, SelectionsKey (partFile).c_str (), 0, KEY_READ, &key) != ERROR_SUCCESS)
+			return out;
+		for (DWORD i = 0;; ++i)
+			{
+			wchar_t name[256] = L"";
+			wchar_t data[4096] = L"";
+			DWORD nameLen = 256, type = 0, size = sizeof (data) - sizeof (wchar_t);
+			const LSTATUS r = RegEnumValueW (key, i, name, &nameLen, nullptr, &type,
+											 reinterpret_cast<BYTE *> (data), &size);
+			if (r == ERROR_NO_MORE_ITEMS)
+				break;
+			if (r != ERROR_SUCCESS || type != REG_SZ)
+				continue;				// too long, or not ours: skipped, never fatal
+			data[size / sizeof (wchar_t)] = 0;
+			out.push_back ({ name, Pick::ParseIds (data) });
+			}
+		RegCloseKey (key);
+		std::sort (out.begin (), out.end (), [] (const auto &a, const auto &b)
+			{ return _wcsicmp (a.first.c_str (), b.first.c_str ()) < 0; });
+		return out;
+		}
+
+	void SaveSelection (const std::wstring &partFile, const std::wstring &name, const std::vector<long> &ids)
+		{
+		const std::wstring v = Pick::IdsText (ids);
+		RegSetKeyValueW (HKEY_CURRENT_USER, SelectionsKey (partFile).c_str (), name.c_str (), REG_SZ, v.c_str (),
+						 static_cast<DWORD> ((v.size () + 1) * sizeof (wchar_t)));
+		}
+
+	void DeleteSelection (const std::wstring &partFile, const std::wstring &name)
+		{
+		RegDeleteKeyValueW (HKEY_CURRENT_USER, SelectionsKey (partFile).c_str (), name.c_str ());
 		}
 
 	std::wstring LastDumpFor (const std::wstring &part)

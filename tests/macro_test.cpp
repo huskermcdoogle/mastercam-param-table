@@ -3,6 +3,7 @@
 // tools\check_macros.ps1 to drive in real Excel.
 //
 // Usage: macro_test <out dir> <vbaProject.bin> <ribbon.xml>
+#include "../src/Summary.h"
 #include "../src/Xlsx.h"
 
 #include <cstdio>
@@ -110,6 +111,12 @@ int main (int argc, char **argv)
 	per.text = L"125";
 	s.toolsAfter = { { Xlsx::Sheet::FreeCell (), h }, { Xlsx::Sheet::FreeCell (), name, edges, total, per } };
 	}
+
+	// The Summary in front, as a dump writes it: the macros must still find
+	// their sheets (by name, and the main sheet by its code name Sheet1).
+	Summary::Where w;
+	w.title = L"Summary - macro sample";
+	Summary::Add (s, w);
 
 	s.vbaProject = slurp (argv[2]);
 	s.ribbonXml = slurp (argv[3]);

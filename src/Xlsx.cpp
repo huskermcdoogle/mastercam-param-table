@@ -138,26 +138,38 @@ namespace Xlsx
 											 "FFDDEBF7", "FFEDEDED", "FFD0CECE", "FFE4DFEC" };
 		const char *const kKindFills[5] = { "FFFFFFFF", "FFF2F8FC", "FFFCF6EC", "FFF3F9EE", "FFF6F1FA" };
 
+		/// Fonts: 0 plain, 1 bold, 2 grey, 3 a page title, 4 a note, 5 a link,
+		/// 6 a section heading.
+		enum Font { NPlain = 0, NBold = 1, NGrey = 2, NTitle = 3, NNote = 4, NLink = 5, NSection = 6 };
+
+		/// Borders: 0 none, 1 a box (a cell to type in on a report page), 2 a line
+		/// under (a report table's heading).
+		enum Border { BNone = 0, BBox = 1, BUnder = 2 };
+
 		/// Registry of distinct cell formats -> cellXfs index.
 		struct Styles
 			{
 			struct Key
 				{
-				int fill, font, fmt;
+				int fill, font, fmt, border;
+				bool right;
 				bool operator< (const Key &o) const
 					{
 					if (fill != o.fill) return fill < o.fill;
 					if (font != o.font) return font < o.font;
-					return fmt < o.fmt;
+					if (fmt != o.fmt) return fmt < o.fmt;
+					if (border != o.border) return border < o.border;
+					return right < o.right;
 					}
 				};
 			std::map<Key, int> ids;
 			std::vector<Key> order;
+			std::vector<std::string> custom;		//!< number formats 164 on
 			Styles () { Get (0, 0); }
-			/// fmt: a built-in number format - 0 General, 49 Text.
-			int Get (int fill, int font, int fmt = 0)
+			/// fmt: a built-in number format - 0 General, 49 Text - or one of Fmt's.
+			int Get (int fill, int font, int fmt = 0, int border = BNone, bool right = false)
 				{
-				const Key k = { fill, font, fmt };
+				const Key k = { fill, font, fmt, border, right };
 				auto it = ids.find (k);
 				if (it != ids.end ())
 					return it->second;
@@ -165,15 +177,54 @@ namespace Xlsx
 				order.push_back (k);
 				return ids[k];
 				}
+			/// A number format's id: Excel's built-in where there is one (so a
+			/// built-in follows the computer's own settings), else a custom one.
+			int Fmt (const std::wstring &code)
+				{
+				if (code.empty ())
+					return 0;
+				if (code == L"currency")
+					return 7;			// built in: the computer's own currency, 2 places
+				static const std::pair<const wchar_t *, int> builtIn[] = {
+					{ L"0", 1 }, { L"0.00", 2 }, { L"#,##0", 3 }, { L"#,##0.00", 4 }, { L"0%", 9 },
+					{ L"0.00%", 10 }, { L"@", 49 } };
+				for (const auto &b : builtIn)
+					if (code == b.first)
+						return b.second;
+				const std::string c = Utf8 (code);
+				for (size_t i = 0; i < custom.size (); ++i)
+					if (custom[i] == c)
+						return static_cast<int> (164 + i);
+				custom.push_back (c);
+				return static_cast<int> (164 + custom.size () - 1);
+				}
 			std::string Xml () const
 				{
 				std::string o =
 					"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-					"<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
-					"<fonts count=\"3\">"
+					"<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">";
+				if (!custom.empty ())
+					{
+					o += "<numFmts count=\"" + std::to_string (custom.size ()) + "\">";
+					for (size_t i = 0; i < custom.size (); ++i)
+						{
+						std::string esc;
+						for (char ch : custom[i])
+							esc += ch == '"' ? std::string ("&quot;") : ch == '&' ? std::string ("&amp;")
+								   : ch == '<' ? std::string ("&lt;") : ch == '>' ? std::string ("&gt;") : std::string (1, ch);
+						o += "<numFmt numFmtId=\"" + std::to_string (164 + i) + "\" formatCode=\"" + esc + "\"/>";
+						}
+					o += "</numFmts>";
+					}
+				o +=
+					"<fonts count=\"7\">"
 					"<font><sz val=\"11\"/><name val=\"Calibri\"/></font>"
 					"<font><b/><sz val=\"11\"/><name val=\"Calibri\"/></font>"
 					"<font><sz val=\"11\"/><color rgb=\"FF7F7F7F\"/><name val=\"Calibri\"/></font>"
+					"<font><b/><sz val=\"16\"/><color rgb=\"FF1F2937\"/><name val=\"Calibri\"/></font>"
+					"<font><sz val=\"10\"/><color rgb=\"FF5B6573\"/><name val=\"Calibri\"/></font>"
+					"<font><u/><sz val=\"11\"/><color rgb=\"FF0563C1\"/><name val=\"Calibri\"/></font>"
+					"<font><b/><sz val=\"12\"/><color rgb=\"FF1F3864\"/><name val=\"Calibri\"/></font>"
 					"</fonts><fills count=\"16\">"
 					"<fill><patternFill patternType=\"none\"/></fill>"
 					"<fill><patternFill patternType=\"gray125\"/></fill>";
@@ -188,8 +239,13 @@ namespace Xlsx
 				for (const char *c : kKindFills)
 					solid (c);
 				solid ("FFBFBFBF");		// grey: not applicable / read-only
-				o += "</fills><borders count=\"1\"><border><left/><right/><top/><bottom/>"
-					 "<diagonal/></border></borders>"
+				o += "</fills><borders count=\"3\"><border><left/><right/><top/><bottom/>"
+					 "<diagonal/></border>"
+					 "<border><left style=\"thin\"><color rgb=\"FF8EA9DB\"/></left><right style=\"thin\"><color rgb=\"FF8EA9DB\"/>"
+					 "</right><top style=\"thin\"><color rgb=\"FF8EA9DB\"/></top><bottom style=\"thin\"><color rgb=\"FF8EA9DB\"/>"
+					 "</bottom><diagonal/></border>"
+					 "<border><left/><right/><top/><bottom style=\"thin\"><color rgb=\"FF8EA9DB\"/></bottom><diagonal/></border>"
+					 "</borders>"
 					 "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" "
 					 "borderId=\"0\"/></cellStyleXfs><cellXfs count=\"";
 				o += std::to_string (order.size ()) + "\">";
@@ -197,14 +253,19 @@ namespace Xlsx
 					{
 					o += "<xf numFmtId=\"" + std::to_string (k.fmt) + "\" fontId=\"" + std::to_string (k.font)
 						 + "\" fillId=\"" + std::to_string (k.fill)
-						 + "\" borderId=\"0\" xfId=\"0\"";
+						 + "\" borderId=\"" + std::to_string (k.border) + "\" xfId=\"0\"";
 					if (k.fmt != 0)
 						o += " applyNumberFormat=\"1\"";
 					if (k.fill != 0)
 						o += " applyFill=\"1\"";
 					if (k.font != 0)
 						o += " applyFont=\"1\"";
-					o += "/>";
+					if (k.border != 0)
+						o += " applyBorder=\"1\"";
+					if (k.right)
+						o += " applyAlignment=\"1\"><alignment horizontal=\"right\"/></xf>";
+					else
+						o += "/>";
 					}
 				o += "</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" "
 					 "xfId=\"0\" builtinId=\"0\"/></cellStyles>"
@@ -671,6 +732,90 @@ namespace Xlsx
 			dumped += "</sheetData></worksheet>";
 			}
 
+		// ---- Free cells (the Tools page's extras, the Summary page): text, a number
+		// or a formula, styled by what the cell is for.
+		auto cell = [&] (size_t r, size_t c, const std::wstring &t, int style)
+			{
+			std::string o = "<c r=\"" + ColName (c) + std::to_string (r) + "\" s=\"" + std::to_string (style) + "\"";
+			if (t.empty ())
+				return o + "/>";
+			return o + " t=\"inlineStr\"><is><t xml:space=\"preserve\">" + Esc (t) + "</t></is></c>";
+			};
+		auto freeCell = [&] (size_t r, size_t c, const Sheet::FreeCell &f)
+			{
+			const int fmt = f.textFormat ? 49 : st.Fmt (f.numFmt);
+			int style = 0;
+			switch (f.look)
+				{
+				case Sheet::FreeCell::Title: style = st.Get (FNone, NTitle, fmt); break;
+				case Sheet::FreeCell::Section: style = st.Get (FNone, NSection, fmt); break;
+				case Sheet::FreeCell::Note: style = st.Get (FNone, NNote, fmt, BNone, f.right); break;
+				case Sheet::FreeCell::Plain:
+					style = st.Get (FNone, f.head ? NBold : NPlain, fmt, f.head ? BUnder : BNone, f.right);
+					break;
+				case Sheet::FreeCell::Link: style = st.Get (FNone, NLink, fmt, BNone, f.right); break;
+				case Sheet::FreeCell::Input: style = st.Get (FNone, NBold, fmt, BBox, f.right); break;
+				default:
+					style = f.head ? st.Get (FGroup0, NBold, fmt) : f.editable ? st.Get (FNone, NPlain, fmt)
+																			  : st.Get (FGrey, NGrey, fmt);
+				}
+			const std::string ref = ColName (c) + std::to_string (r);
+			const std::string at = "<c r=\"" + ref + "\" s=\"" + std::to_string (style) + "\"";
+			if (!f.formula.empty ())
+				{
+				const std::string fx = f.array ? "<f t=\"array\" ref=\"" + ref + "\">" + Esc (f.formula) + "</f>"
+											   : "<f>" + Esc (f.formula) + "</f>";
+				return IsPlainNumber (f.text)
+						   ? at + ">" + fx + "<v>" + Esc (f.text) + "</v></c>"
+						   : at + " t=\"str\">" + fx + "<v>" + Esc (f.text) + "</v></c>";
+				}
+			if (!f.head && !f.text.empty () && IsPlainNumber (f.text))
+				return at + "><v>" + Esc (f.text) + "</v></c>";
+			return cell (r, c, f.text, style);
+			};
+
+		// ---- "Summary": the page the workbook opens on - what to look at first.
+		const bool summaryPage = !s.summary.empty ();
+		std::string summaryXml;
+		if (summaryPage)
+			{
+			// Printed one page wide, as long as it needs.
+			summaryXml = decl + "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
+						 "<sheetPr><pageSetUpPr fitToPage=\"1\"/></sheetPr><sheetViews><sheetView showGridLines=\"0\" tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews>"
+						 "<sheetFormatPr defaultRowHeight=\"15\"/>";
+			if (!s.summaryWidths.empty ())
+				{
+				summaryXml += "<cols>";
+				for (size_t c = 0; c < s.summaryWidths.size (); ++c)
+					{
+					const double w = s.summaryWidths[c];
+					summaryXml += "<col min=\"" + std::to_string (c + 1) + "\" max=\"" + std::to_string (c + 1)
+								  + "\" width=\"" + std::to_string (w > 0 ? w : 8) + "\" customWidth=\"1\""
+								  + (w > 0 ? "" : " hidden=\"1\"") + "/>";
+					}
+				summaryXml += "</cols>";
+				}
+			summaryXml += "<sheetData>";
+			for (size_t k = 0; k < s.summary.size (); ++k)
+				{
+				const size_t r = k + 1;
+				summaryXml += "<row r=\"" + std::to_string (r) + "\">";
+				for (size_t c = 0; c < s.summary[k].size (); ++c)
+					{
+					const Sheet::FreeCell &f = s.summary[k][c];
+					// An empty plain cell is no cell at all: text runs on over it.
+					if (f.text.empty () && f.formula.empty () && f.look != Sheet::FreeCell::Auto
+						&& f.look != Sheet::FreeCell::Input && !f.head)
+						continue;
+					summaryXml += freeCell (r, c, f);
+					}
+				summaryXml += "</row>";
+				}
+			summaryXml += "</sheetData><pageMargins left=\"0.5\" right=\"0.5\" top=\"0.6\" bottom=\"0.6\" "
+						  "header=\"0.3\" footer=\"0.3\"/><pageSetup orientation=\"landscape\" fitToWidth=\"1\" fitToHeight=\"0\"/>"
+						  "</worksheet>";
+			}
+
 		// ---- "Tools": number, name, which operations use it, and its picture.
 		std::string toolsXml, drawingXml, drawingRels;
 		std::vector<std::pair<std::string, std::string>> media;
@@ -694,26 +839,6 @@ namespace Xlsx
 			toolsXml += "<col min=\"" + std::to_string (picCol + 1) + "\" max=\"" + std::to_string (picCol + 1)
 						+ "\" width=\"33\" customWidth=\"1\"/></cols><sheetData>";
 			const int head = st.Get (FGroup0, 1);
-			const int grey = st.Get (FGrey, 2);
-			auto cell = [&] (size_t r, size_t c, const std::wstring &t, int style)
-				{
-				std::string o = "<c r=\"" + ColName (c) + std::to_string (r) + "\" s=\"" + std::to_string (style) + "\"";
-				if (t.empty ())
-					return o + "/>";
-				return o + " t=\"inlineStr\"><is><t xml:space=\"preserve\">" + Esc (t) + "</t></is></c>";
-				};
-			auto freeCell = [&] (size_t r, size_t c, const Sheet::FreeCell &f)
-				{
-				const int style = f.head ? head : f.editable ? st.Get (0, 0, f.textFormat ? 49 : 0) : grey;
-				const std::string at = "<c r=\"" + ColName (c) + std::to_string (r) + "\" s=\"" + std::to_string (style) + "\"";
-				if (!f.formula.empty ())
-					return IsPlainNumber (f.text)
-							   ? at + "><f>" + Esc (f.formula) + "</f><v>" + Esc (f.text) + "</v></c>"
-							   : at + " t=\"str\"><f>" + Esc (f.formula) + "</f><v>" + Esc (f.text) + "</v></c>";
-				if (!f.head && !f.text.empty () && IsPlainNumber (f.text))
-					return at + "><v>" + Esc (f.text) + "</v></c>";
-				return cell (r, c, f.text, style);
-				};
 			toolsXml += "<row r=\"1\">" + cell (1, 0, L"Tool", head) + cell (1, 1, L"Name", head)
 						+ cell (1, 2, L"Used by", head);
 			for (size_t e = 0; e < nExtra; ++e)
@@ -787,6 +912,7 @@ namespace Xlsx
 			"<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
 			+ std::string (track ? "<Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (toolsPage ? "<Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
+			+ std::string (summaryPage ? "<Override PartName=\"/xl/worksheets/sheet4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (!drawingXml.empty () ? "<Override PartName=\"/xl/drawings/drawing1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\"/>" : "") +
 			"<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
 			"</Types>" });
@@ -801,11 +927,17 @@ namespace Xlsx
 			"<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
 			"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
 			+ std::string (macros ? "<workbookPr codeName=\"ThisWorkbook\"/>" : "") +
-			"<sheets><sheet name=\"Lathe params\" sheetId=\"1\" r:id=\"rId1\"/>"
+			// The Summary first: the page it opens on. Code names stay as they were -
+			// the macros find their sheets by name, and the main sheet by Sheet1.
+			"<bookViews><workbookView activeTab=\"0\"/></bookViews><sheets>"
+			+ std::string (summaryPage ? "<sheet name=\"Summary\" sheetId=\"4\" r:id=\"rId6\"/>" : "")
+			+ "<sheet name=\"Lathe params\" sheetId=\"1\" r:id=\"rId1\"/>"
 			+ std::string (toolsPage ? "<sheet name=\"Tools\" sheetId=\"3\" r:id=\"rId4\"/>" : "")
 			+ std::string (track ? "<sheet name=\"Dumped\" sheetId=\"2\" state=\"hidden\" r:id=\"rId3\"/>" : "")
 			+ "</sheets>"
-			+ (filter ? "<definedNames><definedName name=\"_xlnm._FilterDatabase\" localSheetId=\"0\" "
+			// localSheetId is the main sheet's POSITION, which the Summary moves.
+			+ (filter ? "<definedNames><definedName name=\"_xlnm._FilterDatabase\" localSheetId=\""
+						+ std::string (summaryPage ? "1" : "0") + "\" "
 						"hidden=\"1\">'Lathe params'!" + AbsRef (filterRef) + "</definedName></definedNames>"
 					  : std::string ())
 			// Recalculate on open: the counts and highlights are formulas.
@@ -817,6 +949,7 @@ namespace Xlsx
 			"<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
 			+ std::string (track ? "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet2.xml\"/>" : "")
 			+ std::string (toolsPage ? "<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet3.xml\"/>" : "")
+			+ std::string (summaryPage ? "<Relationship Id=\"rId6\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet4.xml\"/>" : "")
 			+ std::string (macros ? "<Relationship Id=\"rId5\" Type=\"http://schemas.microsoft.com/office/2006/relationships/vbaProject\" Target=\"vbaProject.bin\"/>" : "")
 			+ "</Relationships>" });
 		parts.push_back ({ "xl/styles.xml", st.Xml () });
@@ -829,6 +962,8 @@ namespace Xlsx
 			if (!s.ribbonXml.empty ())
 				parts.push_back ({ "customUI/customUI14.xml", s.ribbonXml });
 			}
+		if (summaryPage)
+			parts.push_back ({ "xl/worksheets/sheet4.xml", summaryXml });
 		if (toolsPage)
 			{
 			parts.push_back ({ "xl/worksheets/sheet3.xml", toolsXml });

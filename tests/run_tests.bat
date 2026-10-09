@@ -86,9 +86,27 @@ if errorlevel 1 ( set FAILED=1 ) else (
 
 echo === macro_test ===
 cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\macro_test.exe" ^
-    "%~dp0macro_test.cpp" "%~dp0..\src\Xlsx.cpp"
+    "%~dp0macro_test.cpp" "%~dp0..\src\Xlsx.cpp" "%~dp0..\src\Summary.cpp" "%~dp0..\src\Csv.cpp"
 if errorlevel 1 ( set FAILED=1 ) else (
     "%OUT%\macro_test.exe" "%OUT%" "%~dp0..\res\vbaProject.bin" "%~dp0..\vba\ribbon.xml"
+    if errorlevel 1 set FAILED=1
+)
+
+echo === summary_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\summary_test.exe" ^
+    "%~dp0summary_test.cpp" "%~dp0..\src\Summary.cpp" "%~dp0..\src\Xlsx.cpp" "%~dp0..\src\XlsxRead.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\summary_test.exe" "%OUT%"
+    if errorlevel 1 set FAILED=1
+)
+
+rem tools\check_summary.ps1 then drives summary_sample.xlsx in real Excel.
+
+echo === pick_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\pick_test.exe" ^
+    "%~dp0pick_test.cpp" "%~dp0..\src\Pick.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\pick_test.exe"
     if errorlevel 1 set FAILED=1
 )
 

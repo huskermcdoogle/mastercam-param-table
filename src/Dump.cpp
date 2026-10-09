@@ -5,6 +5,7 @@
 #include "Util.h"
 #include "Csv.h"
 #include "Xlsx.h"
+#include "Summary.h"
 #include "Coolant.h"
 #include "ColumnHelp.h"
 #include "Paths.h"
@@ -636,7 +637,8 @@ namespace
 	bool WriteXlsx (const std::filesystem::path &file, const std::vector<Csv::Row> &out,
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
 					const std::vector<Stats> &stats, std::vector<Xlsx::Sheet::ToolRow> tools,
-					const std::vector<int> &toolOfRow, bool macros)
+					const std::vector<int> &toolOfRow, bool macros, const std::wstring &title,
+					const std::wstring &subtitle)
 		{
 		Xlsx::Sheet s;
 		s.rows = out;
@@ -1368,8 +1370,13 @@ namespace
 					h.head = true;
 					return h;
 					};
-				s.toolsAfter.push_back ({ head (L"Inserts"), head (L"Insert"), head (L"Used by"),
-										  head (L"Edges per insert"), head (L"Flips / part"), head (L"Inserts / part") });
+				// Then the cost: typed per insert, live per part; the Summary takes it to a batch.
+				std::vector<Xlsx::Sheet::FreeCell> heads = { head (L"Inserts"), head (L"Insert"), head (L"Used by"),
+															 head (L"Edges per insert"), head (L"Flips / part"),
+															 head (L"Inserts / part") };
+				for (const std::wstring &h : Summary::CostHeads ())
+					heads.push_back (head (h.c_str ()));
+				s.toolsAfter.push_back (heads);
 				size_t i = 0;
 				for (const auto &kv : byInsert)
 					{
@@ -1399,7 +1406,10 @@ namespace
 					inserts.formula = L"IF(N($D" + r + L")>0,ROUNDUP(ROUND($E" + r + L"/$D" + r + L",6),0),\"\")";
 					inserts.text = Csv::ParseDouble (edges.text, e) && e > 0
 									   ? Csv::Tidy (std::ceil (std::round (total / e * 1e6) / 1e6)) : std::wstring ();
-					s.toolsAfter.push_back ({ blank, name, used, edges, flips, inserts });
+					std::vector<Xlsx::Sheet::FreeCell> row = { blank, name, used, edges, flips, inserts };
+					for (const Xlsx::Sheet::FreeCell &c : Summary::CostCells (tools.size () + 4 + i))
+						row.push_back (c);
+					s.toolsAfter.push_back (row);
 					++i;
 					}
 				// Room for the inserts the names did not give.
@@ -1412,78 +1422,10 @@ namespace
 					flips.formula = L"IF($B" + r + L"=\"\",\"\",SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$"
 									+ lastTool + L"))";
 					inserts.formula = L"IF(N($D" + r + L")>0,ROUNDUP(ROUND(N($E" + r + L")/$D" + r + L",6),0),\"\")";
-					s.toolsAfter.push_back ({ blank, name, used, edges, flips, inserts });
-					}
-				}
-
-			// PART TOTALS, as dumped and now: the effect of the edits on the whole
-			// part. "As dumped" sums the hidden Dumped sheet; "Now" the live sheet.
-			const int estSecCol = colOf (L"est_seconds"), remCol = colOf (L"removed");
-			if (estSecCol >= 0)
-				{
-				auto head = [] (const wchar_t *t)
-					{
-					Xlsx::Sheet::FreeCell h;
-					h.text = t;
-					h.head = true;
-					return h;
-					};
-				auto sumOf = [&] (int c, bool dumped)
-					{
-					const std::wstring l = letters (static_cast<size_t> (c));
-					return L"SUM(" + std::wstring (dumped ? L"Dumped!" : L"'Lathe params'!") + L"$" + l + L"$3:$" + l
-						   + L"$" + last + L")";
-					};
-				double est0 = 0, cut0 = 0, flips0 = 0, rem0 = 0;
-				for (size_t d = 0; d < rows.size (); ++d)
-					{
-					double v = 0;
-					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (estSecCol)], v)) est0 += v;
-					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], v)) cut0 += v;
-					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (partCol)], v)) flips0 += v;
-					if (remCol >= 0 && Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (remCol)], v)) rem0 += v;
-					}
-				auto timeRow = [&] (const wchar_t *what, int c, double v0)
-					{
-					Xlsx::Sheet::FreeCell a, label, was, now, change;
-					label.text = what;
-					const std::wstring w = sumOf (c, true), n = sumOf (c, false);
-					was.formula = L"TEXT(" + w + L"/86400,\"[h]:mm:ss\")";
-					was.text = Hms (v0);
-					now.formula = L"TEXT(" + n + L"/86400,\"[h]:mm:ss\")";
-					now.text = Hms (v0);
-					change.formula = L"IF(ROUND(" + n + L"-" + w + L",0)<0,\"-\",\"+\")&TEXT(ABS(ROUND(" + n + L"-" + w
-									 + L",0))/86400,\"[h]:mm:ss\")";
-					change.text = L"+0:00:00";
-					return std::vector<Xlsx::Sheet::FreeCell> { a, label, was, now, change };
-					};
-				auto numRow = [&] (const wchar_t *what, const std::wstring &w, const std::wstring &n, double v0)
-					{
-					Xlsx::Sheet::FreeCell a, label, was, now, change;
-					label.text = what;
-					was.formula = L"ROUND(" + w + L",2)";
-					was.text = Csv::Tidy (std::round (v0 * 100.0) / 100.0);
-					now.formula = L"ROUND(" + n + L",2)";
-					now.text = was.text;
-					change.formula = L"ROUND(" + n + L"-(" + w + L"),2)";
-					change.text = L"0";
-					return std::vector<Xlsx::Sheet::FreeCell> { a, label, was, now, change };
-					};
-				s.toolsAfter.push_back ({});
-				s.toolsAfter.push_back ({ head (L"Part totals"), head (L"What"), head (L"As dumped"), head (L"Now"),
-										  head (L"Change") });
-				s.toolsAfter.push_back (timeRow (L"Cycle time (estimate)", estSecCol, est0));
-				s.toolsAfter.push_back (timeRow (L"Cutting time", cutEst, cut0));
-				s.toolsAfter.push_back (numRow (L"Insert flips per part", sumOf (partCol, true), sumOf (partCol, false), flips0));
-				if (remCol >= 0)
-					{
-					s.toolsAfter.push_back (numRow (L"Material removed (fixed by the toolpaths)", sumOf (remCol, true),
-													sumOf (remCol, false), rem0));
-					const double mrr0 = est0 > 0 ? rem0 / est0 * 60.0 : 0;
-					s.toolsAfter.push_back (numRow (L"Average removal rate over the cycle (per min)",
-													L"IFERROR(" + sumOf (remCol, true) + L"/" + sumOf (estSecCol, true) + L"*60,0)",
-													L"IFERROR(" + sumOf (remCol, false) + L"/" + sumOf (estSecCol, false) + L"*60,0)",
-													mrr0));
+					std::vector<Xlsx::Sheet::FreeCell> row = { blank, name, used, edges, flips, inserts };
+					for (const Xlsx::Sheet::FreeCell &c : Summary::CostCells (tools.size () + 4 + i))
+						row.push_back (c);
+					s.toolsAfter.push_back (row);
 					}
 				}
 			}
@@ -1631,6 +1573,12 @@ namespace
 			if (toolOfRow[d] >= 0)
 				s.toolLinks.push_back ({ Xlsx::ColName (static_cast<size_t> (toolCol)) + std::to_string (d + 3),
 										 static_cast<size_t> (toolOfRow[d]) });
+
+		// ---- The Summary, first: totals, a batch, and where the time and inserts go.
+		Summary::Where where;
+		where.title = title;
+		where.subtitle = subtitle;
+		Summary::Add (s, where);
 
 		return Xlsx::Write (file, s);
 		}
@@ -2200,7 +2148,18 @@ namespace Dump
 		const std::filesystem::path file = FileRules::Unique (
 			folder, FileRules::Name (settings.pattern, part.stem ().wstring (), std::time (nullptr),
 									 onlySelected, rows.size (), settings.macros ? L".xlsm" : L".xlsx"));
-		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow, settings.macros))
+		wchar_t when[32] = L"";
+		{
+		const std::time_t now = std::time (nullptr);
+		std::tm local = {};
+		if (localtime_s (&local, &now) == 0)
+			std::wcsftime (when, 32, L"%Y-%m-%d %H:%M", &local);
+		}
+		const std::wstring subtitle = L"Dumped " + std::wstring (when) + L" - " + std::to_wstring (rows.size ())
+									  + (rows.size () == 1 ? L" operation" : L" operations") + (onlySelected ? L" (a selection)" : L"")
+									  + L" - " + part.wstring ();
+		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow, settings.macros,
+						L"Summary - " + part.filename ().wstring (), subtitle))
 			{
 			Util::Say (L"Could not write " + file.wstring () + L"\r\n\r\nCheck the "
 					   L"folder can be written to, and try again.",

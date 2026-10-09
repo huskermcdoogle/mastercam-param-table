@@ -24,6 +24,15 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
   (`vba\TextEditor.vb`, controls made by build_vba.ps1); Set selected is coolant-aware. The
   form's MSForms reference embeds C:\Users\<name>\...\MSForms.exd - `tools\scrub_vba.py`
   (run by build_vba.ps1, needs python) overwrites the name in place.
+- **Summary page (2026-10-09, not yet run from Mastercam):** `src\Summary.*` (SDK-free) builds
+  the first sheet - part totals (moved off Tools), a batch with insert cost, and three ranked
+  lists. Ranking is LIVE: one hidden working column (I) of single-cell ARRAY formulas,
+  `MATCH(LARGE(key,n),key,0)` with key = value - ROW/1e9 (ties keep sheet order); the visible
+  cells INDEX by it. `tools\check_summary.ps1` drives it in real Excel. Sheet order is now
+  Summary, Lathe params, Tools, Dumped: the filter's localSheetId follows; code names unchanged.
+- **Dump window:** find box (highlights matches via tree custom draw; Tick / Untick matches)
+  and saved ticks (`HKCU\Software\ParamTableTool\Selections\<part file name>`, one value per
+  name, op numbers). Logic in `src\Pick.*` (SDK-free, `tests\pick_test.cpp`).
 - **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`).
 - Real parts used for testing live in `tests\` locally and are NOT tracked (gitignored).
 
