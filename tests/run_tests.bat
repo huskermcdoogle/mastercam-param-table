@@ -23,7 +23,7 @@ if errorlevel 1 (
 
 rem Build output OUTSIDE Dropbox: Dropbox locks a just-written .obj while it
 rem syncs it, and the next compile that writes the same file then fails.
-set "OUT=%TEMP%\ParamTableTests"
+if defined PT_TEST_OUT ( set "OUT=%PT_TEST_OUT%" ) else ( set "OUT=%TEMP%\ParamTableTests" )
 if not exist "%OUT%" md "%OUT%"
 
 set FAILED=0

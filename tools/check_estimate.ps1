@@ -7,7 +7,7 @@
 #>
 param([string] $Dir = "")
 $ErrorActionPreference = "Stop"
-if (-not $Dir) { $Dir = Join-Path $env:TEMP "ParamTableTests" }
+if (-not $Dir) { $Dir = if ($env:PT_TEST_OUT) { $env:PT_TEST_OUT } else { Join-Path $env:TEMP "ParamTableTests" } }
 $file = Join-Path $Dir "estimate.xlsx"
 $expect = Get-Content (Join-Path $Dir "estimate_expect.txt")
 $failed = 0

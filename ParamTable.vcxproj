@@ -56,7 +56,7 @@
          holds memory-mapped sections open on MSBuild's .tlog files while it syncs
          them and fails the build with "cannot be performed on a file with a
          user-mapped section open". -->
-    <IntDir>$(LOCALAPPDATA)\ParamTable\obj\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(LOCALAPPDATA)\ParamTable\obj\$([MSBuild]::StableStringHash($(ProjectDir)))\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>ParamTable</TargetName>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>

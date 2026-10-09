@@ -7,7 +7,7 @@
 #>
 param([string] $Dir = "")
 $ErrorActionPreference = "Stop"
-if (-not $Dir) { $Dir = Join-Path $env:TEMP "ParamTableTests" }
+if (-not $Dir) { $Dir = if ($env:PT_TEST_OUT) { $env:PT_TEST_OUT } else { Join-Path $env:TEMP "ParamTableTests" } }
 $src = Join-Path $Dir "macro_sample.xlsm"
 $f = Join-Path $Dir "macro_check.xlsm"
 Copy-Item -LiteralPath $src -Destination $f -Force
