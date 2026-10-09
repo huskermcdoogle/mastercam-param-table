@@ -26,7 +26,8 @@ namespace Settings
 	void SetLastDump (const std::wstring &file, const std::wstring &part);
 	std::wstring LastDumpFor (const std::wstring &part);
 
-	/// Troubleshooting switches (DWORD "Diag", normally absent = 0), to find which
+	/// Troubleshooting switches (diag.txt beside the DLL holding a number, else the
+	/// DWORD "Diag"; normally neither = 0), to find which
 	/// Mastercam call a part objects to: 1 = no Mastercam cycle time,
 	/// 2 = no NCI walk (no path stats or estimate).
 	unsigned long Diag ();

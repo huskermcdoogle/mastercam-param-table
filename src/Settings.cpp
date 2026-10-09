@@ -68,6 +68,26 @@ namespace Settings
 
 	unsigned long Diag ()
 		{
+		// A file beside the DLL first (Add-Ins\ParamTable\diag.txt holding a number) -
+		// for machines where the registry cannot be edited by hand.
+		HMODULE self = nullptr;
+		wchar_t path[MAX_PATH] = {};
+		if (GetModuleHandleExW (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+								reinterpret_cast<LPCWSTR> (&Diag), &self)
+			&& GetModuleFileNameW (self, path, MAX_PATH) > 0)
+			{
+			std::wstring file (path);
+			file = file.substr (0, file.find_last_of (L"\\/") + 1) + L"diag.txt";
+			FILE *f = nullptr;
+			if (_wfopen_s (&f, file.c_str (), L"r") == 0 && f != nullptr)
+				{
+				unsigned long v = 0;
+				const int got = fscanf_s (f, "%lu", &v);
+				fclose (f);
+				if (got == 1)
+					return v;
+				}
+			}
 		DWORD v = 0, size = sizeof (v);
 		if (RegGetValueW (HKEY_CURRENT_USER, kKey, L"Diag", RRF_RT_REG_DWORD, nullptr, &v, &size) != ERROR_SUCCESS)
 			return 0;
