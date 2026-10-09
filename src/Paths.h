@@ -30,6 +30,7 @@ namespace Paths
 		double cutLength = 0;		//!< feed moves (lines and arcs)
 		double rapidLength = 0;
 		double arcLength = 0;		//!< the part of cutLength that is arcs
+		double lengthTimesRadius = 0;	//!< feed length x |X| - over cutLength, the mean cutting radius (lathe)
 		long arcs = 0;
 		long arcsOverHalf = 0;		//!< arcs sweeping more than 180 degrees - rare in
 									//!< turning; many would mean the direction is read backwards

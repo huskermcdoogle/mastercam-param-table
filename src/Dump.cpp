@@ -100,13 +100,13 @@ namespace
 		L"Identity", L"Feeds and speeds", L"Depth of cut", L"Stock to leave", L"Coolant",
 		L"Toolpath", L"Home position", L"Reference points", L"Planes", L"Filter",
 		L"Where it sits (read-only)", L"Tool inspection", L"Toolpath stats (read-only)",
-		L"Insert flips (read-only)" };
+		L"Insert flips (read-only)", L"Material removal (estimated, read-only)" };
 	enum { GIdentity, GFeeds, GDepth, GStock, GCoolant, GToolpath,
-		   GHome, GRef, GPlanes, GFilter, GWhere, GInspect, GStats, GFlips };
+		   GHome, GRef, GPlanes, GFilter, GWhere, GInspect, GStats, GFlips, GMrr };
 
 	/// Groups with a +/- of their own, and the ones that start folded away -
 	/// rarely edited, still one click from view.
-	const int kOutlined[] = { GFeeds, GDepth, GStock, GCoolant, GStats, GFlips, GToolpath, GHome,
+	const int kOutlined[] = { GFeeds, GDepth, GStock, GCoolant, GStats, GFlips, GMrr, GToolpath, GHome,
 							  GRef, GPlanes, GFilter, GWhere, GInspect };
 	const int kCollapsed[] = { GRef, GFilter, GWhere, GInspect };
 
@@ -134,6 +134,8 @@ namespace
 		bool inspOk = false;
 		Inspect::Settings insp;
 		Inspect::Result inspRes;
+
+		double toolDia = 0;			//!< for a drill's MRR
 		};
 
 	Stats StatsOf (operation *pOp)
@@ -516,7 +518,8 @@ namespace
 		const int changeCol = colOf (L"time_change");
 		const int rawCol = colOf (L"cycle_time_raw");
 		s.untracked.assign (columns.size (), 0);
-		for (int c : { estCol, estText, changeCol, colOf (L"flips_est"), colOf (L"cut_seconds_est") })
+		for (int c : { estCol, estText, changeCol, colOf (L"flips_est"), colOf (L"cut_seconds_est"),
+					   colOf (L"mrr"), colOf (L"mrr_avg"), colOf (L"removed_est") })
 			if (c >= 0)
 				s.untracked[static_cast<size_t> (c)] = 1;
 
@@ -749,6 +752,120 @@ namespace
 				}
 			s.formula[d][static_cast<size_t> (flipsEst)] = L"IF(" + ref (L"insp_do_stop") + L"=1," + terms + L",0)";
 			}
+
+		// ---- MATERIAL REMOVAL, THEORETICAL AND LIVE. While cutting:
+		//   turning   12 x SFM x feed per rev x depth of cut   (in^3/min)
+		//             Vc x f x ap                              (cm^3/min, metric)
+		//   drilling  pi D^2 / 4 x feed per minute
+		// at the op's mean cutting diameter (from the NCI): an RPM op's surface
+		// speed is taken there, and CSS is capped by max_ss there. Over the whole
+		// op, leads, rapids and air included: mrr x cut time / op time. Removed =
+		// mrr x cut time - an estimate (it counts air cuts as cutting).
+		{
+		const int mrrCol = colOf (L"mrr"), avgCol = colOf (L"mrr_avg"), remCol = colOf (L"removed_est");
+		const int basisCol = colOf (L"mrr_basis"), diaCol = colOf (L"cut_dia");
+		for (size_t d = 0; mrrCol >= 0 && d < rows.size () && d < stats.size (); ++d)
+			{
+			const Stats &st = stats[d];
+			if (!st.path.ok || st.path.cutLength <= 0)
+				continue;
+			const Lathe::Table &t = *rows[d].t;
+			const std::vector<std::wstring> &row = s.rows[d + 1];
+			const std::wstring rowNo = std::to_wstring (d + 3);
+			auto has = [&] (const wchar_t *name)
+				{ return colOf (name) >= 0 && Lathe::IndexOf (t, name) >= 0; };
+			auto ref = [&] (const wchar_t *name)
+				{ return letters (static_cast<size_t> (colOf (name))) + rowNo; };
+			auto text = [&] (const wchar_t *name)
+				{ return colOf (name) >= 0 ? row[static_cast<size_t> (colOf (name))] : std::wstring (); };
+			auto num = [&] (const wchar_t *name)
+				{
+				double v = 0;
+				Csv::ParseDouble (text (name), v);
+				return v;
+				};
+			if (!has (L"speed") || !has (L"feed") || !has (L"feed_mode") || !has (L"speed_mode"))
+				continue;
+			const std::wstring type = t.schema.type;
+			const bool drill = type == L"DRILL" || type == L"MILL DRILL";
+			const wchar_t *ap = nullptr;
+			if (type == L"ROUGH" || type == L"PRIME" || type == L"FINISH")
+				ap = L"step";
+			else if (type == L"DYNAMIC")
+				ap = L"stepover";
+			else if (has (L"rough_step"))
+				ap = L"rough_step";					// face, groove, plunge rough
+			if (!drill && (ap == nullptr || !has (ap) || num (ap) <= 0))
+				continue;
+			const bool mm = text (L"units") == L"mm";
+			const double kSpeed = mm ? 1000.0 : 12.0;		// surface speed <-> RPM
+			const double pi = 3.14159265358979323846;
+
+			// The cached numbers: the same arithmetic as the formulas.
+			// Rounded as the cut_dia cell shows it - the formula reads the cell.
+			const double dia = drill ? st.toolDia
+									 : std::round (2.0 * st.path.lengthTimesRadius / st.path.cutLength * 1000.0) / 1000.0;
+			if (!(dia > 0))
+				continue;
+			const bool css = text (L"speed_mode") == L"CSS";
+			const double speed = num (L"speed"), cap = has (L"max_ss") ? num (L"max_ss") : 0;
+			double rpm = css ? speed * kSpeed / (pi * dia) : speed;
+			if (css && cap > 0)
+				rpm = (std::min) (rpm, cap);
+			const double sfm = rpm * pi * dia / kSpeed;
+			const bool perRev = text (L"feed_mode") == L"per rev";
+			const double feed = num (L"feed");
+			const double ipr = perRev ? feed : (rpm > 0 ? feed / rpm : 0);
+			double mrr = drill ? pi * dia * dia / 4.0 * ipr * rpm / (mm ? 1000.0 : 1.0)
+							   : (mm ? 1.0 : 12.0) * sfm * ipr * num (ap);
+			mrr = std::round (mrr * 1000.0) / 1000.0;
+
+			const std::wstring K = mm ? L"1000" : L"12";
+			const std::wstring D = drill ? Csv::Tidy (dia) : ref (L"cut_dia");
+			const std::wstring capRef = has (L"max_ss") ? ref (L"max_ss") : L"0";
+			const std::wstring rpmF = L"IF(" + ref (L"speed_mode") + L"=\"CSS\",IF(N(" + capRef + L")>0,MIN(" + ref (L"speed")
+									  + L"*" + K + L"/(PI()*" + D + L")," + capRef + L")," + ref (L"speed") + L"*" + K
+									  + L"/(PI()*" + D + L"))," + ref (L"speed") + L")";
+			const std::wstring iprF = L"IF(" + ref (L"feed_mode") + L"=\"per rev\"," + ref (L"feed") + L"," + ref (L"feed")
+									  + L"/" + rpmF + L")";
+			const std::wstring mrrF = drill
+				? L"ROUND(PI()*" + D + L"^2/4*" + iprF + L"*" + rpmF + (mm ? L"/1000" : L"") + L",3)"
+				: L"ROUND(" + std::wstring (mm ? L"1" : L"12") + L"*" + rpmF + L"*PI()*" + D + L"/" + K + L"*" + iprF + L"*"
+					  + ref (ap) + L",3)";
+			s.formula[d][static_cast<size_t> (mrrCol)] = L"IFERROR(" + mrrF + L",\"\")";
+			s.rows[d + 1][static_cast<size_t> (mrrCol)] = Csv::Tidy (mrr);
+			if (drill && diaCol >= 0)
+				s.rows[d + 1][static_cast<size_t> (diaCol)] = Csv::Tidy (dia);
+
+			const int cutEst = colOf (L"cut_seconds_est"), estCol = colOf (L"est_seconds"), rawCol = colOf (L"cycle_time_raw");
+			if (cutEst < 0 || estCol < 0 || rawCol < 0)
+				continue;
+			double cut0 = 0, tot0 = st.seconds;
+			Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], cut0);
+			const std::wstring mrrRef = letters (static_cast<size_t> (mrrCol)) + rowNo;
+			const std::wstring cutRef = letters (static_cast<size_t> (cutEst)) + rowNo;
+			const bool live = !s.formula[d][static_cast<size_t> (estCol)].empty ();
+			const std::wstring totRef = live ? letters (static_cast<size_t> (estCol)) + rowNo
+											 : letters (static_cast<size_t> (rawCol)) + rowNo;
+			if (avgCol >= 0 && tot0 > 0)
+				{
+				s.formula[d][static_cast<size_t> (avgCol)] = L"IFERROR(ROUND(" + mrrRef + L"*" + cutRef + L"/" + totRef + L",3),\"\")";
+				s.rows[d + 1][static_cast<size_t> (avgCol)] = Csv::Tidy (std::round (mrr * cut0 / tot0 * 1000.0) / 1000.0);
+				}
+			if (remCol >= 0)
+				{
+				s.formula[d][static_cast<size_t> (remCol)] = L"IFERROR(ROUND(" + mrrRef + L"*" + cutRef + L"/60,3),\"\")";
+				s.rows[d + 1][static_cast<size_t> (remCol)] = Csv::Tidy (std::round (mrr * cut0 / 60.0 * 1000.0) / 1000.0);
+				}
+			if (basisCol >= 0)
+				s.rows[d + 1][static_cast<size_t> (basisCol)] =
+					drill ? L"drill " + Csv::Tidy (dia) + L" dia x feed per minute"
+						  : std::wstring (ap) + L" " + text (ap) + L" x feed per rev x surface speed at "
+							+ Csv::Tidy (std::round (dia * 1000.0) / 1000.0) + L" dia"
+							+ (css && cap > 0 && speed * kSpeed / (pi * dia) > cap ? L" (capped by max_ss)" : L"")
+							+ (mm ? L" - cm3/min" : L" - in3/min");
+			}
+		}
 
 		// ---- THE TOOLS PAGE: per tool, its insert and - live - flips and cut time
 		// per part, summed from the main sheet by tool number; then per insert.
@@ -1178,6 +1295,11 @@ namespace Dump
 				info (L"flip_longest", true, false, GFlips);
 				info (L"insp_mode", true, false, GFlips);
 				info (L"cut_seconds_est", false, true, GFlips);
+				info (L"cut_dia", false, true, GMrr);
+				info (L"mrr", false, true, GMrr);
+				info (L"mrr_avg", false, true, GMrr);
+				info (L"removed_est", false, true, GMrr);
+				info (L"mrr_basis", true, false, GMrr);
 				}
 			}
 
@@ -1238,6 +1360,8 @@ namespace Dump
 				}
 
 			Stats stats = tool ? StatsOf (pOp) : Stats ();
+			if (tool)
+				stats.toolDia = pOp->tl.dia;
 			if (tool)
 				Util::Log (part, Paths::Describe (*pOp, stats.path, stats.seconds));
 			if (tool && stats.path.ok)
@@ -1342,6 +1466,9 @@ namespace Dump
 					v = stats.inspRes.mode;
 				else if (c.name == L"cut_seconds_est" && stats.path.ok)
 					v = Csv::Tidy (stats.path.feedSeconds);
+				else if (c.name == L"cut_dia" && stats.path.ok && stats.path.cutLength > 0
+						 && stats.path.lengthTimesRadius > 0)
+					v = Csv::Tidy (std::round (2.0 * stats.path.lengthTimesRadius / stats.path.cutLength * 1000.0) / 1000.0);
 
 				// Mastercam's arithmetic noise off the last digits. Well inside
 				// what a load counts as the same value, so nothing untouched

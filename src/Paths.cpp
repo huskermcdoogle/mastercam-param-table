@@ -223,6 +223,7 @@ namespace Paths
 						{
 						const double r = at[0] + (end[0] - at[0]) * (q + 0.5) / k;
 						t.feedSeconds += MoveSeconds (sp, len / k, r, b->u.l1.feed);
+						t.lengthTimesRadius += len / k * std::fabs (r);
 						bucket.push_back ({ len / k, r });
 						}
 					}
@@ -266,6 +267,7 @@ namespace Paths
 					p[va] += r * std::sin (a);
 					visit (p);
 					t.feedSeconds += MoveSeconds (sp, len / pieces, p[0], b->u.l2.feed);
+					t.lengthTimesRadius += len / pieces * std::fabs (p[0]);
 					piecesOfArc.push_back ({ len / pieces, p[0] });
 					}
 				}

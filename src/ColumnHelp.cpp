@@ -140,6 +140,11 @@ namespace ColumnHelp
 			{ L"flip_longest",   L"The most feed time between flips (or from the start / to the end) - the longest any edge cuts." },
 			{ L"insp_mode",      L"How stops are placed: between cuts only, or mid-cut (finishing a pass that is nearly done)." },
 			{ L"cut_seconds_est", L"Feed time in seconds, LIVE - the cutting part of the estimate; the Tools page sums it per tool." },
+			{ L"cut_dia",        L"Mean cutting diameter over the feed moves (from the NCI) - where an RPM op's surface speed, and CSS's max_ss cap, are taken. A drill: the tool diameter." },
+			{ L"mrr",            L"Metal removal rate while cutting, LIVE, in3/min (cm3/min metric): 12 x SFM x feed per rev x depth of cut; a drill: pi D^2/4 x feed per minute. Follows speed, feed and depth edits." },
+			{ L"mrr_avg",        L"MRR over the whole operation, LIVE - leads, rapids and air cuts included: mrr x cut time / op time." },
+			{ L"removed_est",    L"Material removed, ESTIMATED: mrr x cut time (in3, cm3 metric). It counts air cuts as cutting, so it reads high." },
+			{ L"mrr_basis",      L"What mrr is worked from: the depth-of-cut column, the diameter, and whether max_ss caps the speed." },
 			};
 		const auto it = help.find (name);
 		if (it != help.end ())
