@@ -32,7 +32,13 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
 - Dump: `src\Dump.cpp` (columns, groups, validations, edit tracking, live estimate formulas).
 - Workbook: `src\Xlsx.cpp` (writer: stored zip, hidden "Dumped" sheet, conditional formats,
   validations, Tools sheet + drawing) and `src\XlsxRead.cpp` (own DEFLATE + zip + sheet reader).
-- Load: `src\Load.cpp` -> `src\Plan.*` (SDK-free rules) -> `src\Preview.*` (the window).
+- Load: `src\Load.cpp` -> `src\Plan.*` (SDK-free rules) -> `src\Preview.*` (the window;
+  tick rules in `src\PreviewTicks.cpp`, SDK-free). Impact line: `src\Impact.*` reads
+  cycle_time_raw / est_seconds / flips_part (+ the Dumped sheet's flips_part) - SDK-free.
+- Undo last load (`LatheParamsUndoEntry`, `Load::UndoLast`): `src\Undo.*` (SDK-free) writes
+  the load's log lines and reads them back. A load now opens with
+  `load begin: <part>  <-  <sheets>`; loads logged before that line existed cannot be undone.
+  Not yet run in Mastercam (built and unit-tested only; the window checked in a harness).
 - Paths/estimate: `src\Paths.*` (NCI walk), `src\Estimate.*` (formula generator, SDK-free).
 
 ## Facts paid for (do not re-derive)
@@ -47,7 +53,7 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
 
 ## Build / run
 - `python tools\genproj.py` then `build.bat` (MSVC v143 14.40 pinned). Close Mastercam first.
-- `tests\run_tests.bat` (6 SDK-free tests); `tools\check_estimate.ps1` (real-Excel formula check).
+- `tests\run_tests.bat` (SDK-free tests; set PT_TEST_OUT to build them elsewhere); `tools\check_estimate.ps1` (real-Excel formula check).
 - `deploy.ps1` (the build machine), `package.ps1` (the release zip: drop `ParamTable.ft` and
   the `ParamTable\` folder into Add-Ins - install needs no scripts).
 

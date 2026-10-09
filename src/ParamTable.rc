@@ -56,6 +56,7 @@ BEGIN
     // (Function-Table-file.pdf, "Resource Definition".)
     IDS_FT_DUMP     "Parameter Table Tool\nLathe params - dump to Excel"
     IDS_FT_LOAD     "Parameter Table Tool\nLathe params - load"
+    IDS_FT_UNDO     "Parameter Table Tool\nLathe params - undo last load"
 END
 
 #endif

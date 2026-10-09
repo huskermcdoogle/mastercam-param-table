@@ -146,6 +146,15 @@
     <ClCompile Include="src\Plan.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Impact.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\Undo.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\PreviewTicks.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h" />
@@ -166,6 +175,8 @@
     <ClInclude Include="src\LatheFields.h" />
     <ClInclude Include="src\Csv.h" />
     <ClInclude Include="src\Plan.h" />
+    <ClInclude Include="src\Impact.h" />
+    <ClInclude Include="src\Undo.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\ParamTable.rc" />

@@ -16,7 +16,7 @@ namespace Util
 	int Say (const std::wstring &text, unsigned flags = 0x40 /*MB_ICONINFORMATION*/);
 
 	/// Append a line to ParamTable.log beside the part, time-stamped. Every
-	/// value a reload overwrites goes here first - there is no undo, so this is
-	/// the way back.
+	/// value a reload overwrites goes here first - it is the way back, and the
+	/// record "undo last load" reads (Undo.h).
 	void Log (const std::filesystem::path &partFile, const std::wstring &line);
 	}

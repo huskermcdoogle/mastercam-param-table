@@ -98,6 +98,33 @@ int main (int argc, char **argv)
 		}
 	}
 
+	// ---- The hidden Dumped sheet, by name: the values as written, which the
+	// load's impact reads (flips as dumped). The main sheet is still the default.
+	{
+	Xlsx::Sheet s;
+	s.rows = { { L"op_idn", L"type", L"flips_part" },
+			   { L"1", L"ROUGH", L"4" },
+			   { L"2", L"FINISH", L"0" } };
+	s.group = { 0, 0, 1 };
+	s.groupNames = { L"Identity", L"Flips" };
+	s.trackChanges = true;
+	const std::string bytes = Xlsx::Build (s);
+	std::vector<std::vector<std::wstring>> rows, main;
+	std::vector<size_t> sheetRow;
+	std::wstring why;
+	const bool ok = Xlsx::ReadNamedSheetBytes (bytes, L"Dumped", rows, sheetRow, why);
+	Check (ok && rows.size () == 3, "the Dumped sheet reads by name");
+	if (ok && rows.size () == 3)
+		{
+		Check (rows[0] == s.rows[0], "Dumped: the column names");
+		Check (rows[1][2] == L"4" && rows[2][0] == L"2", "Dumped: the values as written");
+		}
+	Check (Xlsx::ReadSheetBytes (bytes, main, sheetRow, why) && main.size () == 3 && main[0] == s.rows[0],
+		   "with a Dumped sheet present, the default is still the main sheet");
+	Check (!Xlsx::ReadNamedSheetBytes (bytes, L"No such sheet", rows, sheetRow, why) && !why.empty (),
+		   "a missing named sheet is refused, not stood in for by another");
+	}
+
 	{
 	std::vector<std::vector<std::wstring>> rows;
 	std::vector<size_t> sheetRow;

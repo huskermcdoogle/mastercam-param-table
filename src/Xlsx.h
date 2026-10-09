@@ -151,6 +151,19 @@ namespace Xlsx
 						 std::vector<std::vector<std::wstring>> &rows,
 						 std::vector<size_t> &sheetRow, std::wstring &why);
 
+	/// Another sheet of the workbook, by its exact name, read the same way -
+	/// "Dumped", the values as written, is how the load knows what the edits
+	/// moved the estimates FROM. False when there is no sheet of that name. An
+	/// empty name is ReadSheet's own choice of sheet.
+	bool ReadNamedSheet (const std::filesystem::path &file, const std::wstring &sheetName,
+						 std::vector<std::vector<std::wstring>> &rows,
+						 std::vector<size_t> &sheetRow, std::wstring &why);
+
+	/// The same, from the file's bytes.
+	bool ReadNamedSheetBytes (const std::string &bytes, const std::wstring &sheetName,
+							  std::vector<std::vector<std::wstring>> &rows,
+							  std::vector<size_t> &sheetRow, std::wstring &why);
+
 	/// Raw DEFLATE (RFC 1951) data to bytes. False when the data is damaged.
 	bool Inflate (const std::string &in, std::string &out);
 

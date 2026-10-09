@@ -3,6 +3,7 @@
 
 #define IDS_FT_DUMP                     1
 #define IDS_FT_LOAD                     2
+#define IDS_FT_UNDO                     3
 #define IDB_DUMP_SMALL                  18001
 #define IDB_DUMP_LARGE                  18002
 #define IDB_LOAD_SMALL                  18003

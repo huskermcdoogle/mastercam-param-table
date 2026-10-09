@@ -48,6 +48,19 @@ Manager; by kind), where to save and what to call the file, then writes one `.xl
 grouped by operation - old value struck through in red, new value in green - and every
 refused row with the reason. **Apply** writes; **Cancel** writes nothing.
 
+- **The impact first.** The top line is the whole part: cycle time as dumped against the
+  sheet's estimate, and insert flips per part - `Cycle time 26:32:07 -> 25:10:40 (-1:21:27)
+  · flips 168 -> 152`. Each operation's line shows its own, green where it got better.
+- **Leave changes out.** Every change has a tick box; an operation's box ticks or unticks all
+  of its changes. A feed and its per rev / per min (a speed and its CSS / RPM, a value and the
+  switch that turns it on) tick together. The impact follows the ticks.
+
+**Undo last load** - puts the old values of this part's most recent load back, from
+`ParamTable.log`, in the same preview. Only values still as the load left them are restored;
+an operation edited since is left alone and listed with what changed. Running it twice does
+nothing the second time. It is its own command (not a button in the load) because a load is
+judged after it - regenerated, backplotted, posted - when the load's window is long closed.
+
 ### Operation kinds
 
 Lathe: rough, finish, dynamic rough, prime turning, face, groove, plunge rough, drill,
@@ -61,8 +74,8 @@ listed by the dump as "not read yet".
 - **Only a cell that differs is a change**; an untouched sheet writes nothing.
 - A row with **any** bad cell is **refused whole** - half a row applied is a state nobody chose.
 - Read-only columns are reported if edited and never written.
-- **Every old value is written to `ParamTable.log` first** - there is no undo, the log is the
-  way back. Changed operations are marked for regeneration.
+- **Every old value is written to `ParamTable.log` first** - the log is the way back, and
+  what **undo last load** reads. Changed operations are marked for regeneration.
 
 ## Install
 
@@ -70,8 +83,9 @@ listed by the dump as "not read yet".
 2. Close Mastercam.
 3. Copy `ParamTable.ft` **and** the `ParamTable` folder into
    `Documents\My Mastercam 2026\Mastercam\Add-Ins`.
-4. Start Mastercam. The two functions appear under **Customize** as
-   *Parameter Table Tool* - "Lathe params - dump to Excel" and "Lathe params - load".
+4. Start Mastercam. The three functions appear under **Customize** as
+   *Parameter Table Tool* - "Lathe params - dump to Excel", "Lathe params - load" and
+   "Lathe params - undo last load".
 
 `ParamTable\SHA256SUMS.txt` has the hash of each file; `BUILD-INFO.txt` says which commit and
 toolset built it. The add-in uses only Mastercam's own DLLs, MFC and Windows - no networking.
@@ -81,8 +95,10 @@ toolset built it. The add-in uses only Mastercam's own DLLs, MFC and Windows - n
 1. Save the part. Run **dump**; choose operations, folder and name; the workbook opens.
 2. Edit in Excel. Hover a cell for what it is; watch `est_cycle_time` as you change feeds.
 3. **Save** the workbook (as `.xlsx` - no "Save As CSV").
-4. Run **load**; it starts at the sheet you last dumped. Read the preview, then Apply.
-5. Regenerate the changed operations, check them, save the part.
+4. Run **load**; it starts at the sheet you last dumped. Read the preview, untick anything
+   to leave out, then Apply.
+5. Regenerate the changed operations, check them, save the part. Not right? Run **undo last
+   load**.
 
 ## Limits
 
@@ -119,6 +135,7 @@ the build machine; `package.ps1` makes the release zip.
 | `src\LatheFields.*` | every operation kind's columns, limits and where each lives in the SDK |
 | `src\Dump.cpp`, `src\DumpDialog.*` | the dump and its window |
 | `src\Load.cpp`, `src\Plan.*`, `src\Preview.*` | the load, its rules (SDK-free), its preview |
+| `src\Impact.*`, `src\Undo.*` | the preview's time / flips impact, and undo from the log (SDK-free) |
 | `src\Xlsx.cpp`, `src\XlsxRead.cpp` | the workbook writer and reader (no libraries) |
 | `src\Paths.*`, `src\Estimate.*` | the NCI walk and the live estimate formula |
 | `src\Coolant.*` | X-style coolant: codes, machine labels, write-back |
