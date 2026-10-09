@@ -453,6 +453,84 @@ namespace
 		return std::wstring ();
 		}
 
+	/// An ANSI insert shape code's name and nose angle (0: round / unknown).
+	std::pair<std::wstring, double> ShapeName (wchar_t code)
+		{
+		switch (code)
+			{
+			case L'C': return { L"C 80°", 80 };
+			case L'D': return { L"D 55°", 55 };
+			case L'E': return { L"E 75°", 75 };
+			case L'K': return { L"K 55°", 55 };
+			case L'M': return { L"M 86°", 86 };
+			case L'V': return { L"V 35°", 35 };
+			case L'T': return { L"T 60°", 60 };
+			case L'S': return { L"S 90°", 90 };
+			case L'W': return { L"W 80°", 80 };
+			case L'H': return { L"H 120°", 120 };
+			case L'O': return { L"O 135°", 135 };
+			case L'P': return { L"P 108°", 108 };
+			case L'R': return { L"Round", 0 };
+			default: return { std::wstring (), 0 };
+			}
+		}
+
+	std::wstring Dim (double v)
+		{
+		return Csv::Tidy (std::round (v * 1000.0) / 1000.0);
+		}
+
+	/// The insert as its geometry says - what tools are grouped by, whatever they
+	/// are called: "Round IC 1", "C 80° IC 0.5 r0.031", "groove w0.197 r0.016".
+	std::wstring InsertLabel (const ToolPictures::InsertInfo &in)
+		{
+		if (!in.ok)
+			return std::wstring ();
+		const std::wstring name = ShapeName (in.shape).first;
+		if (in.shape == L'R')
+			return L"Round IC " + Dim (in.ic);
+		if (!name.empty () && in.ic > 0)
+			return name + L" IC " + Dim (in.ic) + (in.radius > 0 ? L" r" + Dim (in.radius) : L"");
+		if (in.width > 0)
+			return L"groove w" + Dim (in.width) + (in.radius > 0 ? L" r" + Dim (in.radius) : L"");
+		return std::wstring ();
+		}
+
+	/// The insert's own data against the shape the stock simulation sweeps.
+	std::wstring ShapeCheck (const ToolPictures::InsertInfo &in, const StockSim::ToolShape &sim)
+		{
+		if (!in.ok)
+			return L"no insert data in the tool";
+		if (!sim.ok)
+			return L"simulation has no outline - nose circle only";
+		const auto [name, angle] = ShapeName (in.shape);
+		if (in.shape == L'R')
+			{
+			if (!sim.round)
+				return L"MISMATCH: insert is round, simulation sweeps a polygon";
+			return in.ic > 0 && std::fabs (sim.size - in.ic) > 0.1 * in.ic
+					   ? L"size differs: simulation " + Dim (sim.size) + L" dia, insert IC " + Dim (in.ic)
+					   : L"ok";
+			}
+		if (sim.round)
+			return L"MISMATCH: insert is " + (name.empty () ? std::wstring (L"not round") : name)
+				   + L", simulation sweeps a round";
+		if (angle > 0)
+			return std::fabs (sim.noseAngle - angle) <= 8
+					   ? L"ok"
+					   : L"MISMATCH: nose angle " + Dim (std::round (sim.noseAngle)) + L"° in the simulation, "
+							 + Dim (angle) + L"° insert";
+		return L"not checked (shape " + std::wstring (in.shape ? std::wstring (1, in.shape) : L"none") + L")";
+		}
+
+	std::wstring SimShapeText (const StockSim::ToolShape &sim)
+		{
+		if (!sim.ok)
+			return L"nose circle only";
+		return sim.round ? L"round " + Dim (sim.size) + L" dia"
+						 : L"polygon, nose " + Dim (std::round (sim.noseAngle)) + L"°, " + Dim (sim.size) + L" across";
+		}
+
 	/// Edges per insert from its ISO code: corners by the shape letter - C, D,
 	/// E, K, V 2; T, W 3; S 4; a round (R) about 8 - doubled when the clearance
 	/// letter is N (double-sided). Blank without a code: typed in instead.
@@ -463,7 +541,12 @@ namespace
 			up += static_cast<wchar_t> (std::towupper (c));
 		if (up.find (L"ROUND") != std::wstring::npos)
 			return L"8";
-		const std::wstring code = IsoInsertCode (insert);
+		std::wstring code = IsoInsertCode (insert);
+		if (code.empty () && !insert.empty () && ShapeName (insert[0]).second > 0 && insert.size () > 1
+			&& insert[1] == L' ')
+			code = std::wstring (1, insert[0]) + L"X";		// a geometry label: shape only, one-sided
+		if (insert.rfind (L"Round", 0) == 0)
+			return L"8";
 		if (code.empty ())
 			return std::wstring ();
 		int corners = 0;
@@ -1131,7 +1214,7 @@ namespace
 				return L"'Lathe params'!$" + l + L"$3:$" + l + L"$" + last;
 				};
 			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips",
-								 L"Edge life (fallback)" };
+								 L"Edge life (fallback)", L"Insert code", L"Simulated shape", L"Shape check" };
 			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
 			std::vector<char> inspects (tools.size (), 0);	// any of its ops has tool inspection on
 			std::vector<std::map<double, int>> lifeVotes (tools.size ());	// its inspected ops' insp_time
@@ -1154,6 +1237,10 @@ namespace
 			for (size_t k = 0; k < tools.size (); ++k)
 				{
 				Xlsx::Sheet::ToolRow &tr = tools[k];
+				// extra[0] the insert (what tools group by), then code, simulated
+				// shape and check - kept for the end.
+				const std::vector<Xlsx::Sheet::FreeCell> tail (tr.extra.size () > 1 ? tr.extra.begin () + 1 : tr.extra.end (),
+															   tr.extra.end ());
 				tr.extra.resize (1);
 				tr.extra[0].editable = true;			// the insert: correct it, and the table below follows
 				const std::wstring row = std::to_wstring (k + 2);
@@ -1186,6 +1273,8 @@ namespace
 				life.editable = true;
 				life.textFormat = true;
 				tr.extra.push_back (life);
+				for (const Xlsx::Sheet::FreeCell &t : tail)
+					tr.extra.push_back (t);
 				if (!tr.extra[0].text.empty ())
 					byInsert[tr.extra[0].text].push_back (k);
 				}
@@ -1216,7 +1305,15 @@ namespace
 						used.text += (used.text.empty () ? L"T" : L", T") + tools[k].number;
 						total += flipsOf[k];
 						}
-					edges.text = EdgesGuess (kv.first);
+					// Edges: from an ISO code on one of its tools (CNMG432 -> 4), else
+					// from the shape alone (one-sided - type over a double-sided one).
+					std::wstring codeOf;
+					for (size_t k : kv.second)
+						if (codeOf.empty () && tools[k].extra.size () > 5)
+							codeOf = tools[k].extra[5].text;
+					edges.text = EdgesGuess (codeOf);
+					if (edges.text.empty ())
+						edges.text = EdgesGuess (kv.first);
 					edges.editable = true;
 					flips.formula = L"SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$" + lastTool + L")";
 					flips.text = Csv::Tidy (total);
@@ -1909,8 +2006,11 @@ namespace Dump
 						tr.png.clear ();
 						Util::Log (part, L"tool " + tr.number + L": no picture - " + why);
 						}
-					// The insert, for counting flips per insert (lathe tools only, as above).
-					Xlsx::Sheet::FreeCell ins;
+					// The insert, for counting flips per insert (lathe tools only, as above):
+					// its geometry from the tool manager is what groups tools; the names
+					// (Mastercam's, else an ISO code in the tool's name) are shown beside;
+					// and the shape the stock simulation sweeps is checked against it.
+					Xlsx::Sheet::FreeCell ins, code, simShape, check;
 					if (latheKind)
 						{
 						// Often the insert's 3D file ("CNMG 432.stp"): shown without the extension.
@@ -1926,8 +2026,23 @@ namespace Dump
 							low += static_cast<wchar_t> (std::towlower (c));
 						if (low.empty () || low == L"insert" || low == L"default")
 							ins.text = IsoInsertCode (tr.name);
+						const ToolPictures::InsertInfo info = ToolPictures::LatheInsertInfo (slot);
+						const StockSim::ToolShape sim = StockSim::ShapeOfTool (slot);
+						code.text = ins.text;
+						const std::wstring label = InsertLabel (info);
+						if (!label.empty ())
+							ins.text = label;
+						simShape.text = SimShapeText (sim);
+						check.text = ShapeCheck (info, sim);
+						Util::Log (part, L"tool " + tr.number + L" insert: " + (label.empty () ? L"(no geometry)" : label)
+										 + L" | code " + (code.text.empty () ? L"-" : code.text)
+										 + (info.grade.empty () ? L"" : L" | grade " + info.grade)
+										 + L" | simulated " + simShape.text + L" | " + check.text);
 						}
 					tr.extra.push_back (ins);
+					tr.extra.push_back (code);
+					tr.extra.push_back (simShape);
+					tr.extra.push_back (check);
 					k = tools.size ();
 					tools.push_back (tr);
 					bySlot[slot] = k;

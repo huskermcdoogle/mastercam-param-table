@@ -4,15 +4,42 @@
 #include "TlServices_CH.h"
 #include "TlMgr_CH.h"
 #include "ILTool_CH.h"
+#include "TlToolLathe_CH.h"
+#include "TlInsert_CH.h"
+#include "TlToolGrade_CH.h"
 #include "SetupSheet_CH.h"
 
 #include <atlimage.h>
 #include <filesystem>
 #include <fstream>
+#include <cwctype>
 #include <iterator>
 
 namespace ToolPictures
 	{
+	InsertInfo LatheInsertInfo (long slot)
+		{
+		InsertInfo r;
+		Cnc::Tool::TlMgr *mgr = Cnc::Tool::GetTlMgr ();
+		Cnc::Tool::TlToolLathePtr tool;
+		if (mgr == nullptr || !mgr->Find (slot, tool) || !tool)
+			return r;
+		const auto ins = tool->GetMainInsert ();
+		if (!ins)
+			return r;
+		r.ok = true;
+		r.shape = static_cast<wchar_t> (std::towupper (ins->GetAnsiShapeCode ()));
+		r.ic = ins->GetICDiameter ();
+		r.radius = ins->GetCornerRadius ();
+		r.thickness = ins->GetThickness ();
+		r.width = ins->GetWidth ();
+		r.length = ins->GetLength ();
+		r.custom = ins->GetIsCustom ();
+		if (const auto g = ins->GetGrade ())
+			r.grade = g->GetName ().GetString ();
+		return r;
+		}
+
 	std::wstring LatheInsert (long slot)
 		{
 		Cnc::Tool::TlMgr *mgr = Cnc::Tool::GetTlMgr ();

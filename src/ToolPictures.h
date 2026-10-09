@@ -17,4 +17,15 @@ namespace ToolPictures
 
 	/// The insert name of the lathe tool in this slot ("" when none).
 	std::wstring LatheInsert (long slot);
+
+	/// The lathe tool's main insert as the tool manager defines it.
+	struct InsertInfo
+		{
+		bool ok = false;			//!< the tool has an insert definition
+		wchar_t shape = 0;			//!< ANSI shape code: C, D, V, T, S, R, W ... (0 = none / custom)
+		double ic = 0, radius = 0, thickness = 0, width = 0, length = 0;	//!< in the part's units
+		std::wstring grade;			//!< the insert grade's name
+		bool custom = false;
+		};
+	InsertInfo LatheInsertInfo (long slot);
 	}

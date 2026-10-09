@@ -27,6 +27,19 @@ namespace StockSim
 
 	/// Simulate every lathe machine group's operations in Operation Manager
 	/// order: what each removes, by op_idn. `log` writes the probe's lines too.
+	/// The shape the simulation sweeps for a lathe tool, measured from its outline
+	/// (the tool's cut boundary): round with a diameter, or a polygon with the
+	/// included angle at its nose. For checking against the insert's own data.
+	struct ToolShape
+		{
+		bool ok = false;			//!< there is an outline (not just a nose circle)
+		bool round = false;
+		double size = 0;			//!< round: diameter; polygon: the larger extent
+		double noseAngle = 0;		//!< polygon: degrees at the nose
+		double noseRadius = 0;
+		};
+	ToolShape ShapeOfTool (long slot);
+
 	/// simulate = false: no sweeping - each op's removed volume is the difference
 	/// of Mastercam's own stock boundaries before and after it (quick; no air share).
 	std::map<long, Result> Run (const std::filesystem::path &part, bool log, bool simulate);

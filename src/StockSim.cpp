@@ -385,6 +385,73 @@ namespace
 
 namespace StockSim
 	{
+	ToolShape ShapeOfTool (long slot)
+		{
+		ToolShape r;
+		const Shape sh = ShapeOf (slot, std::filesystem::path ());
+		if (!sh.fromBoundary || sh.insert.size () < 3)
+			return r;
+		r.ok = true;
+		const std::vector<P> &h = sh.insert;
+		// The nose: the centre of the corner-radius circle the simulation uses.
+		double nz = 0, nx = 0, nr = 0;
+		for (const P &p : sh.nose)
+			{
+			nz += p.z / sh.nose.size ();
+			nx += p.x / sh.nose.size ();
+			}
+		nr = std::hypot (sh.nose[0].z - nz, sh.nose[0].x - nx);
+		r.noseRadius = nr;
+		// Round: every hull point about as far from the middle.
+		double cz = 0, cx = 0;
+		for (const P &p : h)
+			{
+			cz += p.z / h.size ();
+			cx += p.x / h.size ();
+			}
+		double dMin = 1e300, dMax = 0, z0 = 1e300, z1 = -1e300, x0 = 1e300, x1 = -1e300;
+		for (const P &p : h)
+			{
+			const double d = std::hypot (p.z - cz, p.x - cx);
+			dMin = (std::min) (dMin, d);
+			dMax = (std::max) (dMax, d);
+			z0 = (std::min) (z0, p.z); z1 = (std::max) (z1, p.z);
+			x0 = (std::min) (x0, p.x); x1 = (std::max) (x1, p.x);
+			}
+		if (dMax > 0 && dMin / dMax > 0.97)
+			{
+			r.round = true;
+			r.size = dMin + dMax;
+			return r;
+			}
+		r.size = (std::max) (z1 - z0, x1 - x0);
+		// The nose angle: the two straight sides leaving the nose arc. Walk the hull
+		// from the point nearest the nose centre both ways past the arc; the hull
+		// edge there is the side, tangent to the arc.
+		const size_t n = h.size ();
+		size_t i0 = 0;
+		double best = 1e300;
+		for (size_t i = 0; i < n; ++i)
+			if (const double d = std::hypot (h[i].z - nz, h[i].x - nx); d < best)
+				{
+				best = d;
+				i0 = i;
+				}
+		auto onArc = [&] (size_t i) { return std::hypot (h[i].z - nz, h[i].x - nx) <= nr * 1.05 + 1e-4; };
+		size_t a = i0, b = i0;
+		for (size_t k = 0; k < n && onArc ((a + 1) % n); ++k)
+			a = (a + 1) % n;
+		for (size_t k = 0; k < n && onArc ((b + n - 1) % n); ++k)
+			b = (b + n - 1) % n;
+		const P a1 = h[a], a2 = h[(a + 1) % n], b1 = h[b], b2 = h[(b + n - 1) % n];
+		const double ua = std::atan2 (a2.x - a1.x, a2.z - a1.z), ub = std::atan2 (b2.x - b1.x, b2.z - b1.z);
+		double ang = std::fabs (ua - ub) * 180.0 / kPi;
+		if (ang > 180)
+			ang = 360 - ang;
+		r.noseAngle = ang;
+		return r;
+		}
+
 	std::map<long, Result> Run (const std::filesystem::path &part, bool log, bool simulate)
 		{
 		gLog = log;
