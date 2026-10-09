@@ -130,9 +130,11 @@ namespace
 	Stats StatsOf (operation *pOp)
 		{
 		Stats st;
-		const double t = CalcCycleTime (pOp, false);
+		const unsigned long diag = Settings::Diag ();
+		const double t = (diag & 1) ? 0.0 : CalcCycleTime (pOp, false);
 		st.seconds = t;
-		st.path = Paths::Walk (*pOp);
+		if (!(diag & 2))
+			st.path = Paths::Walk (*pOp);
 		if (st.path.ok)
 			{
 			st.cut = Csv::Tidy (std::round (st.path.cutLength * 10000.0) / 10000.0);
@@ -784,6 +786,10 @@ namespace Dump
 		const std::wstring stamp = stampBuf;
 
 		const std::filesystem::path part = Util::PartFile ();
+		if (const unsigned long diag = Settings::Diag ())
+			Util::Log (part, L"diag " + std::to_wstring (diag) + L": "
+							 + ((diag & 1) ? L"no Mastercam cycle time  " : L"")
+							 + ((diag & 2) ? L"no NCI walk" : L""));
 		if (part.empty ())
 			{
 			Util::Say (L"Save the part first - the CSV file is written beside "

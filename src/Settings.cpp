@@ -66,6 +66,14 @@ namespace Settings
 		SetText (L"LastDumpPart", part);
 		}
 
+	unsigned long Diag ()
+		{
+		DWORD v = 0, size = sizeof (v);
+		if (RegGetValueW (HKEY_CURRENT_USER, kKey, L"Diag", RRF_RT_REG_DWORD, nullptr, &v, &size) != ERROR_SUCCESS)
+			return 0;
+		return v;
+		}
+
 	std::wstring LastDumpFor (const std::wstring &part)
 		{
 		return _wcsicmp (GetText (L"LastDumpPart", L"").c_str (), part.c_str ()) == 0
