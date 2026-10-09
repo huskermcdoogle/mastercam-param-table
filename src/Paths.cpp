@@ -114,6 +114,16 @@ namespace Paths
 			if (b == nullptr)
 				continue;
 			const NCI_GCODE g = b->gcode;
+			if (g == NCI_COMMENT_TOOL_INSPECTION)
+				{
+				Totals::Inspection in;
+				in.cutLength = t.cutLength;
+				in.feedSeconds = t.feedSeconds;
+				in.comment.assign (b->u.m1055.comment, wcsnlen (b->u.m1055.comment, PATH_MAX + 1));
+				t.inspections.push_back (in);
+				}
+			if (g != NCI_RAPID && g != NCI_LINEAR && g != NCI_ARC_CW && g != NCI_ARC_CCW)
+				++t.otherCodes[static_cast<int> (g)];
 			if (static_cast<int> (g) == 1002 && b->type == NCI_LATHE_TYPE)
 				{
 				const long rpm = b->u.l1002.rpm;
@@ -334,6 +344,16 @@ namespace Paths
 			 + L" Y " + n (t.min[1]) + L".." + n (t.max[1])
 			 + L" Z " + n (t.min[2]) + L".." + n (t.max[2])
 			 + L" | feed time " + hms (t.feedSeconds) + L" vs Mastercam " + hms (mastercamSeconds);
+		if (!t.inspections.empty ())
+			{
+			s += L" | " + std::to_wstring (t.inspections.size ()) + L" tool inspection(s), cut so far:";
+			for (const Totals::Inspection &in : t.inspections)
+				s += L" " + n (in.cutLength) + L" (" + hms (in.feedSeconds) + L")"
+					 + (in.comment.empty () ? L"" : L" \"" + in.comment + L"\"");
+			}
+		s += L" | codes";
+		for (const auto &kv : t.otherCodes)
+			s += L" " + std::to_wstring (kv.first) + L"x" + std::to_wstring (kv.second);
 		return s;
 		}
 	}

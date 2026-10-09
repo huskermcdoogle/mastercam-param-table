@@ -12,6 +12,8 @@
 #include "Estimate.h"
 
 #include <string>
+#include <map>
+#include <string>
 #include <vector>
 
 struct operation;
@@ -43,6 +45,20 @@ namespace Paths
 		/// what the sheet's live estimate is built from. A dynamic mill's back
 		/// feed is its own group.
 		std::vector<Estimate::Group> groups;
+
+		/// TOOL INSPECTION: each tool-inspection record (NCI 1055) as it comes,
+		/// with how much cutting (length, feed seconds) the tool had done by then.
+		struct Inspection
+			{
+			double cutLength = 0;
+			double feedSeconds = 0;
+			std::wstring comment;
+			};
+		std::vector<Inspection> inspections;
+
+		/// Every code that is not a move, and how often (probe: where inspection
+		/// stops, events and the like sit in the NCI).
+		std::map<int, long> otherCodes;
 		};
 
 	/// Walk one operation's NCI. Totals::ok is false when it has none (needs
