@@ -18,8 +18,8 @@ the file, then writes one `.xlsx`:
 - **A Summary page first** - the one it opens on, all live: the part's cycle time, cutting
   time, insert flips, material removed and removal rate as dumped and now; a batch quantity
   with its cycle time and insert cost; the ten longest operations (with their share of the
-  part), the tools that flip inserts most, and the operations that cut the most air. Click an
-  op number to jump to its row.
+  part), the tools that flip inserts most, the operations that cut the most air, and insert
+  usage per part by insert. Click an op number to jump to its row.
 
 - **One row per operation**, in Operation Manager order; the most-used parameters first
   (feeds and speeds, depth of cut, stock to leave, coolant), the rest in collapsible groups.
@@ -40,8 +40,25 @@ the file, then writes one `.xlsx`:
   moves as you edit feed, speed, CSS/RPM, max spindle speed or feed mode on that row. The model
   walks the toolpath (lines and arcs, CSS turned to RPM at each diameter, the max-RPM cap, each
   section's own spindle setting) and reproduces Mastercam's cycle time to within seconds.
-- **A Tools sheet** with each tool's picture, linked from the `tool` column, and an
-  inserts table: edges and cost per insert typed in, inserts and insert cost per part live.
+- **Insert flips, live.** Each op's tool-inspection stops are read from its NCI; a stop whose
+  comment says ROTATE / FLIP / CHANGE / INDEX is an insert flip, and stops with no comment are
+  inferred from the settings with an edge clock that runs across a tool's ops. Flips count in
+  whole numbers, rounded up, and follow edits to `insp_time` and the feeds.
+- **Material removed** per op from Mastercam's own lathe stock boundaries (a swept-insert
+  simulation of the bar where they are missing, and as a check), with the theoretical and
+  actual removal rate and the share of each op spent cutting air.
+- **Transforms count as copies** of their source ops: their time, flips and material go to the
+  part and tool totals.
+- **A Tools sheet** with each tool's picture, linked from the `tool` column: its insert, worked
+  out from the tool's geometry (ISO shapes, PrimeTurning A / B, grooving inserts) and checked
+  against the shape the simulation swept; its flips, cut time, the inspection settings its ops
+  stop on, and an edge life for ops that set none. Below, an inserts table: edges, cost and -
+  for an insert that outlasts a part - parts per edge typed in; inserts and insert cost per
+  part live. Every typed cell is checked as you type; a cell that does not apply is greyed out.
+- **Typed values are kept** in a small file beside the part (`<part>.ptconfig`): insert edges,
+  costs, parts per edge, edge lives, corrected insert names and the batch quantity. The next
+  dump picks them up from the last saved workbook - loaded back or not - and drops tools and
+  inserts the part no longer uses. No macros needed; delete the file to start over.
 - **Optional macros** (an `.xlsm`, off unless ticked): a *Parameter Table* ribbon tab -
   set / scale / copy across selected cells in a window that shows how many cells will change
   or be refused before anything is written, revert cells, rows or everything to the dump, a
@@ -163,6 +180,8 @@ the build machine; `package.ps1` makes the release zip.
 | `src\Impact.*`, `src\Undo.*` | the preview's time / flips impact, and undo from the log (SDK-free) |
 | `src\Xlsx.cpp`, `src\XlsxRead.cpp` | the workbook writer and reader (no libraries) |
 | `src\Paths.*`, `src\Estimate.*` | the NCI walk and the live estimate formula |
+| `src\Inspect.*`, `src\StockSim.*`, `src\MillMrr.*` | tool inspection and flips, material removed, mill MRR |
+| `src\Summary.*`, `src\PartConfig.*` | the Summary page, and the part's kept typed values |
 | `src\Coolant.*` | X-style coolant: codes, machine labels, write-back |
 | `vba\` | the workbook macros (module, sheet events, ribbon XML) |
 
