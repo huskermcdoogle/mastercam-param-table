@@ -40,6 +40,7 @@ Private Sub UserForm_Initialize()
     lblInfo.Font.Size = 9
     lblCount.Font.Size = 9
     btnOK.Caption = "OK"
+    btnOK.ControlTipText = "Ctrl+Enter"
     btnCancel.Caption = "Cancel"
     btnCancel.Cancel = True                  ' Esc
     Layout
@@ -97,6 +98,14 @@ End Function
 
 Private Sub txt_Change()
     UpdateCount
+End Sub
+
+' Enter is a new line, so Ctrl+Enter is OK.
+Private Sub txt_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+    If KeyCode = vbKeyReturn And (Shift And 2) <> 0 Then
+        KeyCode = 0
+        If btnOK.Enabled Then btnOK_Click
+    End If
 End Sub
 
 ' "1,204 / 3,111 characters, 18 lines" - red, and OK off, past the limit: the load would

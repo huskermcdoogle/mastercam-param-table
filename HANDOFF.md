@@ -39,6 +39,14 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
 - **Dump window:** find box (highlights matches via tree custom draw; Tick / Untick matches)
   and saved ticks (`HKCU\Software\ParamTableTool\Selections\<part file name>`, one value per
   name, op numbers). Logic in `src\Pick.*` (SDK-free, `tests\pick_test.cpp`).
+- **Planning macros (2026-10-09):** `vba\Planner.bas` + `vba\PlanBox.vb` - hit a target time,
+  even out flips, apply to every op of a tool, filters, what-if scenarios (hidden sheet
+  "Scenario store", compare on a "Scenarios" sheet), round-insert chip thinning in the
+  calculator. A plan is worked out on the sheet's OWN live formulas: trial values in, the
+  sheet recalculated, est_seconds / flips_part / mrr_avg read, old values back (events off,
+  calculation manual) - then OK writes through TryWrite. `tools\check_macros.ps1`: 94 checks.
+  Bulk-edit results go to the status bar (the window already previewed them), not a box.
+- **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`).
 - Real parts used for testing live in `tests\` locally and are NOT tracked (gitignored).
 
 ## Layout of the code
@@ -86,3 +94,8 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
 - Driving Excel by COM: a VBA MsgBox/InputBox hangs it invisibly - keep testable work in
   quiet Functions, and run checks under a timeout.
 - The VBA project is PUBLIC: scan res\vbaProject.bin for user names/paths before committing.
+- A VBA compile error in a COM-driven Excel shows no dialog you can see: open the built
+  `ParamTableVba\vba.xlsm`, run VBE command 578 (Debug > Compile) and read
+  `VBE.ActiveCodePane.GetSelection` - it stops on the bad line.
+- `tools\build_vba.ps1` builds in `%PT_TEST_OUT%\ParamTableVba` when PT_TEST_OUT is set, so
+  worktrees do not trip over each other.
