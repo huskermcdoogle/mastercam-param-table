@@ -423,19 +423,48 @@ namespace
 			   + L"))*86400,VALUE(" + c + L")))";
 		}
 
-	/// Edges per insert, guessed from its name: a CNMG has four, a V-bottom two,
-	/// a round about eight (fewer with heavy wear). Typed over on the sheet.
+	/// Edges per insert, from an ISO insert code in its name (CNMG 432, VBMT 16,
+	/// RCMT ...): corners by the shape letter - C, D, E, K, V 2; T, W 3; S 4; a round
+	/// (R) about 8 - doubled when the clearance letter is N (double-sided). Blank
+	/// when the name holds no such code - a file name, a holder: typed in instead.
 	std::wstring EdgesGuess (const std::wstring &insert)
 		{
 		std::wstring u;
 		for (wchar_t c : insert)
-			u += static_cast<wchar_t> (std::towupper (c));
-		if (u.find (L"CNMG") != std::wstring::npos || u.find (L"CNMA") != std::wstring::npos)
-			return L"4";
-		if (u.find (L"ROUND") != std::wstring::npos || u.rfind (L"RC", 0) == 0 || u.rfind (L"RN", 0) == 0)
-			return L"8";
-		if (u.find (L"V") != std::wstring::npos)
-			return L"2";
+			u += std::iswalnum (c) ? static_cast<wchar_t> (std::towupper (c)) : L' ';
+		size_t at = 0;
+		while (at < u.size ())
+			{
+			while (at < u.size () && u[at] == L' ')
+				++at;
+			size_t end = at;
+			while (end < u.size () && u[end] != L' ')
+				++end;
+			const std::wstring tok = u.substr (at, end - at);
+			at = end;
+			if (tok == L"ROUND")
+				return L"8";
+			// Four letters (shape, clearance, tolerance, type), then digits or nothing.
+			if (tok.size () < 4 || !std::iswalpha (tok[0]) || !std::iswalpha (tok[1]) || !std::iswalpha (tok[2])
+				|| !std::iswalpha (tok[3]))
+				continue;
+			if (tok.size () > 4 && !std::iswdigit (tok[4]))
+				continue;
+			const std::wstring clearance = L"ABCDEFGNPO";
+			if (clearance.find (tok[1]) == std::wstring::npos)
+				continue;
+			int corners = 0;
+			switch (tok[0])
+				{
+				case L'C': case L'D': case L'E': case L'K': case L'V': corners = 2; break;
+				case L'T': case L'W': corners = 3; break;
+				case L'S': corners = 4; break;
+				case L'R': return L"8";
+				default: break;
+				}
+			if (corners > 0)
+				return std::to_wstring (tok[1] == L'N' ? corners * 2 : corners);
+			}
 		return std::wstring ();
 		}
 
@@ -1094,6 +1123,7 @@ namespace
 			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips",
 								 L"Edge life", L"Flips needed", L"Check" };
 			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
+			std::vector<char> inspects (tools.size (), 0);	// any of its ops has tool inspection on
 			for (size_t d = 0; d < rows.size () && d < stats.size (); ++d)
 				if (d < toolOfRow.size () && toolOfRow[d] >= 0)
 					{
@@ -1105,6 +1135,7 @@ namespace
 					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], v))
 						cutOf[k] += v;
 					longOf[k] = (std::max) (longOf[k], stats[d].inspRes.longest);
+					inspects[k] = inspects[k] || (stats[d].inspOk && stats[d].insp.doStop);
 					}
 			std::map<std::wstring, std::vector<size_t>> byInsert;
 			for (size_t k = 0; k < tools.size (); ++k)
@@ -1124,18 +1155,20 @@ namespace
 				tr.extra.push_back (l);
 				// Edge life (typed, m:ss), what the cut time needs at that life - a
 				// cross-check on the stops the program makes - and a flag when the two
-				// are a flip or more apart.
+				// are a flip or more apart. Only a tool whose ops use tool inspection
+				// starts with a life (8:00): without it an insert is expected to last
+				// the part, maybe many - blank, no check, unless one is typed in.
 				Xlsx::Sheet::FreeCell life, need, check;
-				life.text = L"8:00";
+				life.text = inspects[k] ? L"8:00" : L"";
 				life.editable = true;
 				life.textFormat = true;
 				const std::wstring cutSum = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst) + L")";
 				need.formula = L"IFERROR(ROUND(" + cutSum + L"/" + SecondsOf (L"$H" + row) + L",2),\"\")";
-				need.text = Csv::Tidy (std::round (cutOf[k] / 480.0 * 100.0) / 100.0);
+				const double needV = std::round (cutOf[k] / 480.0 * 100.0) / 100.0;
+				need.text = inspects[k] ? Csv::Tidy (needV) : L"";
 				check.formula = L"IF(ISNUMBER($I" + row + L"),IF(ABS($I" + row + L"-$E" + row
 								+ L")>=1,IF($I" + row + L">$E" + row + L",\"program flips too few\",\"program flips more than needed\"),\"\"),\"\")";
-				const double needV = std::round (cutOf[k] / 480.0 * 100.0) / 100.0;
-				check.text = std::fabs (needV - flipsOf[k]) >= 1
+				check.text = inspects[k] && std::fabs (needV - flipsOf[k]) >= 1
 								 ? (needV > flipsOf[k] ? L"program flips too few" : L"program flips more than needed")
 								 : std::wstring ();
 				tr.extra.push_back (life);
@@ -1854,7 +1887,14 @@ namespace Dump
 					// The insert, for counting flips per insert (lathe tools only, as above).
 					Xlsx::Sheet::FreeCell ins;
 					if (latheKind)
+						{
+						// Often the insert's 3D file ("CNMG 432.stp"): shown without the extension.
 						ins.text = ToolPictures::LatheInsert (slot);
+						const size_t dot = ins.text.find_last_of (L'.');
+						if (dot != std::wstring::npos && ins.text.size () - dot <= 5
+							&& ins.text.find_first_of (L"\\/ ", dot) == std::wstring::npos)
+							ins.text.erase (dot);
+						}
 					tr.extra.push_back (ins);
 					k = tools.size ();
 					tools.push_back (tr);
