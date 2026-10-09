@@ -1121,7 +1121,7 @@ namespace
 				return L"'Lathe params'!$" + l + L"$3:$" + l + L"$" + last;
 				};
 			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips",
-								 L"Edge life", L"Flips needed", L"Check" };
+								 L"Edge life (fallback)" };
 			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
 			std::vector<char> inspects (tools.size (), 0);	// any of its ops has tool inspection on
 			std::vector<std::map<double, int>> lifeVotes (tools.size ());	// its inspected ops' insp_time
@@ -1156,14 +1156,13 @@ namespace
 				tr.extra.push_back (f);
 				tr.extra.push_back (c);
 				tr.extra.push_back (l);
-				// Edge life (typed, m:ss), what the cut time needs at that life - a
-				// cross-check on the stops the program makes - and a flag when the two
-				// are a flip or more apart. Only a tool whose ops use tool inspection
-				// starts with a life (8:00): without it an insert is expected to last
-				// the part, maybe many - blank, no check, unless one is typed in.
-				// The tool's own setting first: the insp_time its inspected ops use (the
-				// most common, the shorter on a tie); 8:00 only where none is set.
-				Xlsx::Sheet::FreeCell life, need, check;
+				// Edge life (typed, m:ss): the cut time before a comment-less stop
+				// counts as a flip, on this tool's ops that set no insp_time of their
+				// own - the flips themselves come from the inspection criteria. It
+				// starts at the tool's own insp_time (the most common across its
+				// inspected ops, the shorter on a tie), 8:00 where none is set, and
+				// blank for a tool that does not inspect (its insert lasts the part).
+				Xlsx::Sheet::FreeCell life;
 				double life0 = 480.0;
 				int best = 0;
 				for (const auto &v : lifeVotes[k])			// ascending: the shorter wins a tie
@@ -1175,20 +1174,7 @@ namespace
 				life.text = inspects[k] ? Inspect::MinSec (life0) : L"";
 				life.editable = true;
 				life.textFormat = true;
-				const std::wstring cutSum = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst) + L")";
-				// Whole flips, rounded UP: a part that needs 2.1 edges of cut takes 3.
-				// (A hair over a whole number from rounding does not round up.)
-				need.formula = L"IFERROR(ROUNDUP(ROUND(" + cutSum + L"/" + SecondsOf (L"$H" + row) + L",6),0),\"\")";
-				const double needV = std::ceil (std::round (cutOf[k] / life0 * 1e6) / 1e6);
-				need.text = inspects[k] ? Csv::Tidy (needV) : L"";
-				check.formula = L"IF(ISNUMBER($I" + row + L"),IF(ABS($I" + row + L"-$E" + row
-								+ L")>=1,IF($I" + row + L">$E" + row + L",\"program flips too few\",\"program flips more than needed\"),\"\"),\"\")";
-				check.text = inspects[k] && std::fabs (needV - flipsOf[k]) >= 1
-								 ? (needV > flipsOf[k] ? L"program flips too few" : L"program flips more than needed")
-								 : std::wstring ();
 				tr.extra.push_back (life);
-				tr.extra.push_back (need);
-				tr.extra.push_back (check);
 				if (!tr.extra[0].text.empty ())
 					byInsert[tr.extra[0].text].push_back (k);
 				}
