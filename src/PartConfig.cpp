@@ -84,6 +84,7 @@ namespace PartConfig
 				if (key == L"edges") i.edges = value;
 				else if (key == L"cost") i.cost = value;
 				else if (key == L"parts_per_edge") i.partsPerEdge = value;
+				else if (key == L"edges_detected") i.edgesDetected = value;
 				}
 			else if (section.rfind (L"tool ", 0) == 0)
 				{
@@ -91,6 +92,7 @@ namespace PartConfig
 				if (key == L"edge_life") t.edgeLife = value;
 				else if (key == L"insert") t.insert = value;
 				else if (key == L"detected") t.detected = value;
+				else if (key == L"life_detected") t.lifeDetected = value;
 				}
 			}
 		return c;
@@ -105,22 +107,24 @@ namespace PartConfig
 		for (const auto &kv : c.inserts)
 			{
 			const Insert &i = kv.second;
-			if (i.edges.empty () && i.cost.empty () && i.partsPerEdge.empty ())
+			if (i.edges.empty () && i.cost.empty () && i.partsPerEdge.empty () && i.edgesDetected.empty ())
 				continue;
 			t += L"\r\n[insert " + kv.first + L"]\r\n";
 			if (!i.edges.empty ()) t += L"edges = " + i.edges + L"\r\n";
 			if (!i.cost.empty ()) t += L"cost = " + i.cost + L"\r\n";
 			if (!i.partsPerEdge.empty ()) t += L"parts_per_edge = " + i.partsPerEdge + L"\r\n";
+			if (!i.edgesDetected.empty ()) t += L"edges_detected = " + i.edgesDetected + L"\r\n";
 			}
 		for (const auto &kv : c.tools)
 			{
 			const Tool &tl = kv.second;
-			if (tl.edgeLife.empty () && tl.insert.empty () && tl.detected.empty ())
+			if (tl.edgeLife.empty () && tl.insert.empty () && tl.detected.empty () && tl.lifeDetected.empty ())
 				continue;
 			t += L"\r\n[tool " + kv.first + L"]\r\n";
 			if (!tl.edgeLife.empty ()) t += L"edge_life = " + tl.edgeLife + L"\r\n";
 			if (!tl.insert.empty ()) t += L"insert = " + tl.insert + L"\r\n";
 			if (!tl.detected.empty ()) t += L"detected = " + tl.detected + L"\r\n";
+			if (!tl.lifeDetected.empty ()) t += L"life_detected = " + tl.lifeDetected + L"\r\n";
 			}
 		std::ofstream out (file, std::ios::binary | std::ios::trunc);
 		if (!out)
@@ -150,7 +154,12 @@ namespace PartConfig
 			{
 			const std::wstring number = At (tools, r, 0);
 			Tool &t = n.tools[number];
-			Keep (t.edgeLife, At (tools, r, lifeCol));
+			// Kept only when it differs from what the dump filled in.
+			if (!t.lifeDetected.empty ())
+				{
+				const std::wstring life = At (tools, r, lifeCol);
+				t.edgeLife = life != t.lifeDetected ? life : std::wstring ();
+				}
 			const std::wstring typed = At (tools, r, insCol);
 			// A name other than what the dump put there is a correction. Without a
 			// record of what it put there (a workbook from before this file), the
@@ -178,9 +187,13 @@ namespace PartConfig
 				if (name.empty ())
 					continue;
 				Insert &i = n.inserts[name];
-				Keep (i.edges, At (tools, r, edgesCol));
-				Keep (i.cost, At (tools, r, costCol));
-				Keep (i.partsPerEdge, At (tools, r, partsCol));
+				const std::wstring edges = At (tools, r, edgesCol);
+				if (!i.edgesDetected.empty () || i.edges.empty ())
+					i.edges = edges != i.edgesDetected ? edges : std::wstring ();
+				// Every dump writes the kept cost and parts per edge back into these
+				// cells, so a blank one here was cleared on purpose.
+				i.cost = At (tools, r, costCol);
+				i.partsPerEdge = At (tools, r, partsCol);
 				}
 			break;
 			}

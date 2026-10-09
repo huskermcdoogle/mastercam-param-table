@@ -11,15 +11,17 @@
 // workbook. A load does the same from the workbook it loads. No macros: the
 // workbook only has to be SAVED.
 //
-// INSERT NAMES. The dump labels each tool's insert itself (its geometry, a
-// PrimeTurning or groove type ...). The file records that label as `detected`;
-// only a name typed over it is kept as the tool's `insert` - so better labels in
-// later versions still come through where nobody typed one.
+// WHAT THE DUMP FILLS IN ITSELF - an insert's label, its edges, a tool's edge
+// life - is recorded as `detected` / `edges_detected` / `life_detected`; only a
+// value typed OVER it is kept. So better guesses in later versions, and a changed
+// insp_time, still come through where nobody typed anything. A value with no such
+// record (a workbook from before) is not taken: it cannot be told from a guess.
+// A dump of the WHOLE part drops tools and inserts it no longer uses.
 //
 // The file is plain text, UTF-8, one "key = value" per line under [sections]:
 //   [batch]          qty
-//   [insert <name>]  edges, cost, parts_per_edge
-//   [tool <number>]  edge_life, insert, detected
+//   [insert <name>]  edges, cost, parts_per_edge, edges_detected
+//   [tool <number>]  edge_life, insert, detected, life_detected
 //
 #pragma once
 
@@ -32,12 +34,14 @@ namespace PartConfig
 	struct Insert
 		{
 		std::wstring edges, cost, partsPerEdge;		//!< as typed ("" = not set)
+		std::wstring edgesDetected;					//!< the edges the last dump filled in
 		};
 	struct Tool
 		{
 		std::wstring edgeLife;		//!< m:ss as typed
 		std::wstring insert;		//!< a name typed over the detected one
 		std::wstring detected;		//!< what the last dump labelled it
+		std::wstring lifeDetected;	//!< the edge life the last dump filled in
 		};
 	struct Config
 		{
@@ -55,7 +59,9 @@ namespace PartConfig
 	bool Save (const std::filesystem::path &file, const Config &c);
 
 	/// What was typed into a dump workbook's Tools and Summary sheets, merged into
-	/// `c`: a value filled in there replaces the file's; a blank one leaves it.
+	/// `c`: cost and parts per edge as they stand (a dump writes the kept ones
+	/// back, so blank = cleared); edges, edge life and insert names only where
+	/// they differ from what that dump filled in.
 	/// False (and `c` untouched) when the workbook cannot be read.
 	bool Harvest (const std::filesystem::path &workbook, Config &c, std::wstring &why);
 

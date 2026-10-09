@@ -723,7 +723,7 @@ namespace
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
 					const std::vector<Stats> &stats, std::vector<Xlsx::Sheet::ToolRow> tools,
 					const std::vector<int> &toolOfRow, bool macros, const std::wstring &title,
-					const std::wstring &subtitle, const PartConfig::Config &cfg)
+					const std::wstring &subtitle, PartConfig::Config &cfg, bool wholePart)
 		{
 		Xlsx::Sheet s;
 		s.rows = out;
@@ -1586,8 +1586,15 @@ namespace
 						life0 = v.first;
 						}
 				life.text = inspects[k] ? Inspect::MinSec (life0) : L"";
-				if (const auto it = cfg.tools.find (tr.number); it != cfg.tools.end () && !it->second.edgeLife.empty ())
-					life.text = it->second.edgeLife;		// typed in an earlier dump (the part's .ptconfig)
+				{
+				// The part's .ptconfig: a life typed over an earlier dump's own (only
+				// one recorded against what that dump filled in); then this dump's own.
+				PartConfig::Tool &had = cfg.tools[tr.number];
+				const std::wstring own = life.text;
+				if (!had.lifeDetected.empty () && !had.edgeLife.empty ())
+					life.text = had.edgeLife;
+				had.lifeDetected = own.empty () ? std::wstring (L"-") : own;
+				}
 				life.editable = true;
 				life.textFormat = true;
 				tr.extra.push_back (life);
@@ -1626,10 +1633,9 @@ namespace
 					c.editable = true;
 					return c;
 					};
-				auto remembered = [&] (const std::wstring &name) -> const PartConfig::Insert *
+				auto remembered = [&] (const std::wstring &name) -> PartConfig::Insert *
 					{
-					const auto it = cfg.inserts.find (name);
-					return it == cfg.inserts.end () ? nullptr : &it->second;
+					return &cfg.inserts[name];
 					};
 				size_t i = 0;
 				for (const auto &kv : byInsert)
@@ -1654,9 +1660,14 @@ namespace
 					if (edges.text.empty ())
 						edges.text = EdgesGuess (kv.first);
 					edges.editable = true;
-					const PartConfig::Insert *had = remembered (kv.first);
-					if (had != nullptr && !had->edges.empty ())
+					PartConfig::Insert *had = remembered (kv.first);
+					{
+					// Typed over an earlier dump's own guess (recorded), else this dump's.
+					const std::wstring own = edges.text;
+					if (!had->edgesDetected.empty () && !had->edges.empty ())
 						edges.text = had->edges;
+					had->edgesDetected = own.empty () ? std::wstring (L"-") : own;
+					}
 					double ppe = 0;
 					const bool perParts = had != nullptr && Csv::ParseDouble (had->partsPerEdge, ppe) && ppe > 0;
 					flips.formula = L"IF(N($I" + r + L")>0,1/$I" + r + L",SUMIF($D$2:$D$" + lastTool + L",$B" + r + L",$E$2:$E$"
@@ -1682,25 +1693,14 @@ namespace
 					s.toolsAfter.push_back (row);
 					++i;
 					}
-				// Room for the inserts the names did not give - first the ones named in
-				// an earlier dump that no tool here is labelled with (they come back
-				// with what was typed for them), then blank ones.
-				std::vector<std::pair<std::wstring, const PartConfig::Insert *>> spare;
-				for (const auto &kv : cfg.inserts)
-					if (!byInsert.count (kv.first))
-						spare.push_back ({ kv.first, &kv.second });
-				for (size_t extra = 0; extra < (std::max) (spare.size (), static_cast<size_t> (0)) + 4; ++extra, ++i)
+				// Room for inserts named by hand (type the name on a tool row and here).
+				for (size_t extra = 0; extra < 4; ++extra, ++i)
 					{
 					const std::wstring r = std::to_wstring (tools.size () + 4 + i);
-					const PartConfig::Insert *had = extra < spare.size () ? spare[extra].second : nullptr;
+					const PartConfig::Insert *had = nullptr;
 					Xlsx::Sheet::FreeCell blank, name, used, edges, flips, inserts;
 					name.editable = true;
 					edges.editable = true;
-					if (had != nullptr)
-						{
-						name.text = spare[extra].first;
-						edges.text = had->edges;
-						}
 					flips.formula = L"IF($B" + r + L"=\"\",\"\",IF(N($I" + r + L")>0,1/$I" + r + L",SUMIF($D$2:$D$" + lastTool
 									+ L",$B" + r + L",$E$2:$E$" + lastTool + L")))";
 					inserts.formula = L"IF(N($D" + r + L")>0,IF(N($I" + r + L")>0,ROUND(N($E" + r + L")/$D" + r
@@ -1714,6 +1714,17 @@ namespace
 						}
 					row.push_back (partsCell (had != nullptr ? had->partsPerEdge : std::wstring ()));
 					s.toolsAfter.push_back (row);
+					}
+				// A dump of the whole part: what it no longer uses goes from the file.
+				if (wholePart)
+					{
+					std::set<std::wstring> numbers;
+					for (const Xlsx::Sheet::ToolRow &t : tools)
+						numbers.insert (t.number);
+					for (auto it = cfg.tools.begin (); it != cfg.tools.end ();)
+						it = numbers.count (it->first) ? std::next (it) : cfg.tools.erase (it);
+					for (auto it = cfg.inserts.begin (); it != cfg.inserts.end ();)
+						it = byInsert.count (it->first) ? std::next (it) : cfg.inserts.erase (it);
 					}
 				}
 			}
@@ -2515,7 +2526,7 @@ namespace Dump
 									  + (rows.size () == 1 ? L" operation" : L" operations") + (onlySelected ? L" (a selection)" : L"")
 									  + L" - " + part.wstring ();
 		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow, settings.macros,
-						L"Summary - " + part.filename ().wstring (), subtitle, cfg))
+						L"Summary - " + part.filename ().wstring (), subtitle, cfg, !onlySelected))
 			{
 			Util::Say (L"Could not write " + file.wstring () + L"\r\n\r\nCheck the "
 					   L"folder can be written to, and try again.",

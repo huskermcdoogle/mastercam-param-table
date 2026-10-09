@@ -68,7 +68,10 @@ int main (int argc, char **argv)
 	PartConfig::Config c;
 	c.tools[L"1"].detected = L"CNMG 432";
 	c.tools[L"3"].detected = L"C 80° r0.031";
-	c.inserts[L"C 80° r0.031"].cost = L"9.75";		// typed in an earlier dump, blank here: kept
+	c.inserts[L"C 80° r0.031"].cost = L"9.75";		// kept, then cleared in this workbook
+	c.inserts[L"C 80° r0.031"].edgesDetected = L"2";	// the dump filled in 2: not a typed value
+	c.tools[L"1"].lifeDetected = L"8:00";
+	c.tools[L"3"].lifeDetected = L"-";
 	std::wstring why;
 	Check (PartConfig::Harvest (wb, c, why), "harvest reads the workbook");
 	Check (c.tools[L"1"].insert == L"CNMG 432 typed", "a name typed over the label is kept as the tool's insert");
@@ -76,7 +79,9 @@ int main (int argc, char **argv)
 	Check (c.tools[L"1"].edgeLife == L"6:30", "edge life typed for T1");
 	Check (c.inserts[L"CNMG 432 typed"].edges == L"4" && c.inserts[L"CNMG 432 typed"].cost == L"12.5", "edges and cost");
 	Check (c.inserts[L"C 80° r0.031"].partsPerEdge == L"5", "parts per edge");
-	Check (c.inserts[L"C 80° r0.031"].cost == L"9.75", "a blank cell does not erase what was kept");
+	Check (c.inserts[L"C 80° r0.031"].cost.empty (), "a cost cleared in the workbook is cleared");
+	Check (c.inserts[L"C 80° r0.031"].edges.empty (), "edges left as the dump filled them in are not kept");
+	Check (c.tools[L"3"].edgeLife.empty (), "a blank life the dump left blank is not kept");
 	Check (c.batchQty == L"25", "batch quantity from the Summary");
 
 	// Without a record of the dump's labels, names are left alone.
@@ -89,7 +94,8 @@ int main (int argc, char **argv)
 	const PartConfig::Config back = PartConfig::Load (f);
 	Check (back.batchQty == L"25" && back.tools.at (L"1").insert == L"CNMG 432 typed"
 			   && back.tools.at (L"1").edgeLife == L"6:30" && back.inserts.at (L"C 80° r0.031").partsPerEdge == L"5"
-			   && back.inserts.at (L"C 80° r0.031").cost == L"9.75" && back.tools.at (L"3").detected == L"C 80° r0.031",
+			   && back.inserts.at (L"C 80° r0.031").edgesDetected == L"2" && back.tools.at (L"3").detected == L"C 80° r0.031"
+			   && back.tools.at (L"1").lifeDetected == L"8:00",
 		   "read back the same (names with spaces and the degree sign)");
 	Check (PartConfig::PathFor (L"C:\\parts\\Oil Spool.mcam") == std::filesystem::path (L"C:\\parts\\Oil Spool.ptconfig"),
 		   "the file sits beside the part");
