@@ -59,6 +59,7 @@ namespace Inspect
 		int flips = 0;				//!< the stops that change the insert
 		int byTime = 0, byDist = 0, atEnd = 0, other = 0;	//!< the FLIPS, by cause
 		double longest = 0;			//!< most feed seconds between flips (start and end count)
+		double tail = 0;			//!< feed seconds after the last flip (all of it with none)
 		std::wstring why;			//!< "time 8 + end 1"
 		std::wstring mode;			//!< "between cuts" / "mid-cut ..."
 		};

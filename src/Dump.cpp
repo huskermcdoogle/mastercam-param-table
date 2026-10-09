@@ -519,7 +519,8 @@ namespace
 		const int rawCol = colOf (L"cycle_time_raw");
 		s.untracked.assign (columns.size (), 0);
 		for (int c : { estCol, estText, changeCol, colOf (L"flips_est"), colOf (L"cut_seconds_est"),
-					   colOf (L"mrr"), colOf (L"mrr_avg"), colOf (L"removed_est") })
+					   colOf (L"mrr"), colOf (L"mrr_avg"), colOf (L"removed_est"), colOf (L"flips_uncommented"),
+					   colOf (L"flips_part"), colOf (L"edge_limit"), colOf (L"edge_after") })
 			if (c >= 0)
 				s.untracked[static_cast<size_t> (c)] = 1;
 
@@ -869,10 +870,140 @@ namespace
 			}
 		}
 
+		// ---- THE EDGE CLOCK. Per tool, in program order, the cut time an edge has
+		// done since its last flip - tool changes in between do not reset it.
+		//   commented stops (CHANGE/ROTATE INSERT) are flips, as counted above; the
+		//     clock leaves the op at the cut time after its last flip.
+		//   UNCOMMENTED stops leave nothing in the NCI, so they are inferred from
+		//     the settings: one at each edge_limit of cut while the clock runs
+		//     (the timer on), or one at the end (the end stop) - each a flip only
+		//     once the edge has cut edge_limit. Short ops let the time carry on.
+		//   edge_limit = the op's insp_time when one is filled in (even with the
+		//     timer off), else the tool's edge life on the Tools page (8:00).
+		// Each op reads the clock from the previous op of its tool BY op_idn, so
+		// sorting or filtering the sheet does not break the chain.
+		const int toolsN = static_cast<int> (tools.size ());
+		{
+		const int idCol = colOf (L"op_idn"), toolCol = colOf (L"tool");
+		const int uncCol = colOf (L"flips_uncommented"), partCol = colOf (L"flips_part");
+		const int limCol = colOf (L"edge_limit"), afterCol = colOf (L"edge_after");
+		const int cutCol = colOf (L"cut_seconds_est"), estFlips = colOf (L"flips_est");
+		auto full = [] (double v)
+			{
+			wchar_t buf[40];
+			swprintf_s (buf, L"%.12g", v);
+			return std::wstring (buf);
+			};
+		const std::wstring lastRow = std::to_wstring (rows.size () + 2);
+		auto range = [&] (int c)
+			{
+			const std::wstring l = letters (static_cast<size_t> (c));
+			return L"$" + l + L"$3:$" + l + L"$" + lastRow;
+			};
+		const double defaultLife = 480.0;		// the Tools page's edge life to start with
+		// The Tools page's edge life for a tool (column H, as m:ss), in seconds.
+		const std::wstring lifeOf = toolsN > 0
+			? L"IFERROR(" + SecondsOf (L"VLOOKUP(" + std::wstring (L"TOOLREF") + L"&\"\",'Tools'!$A$2:$H$"
+									   + std::to_wstring (toolsN + 1) + L",8,FALSE)") + L"," + full (defaultLife) + L")"
+			: full (defaultLife);
+		std::map<long, double> clockOf;			// tool -> edge clock leaving its last op
+		std::map<long, std::wstring> lastOpOf;	// tool -> op_idn of its last op
+		for (size_t d = 0; idCol >= 0 && toolCol >= 0 && uncCol >= 0 && partCol >= 0 && limCol >= 0
+						   && afterCol >= 0 && cutCol >= 0 && d < rows.size () && d < stats.size (); ++d)
+			{
+			const Stats &st = stats[d];
+			if (!st.path.ok || !HasTool (*rows[d].t))
+				continue;
+			const Lathe::Table &t = *rows[d].t;
+			const std::wstring rowNo = std::to_wstring (d + 3);
+			auto has = [&] (const wchar_t *name)
+				{ return colOf (name) >= 0 && Lathe::IndexOf (t, name) >= 0; };
+			auto ref = [&] (const wchar_t *name)
+				{ return letters (static_cast<size_t> (colOf (name))) + rowNo; };
+			auto cell = [&] (int c) { return letters (static_cast<size_t> (c)) + rowNo; };
+			const long tool = rows[d].op->tl.tlno;
+			std::vector<std::wstring> &row = s.rows[d + 1];
+
+			// The clock coming in.
+			const double in0 = clockOf.count (tool) ? clockOf[tool] : 0.0;
+			const std::wstring in = lastOpOf.count (tool)
+				// INDIRECT, not INDEX over the column: a range holding this very cell
+				// would be a circular reference.
+				? L"IFERROR(INDIRECT(\"" + letters (static_cast<size_t> (afterCol)) + L"\"&(MATCH(" + lastOpOf[tool] + L","
+				  + range (idCol) + L",0)+2)),0)"
+				: std::wstring (L"0");
+			double feed0 = 0;
+			Csv::ParseDouble (row[static_cast<size_t> (cutCol)], feed0);
+			const std::wstring feed = cell (cutCol);
+
+			// The limit.
+			const Inspect::Settings &is = st.insp;
+			const bool hasTime = has (L"insp_time");
+			const double lim0 = hasTime && is.time > 0 ? is.time : defaultLife;
+			std::wstring life = lifeOf;
+			for (size_t at = life.find (L"TOOLREF"); at != std::wstring::npos; at = life.find (L"TOOLREF"))
+				life.replace (at, 7, cell (toolCol));
+			s.formula[d][static_cast<size_t> (limCol)] = hasTime
+				? L"IF(" + SecondsOf (ref (L"insp_time")) + L">0," + SecondsOf (ref (L"insp_time")) + L"," + life + L")"
+				: life;
+			row[static_cast<size_t> (limCol)] = Csv::Tidy (lim0);
+			const std::wstring lim = cell (limCol);
+
+			// Flips the comment-less stops add, and the clock going out.
+			const bool on = st.inspOk && is.doStop;
+			double unc0 = 0, out0 = in0 + feed0;
+			if (on && is.commentOn)
+				{
+				if (st.inspRes.flips > 0 && st.path.feedSeconds > 0)
+					out0 = feed0 * st.inspRes.tail / st.path.feedSeconds;
+				}
+			else if (on && (is.timeOn || is.atEnd))
+				{
+				const double total = in0 + feed0;
+				unc0 = std::floor (total / lim0);
+				if (!is.timeOn)
+					unc0 = (std::min) (unc0, 1.0);
+				out0 = is.atEnd && unc0 > 0 ? 0.0 : total - unc0 * lim0;
+				}
+			if (st.inspOk && has (L"insp_do_stop") && has (L"insp_comment_on") && has (L"insp_at_end"))
+				{
+				const std::wstring doStop = ref (L"insp_do_stop"), comment = ref (L"insp_comment_on");
+				const std::wstring timeOn = has (L"insp_time_on") ? ref (L"insp_time_on") : L"0";
+				const std::wstring atEnd = ref (L"insp_at_end"), total = L"(" + in + L"+" + feed + L")";
+				const std::wstring n = L"INT(" + total + L"/" + lim + L")";
+				s.formula[d][static_cast<size_t> (uncCol)] = L"IF(AND(" + doStop + L"=1," + comment + L"<>1),IF(" + timeOn
+					+ L"=1," + n + L",IF(" + atEnd + L"=1,MIN(1," + n + L"),0)),0)";
+				const std::wstring unc = cell (uncCol);
+				const std::wstring tailRatio = st.inspRes.flips > 0 && st.path.feedSeconds > 0
+					? full (st.inspRes.tail / st.path.feedSeconds) : std::wstring ();
+				const std::wstring commented = tailRatio.empty () || estFlips < 0
+					? total
+					: L"IF(N(" + cell (estFlips) + L")>0," + feed + L"*" + tailRatio + L"," + total + L")";
+				s.formula[d][static_cast<size_t> (afterCol)] = L"IF(" + doStop + L"<>1," + total + L",IF(" + comment
+					+ L"=1," + commented + L",IF(AND(" + atEnd + L"=1," + unc + L">0),0," + total + L"-" + unc + L"*"
+					+ lim + L")))";
+				}
+			else
+				s.formula[d][static_cast<size_t> (afterCol)] = in + L"+" + feed;
+			row[static_cast<size_t> (uncCol)] = Csv::Tidy (unc0);
+			row[static_cast<size_t> (afterCol)] = Csv::Tidy (std::round (out0 * 1000.0) / 1000.0);
+
+			// All the flips of the op: commented (as counted) + inferred.
+			const double flips0 = st.inspRes.flips + unc0;
+			s.formula[d][static_cast<size_t> (partCol)] = (estFlips >= 0 ? L"N(" + cell (estFlips) + L")" : std::wstring (L"0"))
+														  + L"+" + cell (uncCol);
+			row[static_cast<size_t> (partCol)] = Csv::Tidy (flips0);
+
+			clockOf[tool] = out0;
+			lastOpOf[tool] = row[static_cast<size_t> (idCol)];
+			}
+		}
+
 		// ---- THE TOOLS PAGE: per tool, its insert and - live - flips and cut time
 		// per part, summed from the main sheet by tool number; then per insert.
 		const int toolCol = colOf (L"tool");
-		if (!tools.empty () && toolCol >= 0 && flipsEst >= 0 && cutEst >= 0)
+		const int partCol = colOf (L"flips_part");
+		if (!tools.empty () && toolCol >= 0 && partCol >= 0 && cutEst >= 0)
 			{
 			const std::wstring last = std::to_wstring (rows.size () + 2);
 			auto range = [&] (int c)
@@ -880,13 +1011,16 @@ namespace
 				const std::wstring l = letters (static_cast<size_t> (c));
 				return L"'Lathe params'!$" + l + L"$3:$" + l + L"$" + last;
 				};
-			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips" };
+			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips",
+								 L"Edge life", L"Flips needed", L"Check" };
 			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
 			for (size_t d = 0; d < rows.size () && d < stats.size (); ++d)
 				if (d < toolOfRow.size () && toolOfRow[d] >= 0)
 					{
 					const size_t k = static_cast<size_t> (toolOfRow[d]);
-					flipsOf[k] += stats[d].inspRes.flips;
+					double fp = 0;
+					Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (partCol)], fp);
+					flipsOf[k] += fp;
 					double v = 0;
 					if (Csv::ParseDouble (s.rows[d + 1][static_cast<size_t> (cutEst)], v))
 						cutOf[k] += v;
@@ -899,7 +1033,7 @@ namespace
 				tr.extra.resize (1);
 				const std::wstring row = std::to_wstring (k + 2);
 				Xlsx::Sheet::FreeCell f, c, l;
-				f.formula = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (flipsEst) + L")";
+				f.formula = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (partCol) + L")";
 				f.text = Csv::Tidy (flipsOf[k]);
 				c.formula = L"TEXT(SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst)
 							+ L")/86400,\"[h]:mm:ss\")";
@@ -908,6 +1042,25 @@ namespace
 				tr.extra.push_back (f);
 				tr.extra.push_back (c);
 				tr.extra.push_back (l);
+				// Edge life (typed, m:ss), what the cut time needs at that life - a
+				// cross-check on the stops the program makes - and a flag when the two
+				// are a flip or more apart.
+				Xlsx::Sheet::FreeCell life, need, check;
+				life.text = L"8:00";
+				life.editable = true;
+				life.textFormat = true;
+				const std::wstring cutSum = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst) + L")";
+				need.formula = L"IFERROR(ROUND(" + cutSum + L"/" + SecondsOf (L"$H" + row) + L",2),\"\")";
+				need.text = Csv::Tidy (std::round (cutOf[k] / 480.0 * 100.0) / 100.0);
+				check.formula = L"IF(ISNUMBER($I" + row + L"),IF(ABS($I" + row + L"-$E" + row
+								+ L")>=1,IF($I" + row + L">$E" + row + L",\"program flips too few\",\"program flips more than needed\"),\"\"),\"\")";
+				const double needV = std::round (cutOf[k] / 480.0 * 100.0) / 100.0;
+				check.text = std::fabs (needV - flipsOf[k]) >= 1
+								 ? (needV > flipsOf[k] ? L"program flips too few" : L"program flips more than needed")
+								 : std::wstring ();
+				tr.extra.push_back (life);
+				tr.extra.push_back (need);
+				tr.extra.push_back (check);
 				if (!tr.extra[0].text.empty ())
 					byInsert[tr.extra[0].text].push_back (k);
 				}
@@ -1297,6 +1450,10 @@ namespace Dump
 				info (L"flip_longest", true, false, GFlips);
 				info (L"insp_mode", true, false, GFlips);
 				info (L"cut_seconds_est", false, true, GFlips);
+				info (L"flips_uncommented", false, false, GFlips);
+				info (L"flips_part", false, false, GFlips);
+				info (L"edge_limit", false, true, GFlips);
+				info (L"edge_after", false, true, GFlips);
 				info (L"cut_dia", false, true, GMrr);
 				info (L"mrr", false, true, GMrr);
 				info (L"mrr_avg", false, true, GMrr);

@@ -118,6 +118,7 @@ namespace Inspect
 			}
 		if (r.flips > 0)
 			r.longest = (std::max) (r.longest, t.feedSeconds - lastFlip);
+		r.tail = (std::max) (0.0, t.feedSeconds - lastFlip);
 		auto add = [&r] (int n, const wchar_t *what)
 			{
 			if (n > 0)

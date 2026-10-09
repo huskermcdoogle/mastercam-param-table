@@ -687,7 +687,7 @@ namespace Xlsx
 				};
 			auto freeCell = [&] (size_t r, size_t c, const Sheet::FreeCell &f)
 				{
-				const int style = f.head ? head : f.editable ? 0 : grey;
+				const int style = f.head ? head : f.editable ? st.Get (0, 0, f.textFormat ? 49 : 0) : grey;
 				const std::string at = "<c r=\"" + ColName (c) + std::to_string (r) + "\" s=\"" + std::to_string (style) + "\"";
 				if (!f.formula.empty ())
 					return IsPlainNumber (f.text)

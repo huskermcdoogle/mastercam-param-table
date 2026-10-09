@@ -95,6 +95,7 @@ namespace Xlsx
 			std::wstring formula;
 			bool head = false;			//!< drawn as a heading
 			bool editable = false;		//!< drawn as a cell to type in (not grey)
+			bool textFormat = false;	//!< formatted as Text: a typed 8:00 stays 8:00
 			};
 		struct ToolRow
 			{
