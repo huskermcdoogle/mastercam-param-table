@@ -89,9 +89,20 @@ namespace Inspect
 			// A little slack - the recorded positions are rounded.
 			const bool end = s.atEnd && i + 1 == t.inspections.size ()
 							 && std::fabs (in.cutLength - t.cutLength) <= 1e-3 * (std::max) (1.0, t.cutLength);
-			const bool byTime = !end && s.timeOn && s.time > 0 && in.feedSeconds - lastTime >= 0.97 * s.time;
-			const bool byDist = !end && !byTime && s.distOn && s.dist > 0
-								&& in.cutLength - lastLen >= 0.97 * s.dist;
+			// Mastercam's own clock for the timer runs a little ahead of our feed
+			// time (stops up to ~10% early on a real part), so with no cut-count
+			// trigger switched on, an early stop is still the timer's (or the
+			// distance's, whichever is nearer its setting).
+			const bool cutTriggers = s.cutsOn || s.firstCut || s.eachDepth || s.eachGroove || s.eachSection;
+			const double rt = s.timeOn && s.time > 0 ? (in.feedSeconds - lastTime) / s.time : -1;
+			const double rd = s.distOn && s.dist > 0 ? (in.cutLength - lastLen) / s.dist : -1;
+			bool byTime = !end && rt >= 0.97;
+			bool byDist = !end && !byTime && rd >= 0.97;
+			if (!end && !byTime && !byDist && !cutTriggers && (rt >= 0 || rd >= 0))
+				{
+				byTime = rt >= rd;
+				byDist = !byTime;
+				}
 			if (flip)
 				{
 				++r.flips;
@@ -120,7 +131,8 @@ namespace Inspect
 			r.why += (r.why.empty () ? L"" : L"  ") + std::wstring (L"(")
 					 + std::to_wstring (r.stops - r.flips) + L" stop(s) not a flip)";
 		if (r.why.empty () && s.doStop)
-			r.why = L"inspection on, no stop in the toolpath";
+			r.why = s.commentOn ? L"inspection on, no stop in the toolpath"
+								: L"no comment on the stops - not counted";
 		return r;
 		}
 

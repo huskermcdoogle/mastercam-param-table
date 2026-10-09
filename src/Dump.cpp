@@ -789,8 +789,10 @@ namespace
 			const std::wstring type = t.schema.type;
 			const bool drill = type == L"DRILL" || type == L"MILL DRILL";
 			const wchar_t *ap = nullptr;
-			if (type == L"ROUGH" || type == L"PRIME" || type == L"FINISH")
+			if (type == L"ROUGH" || type == L"PRIME")
 				ap = L"step";
+			else if (type == L"FINISH" && num (L"n_cuts") > 1)
+				ap = L"step";						// a finish's step is a depth only between several passes
 			else if (type == L"DYNAMIC")
 				ap = L"stepover";
 			else if (has (L"rough_step"))

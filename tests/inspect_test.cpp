@@ -48,7 +48,7 @@ int main ()
 
 	// A 9:00 timer, between cuts, stop at end: three timed stops then the end one.
 	Inspect::Settings s;
-	s.doStop = s.timeOn = s.atEnd = s.betweenCuts = true;
+	s.doStop = s.timeOn = s.atEnd = s.betweenCuts = s.commentOn = true;
 	s.time = 540;
 	Paths::Totals t = Path (40.0, 1900, { { 10.9, 558 }, { 21.6, 1118 }, { 32.4, 1690 }, { 40.0, 1900 } });
 	Inspect::Result r = Inspect::Explain (s, t);
@@ -58,11 +58,25 @@ int main ()
 	Check (std::fabs (r.longest - 572) < 1e-9, "longest between flips is 9:32");
 	Check (r.mode == L"between cuts", "mode between cuts");
 
-	// No end stop wanted, and a stop well short of the timer: not time, so cuts.
+	// Only the timer is on: a stop that comes early by our clock is still the timer's.
 	s.atEnd = false;
-	t = Path (12.0, 700, { { 3.0, 200 }, { 11.0, 650 } });
+	t = Path (12.0, 1000, { { 5.0, 440 }, { 11.0, 900 } });
 	r = Inspect::Explain (s, t);
-	Check (r.byTime == 0 && r.other == 2, "stops short of the timer count as cuts");
+	Check (r.byTime == 2 && r.other == 0, "timer only: early stops are still the timer's");
+
+	// With a cut-count trigger on as well, a stop well short of the timer is the cuts'.
+	s.cutsOn = true;
+	s.cuts = 2;
+	t = Path (12.0, 800, { { 3.0, 200 }, { 11.0, 760 } });
+	r = Inspect::Explain (s, t);
+	Check (r.byTime == 1 && r.other == 1, "with cuts on: short stop is the cuts', the long one the timer's");
+	s.cutsOn = false;
+
+	// Inspection on, comment off: Mastercam writes no record to count.
+	Inspect::Settings q = s;
+	q.commentOn = false;
+	r = Inspect::Explain (q, Path (5.0, 300, {}));
+	Check (r.why == L"no comment on the stops - not counted", "comment off - said so");
 
 	// Inspections that are not flips are counted as stops only.
 	t = Path (12.0, 700, { { 6.0, 560 } }, L"CHECK SIZE");
