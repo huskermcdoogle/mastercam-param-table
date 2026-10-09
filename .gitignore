@@ -33,3 +33,6 @@ res/*POST*/
 
 # Anything dropped in from the work machine - never published
 tests/temp/
+
+# Part companion files (what was typed for a real part) - never published
+*.ptconfig
