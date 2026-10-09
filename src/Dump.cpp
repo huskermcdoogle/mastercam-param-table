@@ -1124,6 +1124,7 @@ namespace
 								 L"Edge life", L"Flips needed", L"Check" };
 			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
 			std::vector<char> inspects (tools.size (), 0);	// any of its ops has tool inspection on
+			std::vector<std::map<double, int>> lifeVotes (tools.size ());	// its inspected ops' insp_time
 			for (size_t d = 0; d < rows.size () && d < stats.size (); ++d)
 				if (d < toolOfRow.size () && toolOfRow[d] >= 0)
 					{
@@ -1136,6 +1137,8 @@ namespace
 						cutOf[k] += v;
 					longOf[k] = (std::max) (longOf[k], stats[d].inspRes.longest);
 					inspects[k] = inspects[k] || (stats[d].inspOk && stats[d].insp.doStop);
+					if (stats[d].inspOk && stats[d].insp.doStop && stats[d].insp.time > 0)
+						++lifeVotes[k][stats[d].insp.time];
 					}
 			std::map<std::wstring, std::vector<size_t>> byInsert;
 			for (size_t k = 0; k < tools.size (); ++k)
@@ -1158,13 +1161,23 @@ namespace
 				// are a flip or more apart. Only a tool whose ops use tool inspection
 				// starts with a life (8:00): without it an insert is expected to last
 				// the part, maybe many - blank, no check, unless one is typed in.
+				// The tool's own setting first: the insp_time its inspected ops use (the
+				// most common, the shorter on a tie); 8:00 only where none is set.
 				Xlsx::Sheet::FreeCell life, need, check;
-				life.text = inspects[k] ? L"8:00" : L"";
+				double life0 = 480.0;
+				int best = 0;
+				for (const auto &v : lifeVotes[k])			// ascending: the shorter wins a tie
+					if (v.second > best)
+						{
+						best = v.second;
+						life0 = v.first;
+						}
+				life.text = inspects[k] ? Inspect::MinSec (life0) : L"";
 				life.editable = true;
 				life.textFormat = true;
 				const std::wstring cutSum = L"SUMIF(" + range (toolCol) + L",$A" + row + L"," + range (cutEst) + L")";
 				need.formula = L"IFERROR(ROUND(" + cutSum + L"/" + SecondsOf (L"$H" + row) + L",2),\"\")";
-				const double needV = std::round (cutOf[k] / 480.0 * 100.0) / 100.0;
+				const double needV = std::round (cutOf[k] / life0 * 100.0) / 100.0;
 				need.text = inspects[k] ? Csv::Tidy (needV) : L"";
 				check.formula = L"IF(ISNUMBER($I" + row + L"),IF(ABS($I" + row + L"-$E" + row
 								+ L")>=1,IF($I" + row + L">$E" + row + L",\"program flips too few\",\"program flips more than needed\"),\"\"),\"\")";
