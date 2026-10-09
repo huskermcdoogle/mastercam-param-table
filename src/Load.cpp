@@ -9,11 +9,14 @@
 #include "Xlsx.h"
 #include "Preview.h"
 #include "Settings.h"
+#include "Impact.h"
+#include "Undo.h"
 
 #include <algorithm>
 #include <fstream>
 #include <iterator>
 #include <map>
+#include <set>
 #include <sstream>
 
 namespace
@@ -64,18 +67,104 @@ namespace
 		return now;
 		}
 
-	/// A value on one log line: a manual entry's line breaks shown as the
-	/// preview shows them, so one change stays one line.
-	std::wstring OneLine (const std::wstring &v)
+	/// Every operation's comment, by op_idn - the preview names operations the
+	/// way the Operation Manager does.
+	std::map<long, std::wstring> Comments ()
 		{
-		std::wstring o;
-		for (wchar_t c : v)
+		std::map<long, std::wstring> comments;
+		Cnc::Tool::TpPartOpList &ops = TpMainOpMgr.GetMainOpList ();
+		for (INT_PTR i = 0; i < ops.GetSize (); ++i)
+			if (const operation *o = ops.GetAt (i))
+				comments[o->op_idn] = std::wstring (o->comment, wcsnlen (o->comment, COMMENT_SIZE));
+		return comments;
+		}
+
+	/// The values to write into one operation.
+	struct Batch
+		{
+		const Lathe::Table *table = nullptr;
+		long op = 0;
+		std::vector<const Plan::Change *> changes;	//!< to = the text to write
+		};
+
+	/// Write each batch, one database round trip per operation, every old
+	/// value logged first (prefixed by `prefix`, "" for a load). Counts the
+	/// operations written and failed.
+	void WriteBatches (const std::filesystem::path &part, const std::vector<Batch> &batches,
+				const std::wstring &prefix, int &wrote, int &failed)
+		{
+		Cnc::Tool::TpPartOpList &opList = TpMainOpMgr.GetMainOpList ();
+		wrote = failed = 0;
+
+		for (const Batch &b : batches)
 			{
-			if (c == L'\r')
+			// THE OLD VALUES FIRST. If anything after this goes wrong, or
+			// the edit turns out to be wrong, this is the record.
+			for (const Plan::Change *c : b.changes)
+				Util::Log (part, prefix + Undo::ChangeLine (b.op, b.table->schema.type, c->name,
+															c->from, c->to));
+
+			ent opEnt;
+			if (!opList.DatabaseRetrieve (b.op, opEnt))
+				{
+				++failed;
+				Util::Log (part, prefix + L"op " + std::to_wstring (b.op)
+								 + L" FAILED - could not read it from the database");
 				continue;
-			o += c == L'\n' ? std::wstring (L" \u21B5 ") : std::wstring (1, c);
+				}
+
+			void *prm = Lathe::PrmFor (opEnt.u.op, b.table->opcode);
+			if (prm == nullptr)
+				{
+				++failed;
+				continue;
+				}
+
+			bool ok = true;
+			for (const Plan::Change *c : b.changes)
+				if (!Lathe::Write (b.table->bindings[c->col], &opEnt.u.op, prm, c->to))
+					{
+					ok = false;
+					Util::Log (part, prefix + L"op " + std::to_wstring (b.op)
+									 + L" FAILED writing " + c->name);
+					}
+
+			if (!ok)
+				{
+				// Nothing is stored: opEnt is a copy, and it is discarded.
+				++failed;
+				continue;
+				}
+
+			// MARKED DIRTY. The post reads the NCI, and the NCI is written
+			// when the operation regenerates - so an edit that is not
+			// marked would sit in the operation and reach no program.
+			opEnt.u.op.db.nci_flag = true;
+
+			if (!opList.UpdateListAndDB (opEnt, true))
+				{
+				++failed;
+				Util::Log (part, prefix + L"op " + std::to_wstring (b.op)
+								 + L" FAILED - the database rejected the update");
+				continue;
+				}
+			++wrote;
 			}
-		return o;
+		}
+
+	/// A preview line.
+	Preview::Line MakeLine (Preview::Line::Kind k, const std::wstring &text,
+							const std::wstring &detail = std::wstring (),
+							const std::wstring &from = std::wstring (),
+							const std::wstring &to = std::wstring ())
+		{
+		Preview::Line l;
+		l.kind = k;
+		l.text = text;
+		l.detail = detail;
+		l.from = from;
+		l.to = to;
+		return l;
 		}
 
 	/// The newest dumped sheet of this part, or "" - what a load is almost
@@ -175,6 +264,9 @@ namespace Load
 		std::vector<FilePlan> plans;
 		std::wstring problems;
 		int changes = 0, refusals = 0, rowsChanged = 0;
+		// Each operation's time and flips, as dumped and as edited - the sheet's
+		// own estimate columns, which the plan never reads.
+		std::map<long, Impact::Op> figures;
 
 		for (const std::filesystem::path &file : picked)
 			{
@@ -182,6 +274,7 @@ namespace Load
 			// column names first, and each row's number as the person sees it.
 			std::vector<Csv::Row> csv;
 			std::vector<size_t> rowNo;
+			std::vector<Csv::Row> dumped;
 			std::wstring ext = file.extension ().wstring ();
 			for (wchar_t &c : ext)
 				c = static_cast<wchar_t> (towlower (c));
@@ -193,6 +286,11 @@ namespace Load
 					problems += L"\r\n  " + file.filename ().wstring () + L": " + why;
 					continue;
 					}
+				// The values as dumped, for what the edits moved the flips FROM.
+				// A sheet without them still loads; its flips compare to `flips`.
+				std::vector<size_t> dumpedRow;
+				if (!Xlsx::ReadNamedSheet (file, L"Dumped", dumped, dumpedRow, why))
+					dumped.clear ();
 				}
 			else
 				{
@@ -220,6 +318,9 @@ namespace Load
 							  L"this the dumped sheet?";
 				continue;
 				}
+
+			for (const auto &kv : Impact::Read (csv, dumped))
+				figures[kv.first] = kv.second;
 
 			// ---- ONE SHEET, SEVERAL KINDS. Split the rows by their type, then
 			// plan each kind against its own schema - so every rule the plan
@@ -322,15 +423,10 @@ namespace Load
 		auto add = [&lines] (Preview::Line::Kind k, const std::wstring &text,
 							 const std::wstring &detail = std::wstring (),
 							 const std::wstring &from = std::wstring (),
-							 const std::wstring &to = std::wstring ())
+							 const std::wstring &to = std::wstring ()) -> Preview::Line &
 			{
-			Preview::Line l;
-			l.kind = k;
-			l.text = text;
-			l.detail = detail;
-			l.from = from;
-			l.to = to;
-			lines.push_back (l);
+			lines.push_back (MakeLine (k, text, detail, from, to));
+			return lines.back ();
 			};
 
 		// Refusals first: nothing from those rows is written, and they are what
@@ -367,13 +463,7 @@ namespace Load
 		std::stable_sort (items.begin (), items.end (), [] (const Item &a, const Item &b)
 			{ return a.file != b.file ? a.file < b.file : a.row < b.row; });
 
-		std::map<long, std::wstring> comments;
-		{
-		Cnc::Tool::TpPartOpList &ops = TpMainOpMgr.GetMainOpList ();
-		for (INT_PTR i = 0; i < ops.GetSize (); ++i)
-			if (const operation *o = ops.GetAt (i))
-				comments[o->op_idn] = std::wstring (o->comment, wcsnlen (o->comment, COMMENT_SIZE));
-		}
+		std::map<long, std::wstring> comments = Comments ();
 
 		if (!items.empty ())
 			{
@@ -383,18 +473,32 @@ namespace Load
 										 + (rowsChanged == 1 ? L" operation" : L" operations"));
 			long lastOp = -1;
 			size_t lastFile = static_cast<size_t> (-1);
-			for (const Item &it : items)
+			for (size_t k = 0; k < items.size (); ++k)
 				{
+				const Item &it = items[k];
 				if (it.op != lastOp || it.file != lastFile)
 					{
-					add (Preview::Line::Op,
-						 L"op " + std::to_wstring (it.op) + L"  \u00B7  " + it.fp->table->schema.type
-							 + (it.row ? L"  \u00B7  row " + std::to_wstring (it.row) : L""),
-						 comments[it.op]);
+					Preview::Line &o = add (Preview::Line::Op,
+											L"op " + std::to_wstring (it.op) + L"  \u00B7  " + it.fp->table->schema.type
+												+ (it.row ? L"  \u00B7  row " + std::to_wstring (it.row) : L""),
+											comments[it.op]);
+					o.box = Preview::Line::Ticked;
+					o.tag = it.op;
+					const auto f = figures.find (it.op);
+					if (f != figures.end ())
+						{
+						o.impact = Impact::OpText (f->second);
+						o.tone = Impact::Tone (f->second.was, f->second.now);
+						if (o.tone == 0)
+							o.tone = Impact::Tone (f->second.flipsWas, f->second.flipsNow, true);
+						}
 					lastOp = it.op;
 					lastFile = it.file;
 					}
-				add (Preview::Line::Change, it.c->name, std::wstring (), it.c->from, it.c->to);
+				Preview::Line &c = add (Preview::Line::Change, it.c->name, std::wstring (), it.c->from, it.c->to);
+				c.box = Preview::Line::Ticked;
+				c.link = Plan::LinkOf (it.c->name);
+				c.tag = static_cast<long> (k);
 				}
 			}
 
@@ -441,75 +545,77 @@ namespace Load
 			+ L"  \u00B7  " + std::to_wstring (unchanged) + L" unchanged"
 			+ (refusals ? L"  \u00B7  " + std::to_wstring (refusals) + L" refused" : L"");
 
-		if (!Preview::Show (L"Load " + files, summary, lines, changes))
+		// ---- THE IMPACT, following the ticks: an operation counts as edited
+		// while any of its changes is ticked, as dumped when none is.
+		Preview::Options options;
+		options.foot = L"Untick a change to leave it out. Every old value goes to ParamTable.log first - "
+					   L"\"Lathe params - undo last load\" puts them back. Changed operations are marked "
+					   L"for regeneration.";
+		if (!figures.empty ())
+			options.impact = [&figures] (std::vector<Preview::Line> &ls, int &tone) -> std::wstring
+				{
+				std::set<long> applied;
+				bool partly = false;
+				for (const Preview::Line &l : ls)
+					if (l.kind == Preview::Line::Op && l.box != Preview::Line::Unticked)
+						{
+						applied.insert (l.tag);
+						partly = partly || l.box == Preview::Line::Mixed;
+						}
+				const Impact::Total t = Impact::Sum (figures, applied);
+				std::wstring s = Impact::TotalText (t);
+				if (s.empty ())
+					return s;
+				tone = Impact::Tone (t.was, t.now);
+				if (tone == 0)
+					tone = Impact::Tone (t.flipsWas, t.flipsNow, true);
+				// The estimate is per row: a row half applied cannot be split.
+				if (partly)
+					s += L"  (partly ticked operations count all their edits)";
+				return s;
+				};
+
+		if (!Preview::Show (L"Load " + files, summary, lines, options))
 			return 0;
 
-		// ---- Apply, one database round trip per operation.
-		Cnc::Tool::TpPartOpList &opList = TpMainOpMgr.GetMainOpList ();
-		int wrote = 0, failed = 0;
+		// ---- What was ticked. A change left out is logged, so the log still
+		// tells the whole story of the sheet.
+		std::set<const Plan::Change *> chosen;
+		for (const Preview::Line &l : lines)
+			{
+			if (l.kind != Preview::Line::Change || l.tag < 0 || static_cast<size_t> (l.tag) >= items.size ())
+				continue;
+			const Item &it = items[static_cast<size_t> (l.tag)];
+			if (l.box == Preview::Line::Ticked)
+				chosen.insert (it.c);
+			else
+				Util::Log (part, L"left out: " + Undo::ChangeLine (it.op, it.fp->table->schema.type, it.c->name,
+																 it.c->from, it.c->to));
+			}
 
+		// ---- Apply, one database round trip per operation.
+		std::vector<Batch> batches;
 		for (const FilePlan &fp : plans)
 			{
 			std::map<long, std::vector<const Plan::Change *>> byOp;
 			for (const Plan::Change &c : fp.result.changes)
-				byOp[c.op].push_back (&c);
-
+				if (chosen.count (&c) != 0)
+					byOp[c.op].push_back (&c);
 			for (const auto &kv : byOp)
 				{
-				// THE OLD VALUES FIRST. If anything after this goes wrong, or
-				// the edit turns out to be wrong, this is the record.
-				for (const Plan::Change *c : kv.second)
-					Util::Log (part, L"op " + std::to_wstring (kv.first) + L" "
-									 + fp.table->schema.type + L"  " + c->name + L"  "
-									 + OneLine (c->from) + L" -> " + OneLine (c->to));
-
-				ent opEnt;
-				if (!opList.DatabaseRetrieve (kv.first, opEnt))
-					{
-					++failed;
-					Util::Log (part, L"op " + std::to_wstring (kv.first)
-									 + L" FAILED - could not read it from the database");
-					continue;
-					}
-
-				void *prm = Lathe::PrmFor (opEnt.u.op, fp.table->opcode);
-				if (prm == nullptr)
-					{
-					++failed;
-					continue;
-					}
-
-				bool ok = true;
-				for (const Plan::Change *c : kv.second)
-					if (!Lathe::Write (fp.table->bindings[c->col], &opEnt.u.op, prm, c->to))
-						{
-						ok = false;
-						Util::Log (part, L"op " + std::to_wstring (kv.first)
-										 + L" FAILED writing " + c->name);
-						}
-
-				if (!ok)
-					{
-					// Nothing is stored: opEnt is a copy, and it is discarded.
-					++failed;
-					continue;
-					}
-
-				// MARKED DIRTY. The post reads the NCI, and the NCI is written
-				// when the operation regenerates - so an edit that is not
-				// marked would sit in the operation and reach no program.
-				opEnt.u.op.db.nci_flag = true;
-
-				if (!opList.UpdateListAndDB (opEnt, true))
-					{
-					++failed;
-					Util::Log (part, L"op " + std::to_wstring (kv.first)
-									 + L" FAILED - the database rejected the update");
-					continue;
-					}
-				++wrote;
+				Batch b;
+				b.table = fp.table;
+				b.op = kv.first;
+				b.changes = kv.second;
+				batches.push_back (b);
 				}
 			}
+
+		// The line that makes this load undoable: it names the part, because one
+		// log serves every part in the folder.
+		Util::Log (part, Undo::BeginLine (part.filename ().wstring (), files));
+		int wrote = 0, failed = 0;
+		WriteBatches (part, batches, std::wstring (), wrote, failed);
 
 		Util::Log (part, L"load: " + std::to_wstring (wrote) + L" operation(s) written, "
 						 + std::to_wstring (failed) + L" failed");
@@ -519,7 +625,169 @@ namespace Load
 			done += L", " + std::to_wstring (failed) + L" FAILED (see ParamTable.log)";
 		done += L".\r\n\r\nThey are marked for regeneration - regenerate them "
 				L"before posting, or the old values will still be in the "
-				L"toolpath. Then save the part.";
+				L"toolpath. Then save the part."
+				L"\r\n\r\nTo put the old values back: \"Lathe params - undo last load\".";
+		Util::Say (done, failed ? MB_ICONWARNING : MB_ICONINFORMATION);
+		return 0;
+		}
+
+	int UndoLast ()
+		{
+		Coolant::Reset ();
+		const std::filesystem::path part = Util::PartFile ();
+		if (part.empty ())
+			{
+			Util::Say (L"Save the part first - there is no open part to undo a load in.");
+			return 0;
+			}
+		const std::wstring name = part.filename ().wstring ();
+
+		// ---- The last load of this part, from the log beside it.
+		std::wstring log;
+		if (!ReadFile (part.parent_path () / L"ParamTable.log", log))
+			{
+			Util::Say (L"There is no ParamTable.log beside " + name + L", so there is no load to undo.");
+			return 0;
+			}
+		const Undo::Last last = Undo::FindLast (log, name);
+		if (!last.found)
+			{
+			Util::Say (L"ParamTable.log has no load of " + name + L" that can be undone."
+					   + (last.olderLoads
+							  ? std::wstring (L"\r\n\r\nIts loads were made by an older version of the tool, "
+											  L"which did not note the part. Their old values are still in the "
+											  L"log, to put back by hand.")
+							  : std::wstring ()),
+					   MB_ICONINFORMATION);
+			return 0;
+			}
+
+		// ---- Each value still as the load left it goes back.
+		std::vector<Undo::Kind> kinds;
+		for (const Lathe::Table &t : Lathe::AllTables ())
+			{
+			Undo::Kind k;
+			k.schema = &t.schema;
+			k.now = Snapshot (t);
+			kinds.push_back (k);
+			}
+		const Undo::Result r = Undo::Make (last, kinds);
+
+		std::vector<Preview::Line> lines;
+		if (!r.skipped.empty ())
+			{
+			lines.push_back (MakeLine (Preview::Line::Section, L"Changed since the load - left as they are ("
+									   + std::to_wstring (r.skipped.size ()) + L")"));
+			for (const Undo::Skip &s : r.skipped)
+				lines.push_back (MakeLine (Preview::Line::Refused,
+										   L"op " + std::to_wstring (s.op) + L"  ·  " + s.type, s.why));
+			}
+
+		std::map<long, std::wstring> comments = Comments ();
+		int ops = 0;
+		{
+		long lastOp = -1;
+		for (const Undo::Restore &x : r.restores)
+			if (x.change.op != lastOp)
+				{
+				++ops;
+				lastOp = x.change.op;
+				}
+		}
+		if (!r.restores.empty ())
+			{
+			lines.push_back (MakeLine (Preview::Line::Section, L"Restore - " + std::to_wstring (r.restores.size ())
+									   + (r.restores.size () == 1 ? L" value on " : L" values on ")
+									   + std::to_wstring (ops) + (ops == 1 ? L" operation" : L" operations")));
+			long lastOp = -1;
+			for (size_t k = 0; k < r.restores.size (); ++k)
+				{
+				const Undo::Restore &x = r.restores[k];
+				if (x.change.op != lastOp)
+					{
+					Preview::Line o = MakeLine (Preview::Line::Op, L"op " + std::to_wstring (x.change.op)
+												+ L"  ·  " + x.type, comments[x.change.op]);
+					o.box = Preview::Line::Ticked;
+					o.tag = x.change.op;
+					lines.push_back (o);
+					lastOp = x.change.op;
+					}
+				Preview::Line c = MakeLine (Preview::Line::Change, x.change.name, std::wstring (),
+											x.change.from, x.change.to);
+				c.box = Preview::Line::Ticked;
+				c.link = Plan::LinkOf (x.change.name);
+				c.tag = static_cast<long> (k);
+				lines.push_back (c);
+				}
+			}
+
+		if (!r.already.empty ())
+			{
+			lines.push_back (MakeLine (Preview::Line::Section, L"Already as before the load ("
+									   + std::to_wstring (r.already.size ()) + L")"));
+			for (const Undo::Entry &e : r.already)
+				lines.push_back (MakeLine (Preview::Line::Note, L"op " + std::to_wstring (e.op) + L"  ·  "
+										   + e.type, e.column));
+			}
+
+		const std::wstring summary =
+			L"Load of " + last.stamp + (last.files.empty () ? L"" : L" from " + last.files)
+			+ L"  ·  " + std::to_wstring (r.restores.size ()) + L" to restore"
+			+ (r.skipped.empty () ? L"" : L"  ·  " + std::to_wstring (r.skipped.size ()) + L" changed since")
+			+ (r.already.empty () ? L"" : L"  ·  " + std::to_wstring (r.already.size ()) + L" already back");
+
+		Preview::Options options;
+		options.caption = L"Parameter Table Tool - undo last load";
+		options.verb = L"Restore";
+		options.foot = L"Untick a value to keep it as it is now. Every value replaced goes to ParamTable.log "
+					   L"first. Restored operations are marked for regeneration.";
+		options.nothing = last.entries.empty () ?L"That load wrote nothing - there is nothing to restore."
+											: L"Nothing to restore.";
+
+		if (!Preview::Show (L"Undo the last load of " + name, summary, lines, options))
+			return 0;
+
+		// ---- Restore, logged the way a load is, marked as an undo.
+		Util::Log (part, L"undo begin: " + name + L"  (load of " + last.stamp + L")");
+		std::map<std::pair<long, std::wstring>, Batch> byOp;
+		std::vector<std::pair<long, std::wstring>> order;
+		for (const Preview::Line &l : lines)
+			{
+			if (l.kind != Preview::Line::Change || l.tag < 0 || static_cast<size_t> (l.tag) >= r.restores.size ())
+				continue;
+			const Undo::Restore &x = r.restores[static_cast<size_t> (l.tag)];
+			if (l.box != Preview::Line::Ticked)
+				{
+				Util::Log (part, L"undo left out: " + Undo::ChangeLine (x.change.op, x.type, x.change.name,
+																	  x.change.from, x.change.to));
+				continue;
+				}
+			const Lathe::Table *t = TableForType (x.type);
+			if (t == nullptr)
+				continue;
+			const auto key = std::make_pair (x.change.op, x.type);
+			if (byOp.count (key) == 0)
+				{
+				order.push_back (key);
+				byOp[key].table = t;
+				byOp[key].op = x.change.op;
+				}
+			byOp[key].changes.push_back (&x.change);
+			}
+		std::vector<Batch> batches;
+		for (const auto &key : order)
+			batches.push_back (byOp[key]);
+
+		int wrote = 0, failed = 0;
+		WriteBatches (part, batches, L"undo ", wrote, failed);
+		Util::Log (part, L"undo: " + std::to_wstring (wrote) + L" operation(s) restored, "
+						 + std::to_wstring (failed) + L" failed");
+
+		std::wstring done = L"Restored " + std::to_wstring (wrote) + L" operation(s)";
+		if (failed != 0)
+			done += L", " + std::to_wstring (failed) + L" FAILED (see ParamTable.log)";
+		done += L".\r\n\r\nThey are marked for regeneration - regenerate them "
+				L"before posting. Then save the part.";
 		Util::Say (done, failed ? MB_ICONWARNING : MB_ICONINFORMATION);
 		return 0;
 		}

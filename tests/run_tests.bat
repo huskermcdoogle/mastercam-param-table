@@ -44,6 +44,15 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+echo === load_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\load_test.exe" ^
+    "%~dp0load_test.cpp" "%~dp0..\src\Impact.cpp" "%~dp0..\src\Undo.cpp" "%~dp0..\src\PreviewTicks.cpp" ^
+    "%~dp0..\src\Plan.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\load_test.exe"
+    if errorlevel 1 set FAILED=1
+)
+
 echo === xlsx_test ===
 cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\xlsx_test.exe" ^
     "%~dp0xlsx_test.cpp" "%~dp0..\src\Xlsx.cpp"

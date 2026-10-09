@@ -32,6 +32,37 @@ namespace Plan
 		return false;
 		}
 
+	std::wstring LinkOf (const std::wstring &column)
+		{
+		// The pairs the sheet splits one setting into, named outright: a rule
+		// that guessed from the names would one day tie two columns that are
+		// not one setting.
+		static const wchar_t *const pairs[][2] = {
+			{ L"feed_mode", L"feed" },
+			{ L"speed_mode", L"speed" },
+			{ L"spindle_dir", L"speed" },
+			{ L"use_finish_feed", L"finish_feed" },
+			{ L"use_finish_ss", L"finish_ss" },
+			{ L"finish_ss_css", L"finish_ss" },
+			{ L"pt_rough_css", L"pt_rough_speed" },
+			{ L"pt_fin_css", L"pt_fin_speed" },
+			{ L"pt_rough_axial_type", L"pt_rough_feed_axial" },
+			{ L"pt_rough_radial_type", L"pt_rough_feed_radial" },
+			{ L"pt_fin_axial_type", L"pt_fin_feed_axial" },
+			{ L"pt_fin_radial_type", L"pt_fin_feed_radial" },
+			{ L"fr_override_on", L"fr_override" },
+			{ L"ss_override_on", L"ss_override" },
+			{ L"insp_n_cuts_on", L"insp_n_cuts" },
+			{ L"insp_time_on", L"insp_time" },
+			{ L"insp_dist_on", L"insp_dist" },
+			{ L"insp_comment_on", L"insp_comment" },
+			{ L"use_overlap", L"overlap" } };
+		for (const auto &p : pairs)
+			if (column == p[0])
+				return p[1];
+		return column;
+		}
+
 	std::wstring Lower (std::wstring s)
 		{
 		for (wchar_t &c : s)

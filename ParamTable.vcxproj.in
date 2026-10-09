@@ -56,7 +56,7 @@
          holds memory-mapped sections open on MSBuild's .tlog files while it syncs
          them and fails the build with "cannot be performed on a file with a
          user-mapped section open". -->
-    <IntDir>$(LOCALAPPDATA)\ParamTable\obj\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(LOCALAPPDATA)\ParamTable\obj\$([MSBuild]::StableStringHash($(ProjectDir)))\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>ParamTable</TargetName>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
@@ -143,6 +143,9 @@
     <ClCompile Include="src\XlsxRead.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Inspect.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\Plan.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -150,6 +153,15 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Xform.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\Impact.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\Undo.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\PreviewTicks.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
@@ -172,6 +184,11 @@
     <ClInclude Include="src\LatheFields.h" />
     <ClInclude Include="src\Csv.h" />
     <ClInclude Include="src\Plan.h" />
+    <ClInclude Include="src\Impact.h" />
+    <ClInclude Include="src\Undo.h" />
+    <ClInclude Include="src\Inspect.h" />
+    <ClInclude Include="src\MillMrr.h" />
+    <ClInclude Include="src\Xform.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\ParamTable.rc" />

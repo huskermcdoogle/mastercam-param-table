@@ -392,23 +392,28 @@ namespace
 		}
 
 	/// The worksheet part the workbook lists first (or the one named "Lathe
-	/// params"), through the workbook's relationships.
-	std::string SheetPart (const std::map<std::string, std::string> &parts)
+	/// params"), through the workbook's relationships. With `only`, the sheet
+	/// of exactly that name or "" - another sheet is never a stand-in for it.
+	std::string SheetPart (const std::map<std::string, std::string> &parts,
+						   const std::string &only = std::string ())
 		{
 		const auto wb = parts.find ("xl/workbook.xml");
 		const auto rels = parts.find ("xl/_rels/workbook.xml.rels");
 		if (wb == parts.end () || rels == parts.end ())
-			return "xl/worksheets/sheet1.xml";
+			return only.empty () ? "xl/worksheets/sheet1.xml" : std::string ();
 
 		std::string rid;
 		size_t from = 0, s = 0, e = 0;
 		while (FindTag (wb->second, "sheet", from, s, e))
 			{
 			const std::string id = Attr (wb->second, s, e, "r:id");
-			if (rid.empty () || Attr (wb->second, s, e, "name") == "Lathe params")
+			const std::string name = Attr (wb->second, s, e, "name");
+			if (only.empty () ? (rid.empty () || name == "Lathe params") : name == only)
 				rid = id;
 			from = e;
 			}
+		if (!only.empty () && rid.empty ())
+			return std::string ();
 		from = 0;
 		while (FindTag (rels->second, "Relationship", from, s, e))
 			{
@@ -554,6 +559,13 @@ namespace Xlsx
 						 std::vector<std::vector<std::wstring>> &rows,
 						 std::vector<size_t> &sheetRow, std::wstring &why)
 		{
+		return ReadNamedSheetBytes (bytes, std::wstring (), rows, sheetRow, why);
+		}
+
+	bool ReadNamedSheetBytes (const std::string &bytes, const std::wstring &sheetName,
+							  std::vector<std::vector<std::wstring>> &rows,
+							  std::vector<size_t> &sheetRow, std::wstring &why)
+		{
 		rows.clear ();
 		sheetRow.clear ();
 		std::map<std::string, std::string> parts;
@@ -580,7 +592,15 @@ namespace Xlsx
 				}
 			}
 
-		const std::string partName = SheetPart (parts);
+		// The workbook lists sheet names as UTF-8; ToUtf8Bom's first three bytes
+		// are the BOM.
+		const std::string partName = SheetPart (parts, sheetName.empty ()
+													   ? std::string () : Csv::ToUtf8Bom (sheetName).substr (3));
+		if (partName.empty ())
+			{
+			why = L"the workbook has no sheet \"" + sheetName + L"\"";
+			return false;
+			}
 		const auto sh = parts.find (partName);
 		if (sh == parts.end ())
 			{
@@ -708,5 +728,20 @@ namespace Xlsx
 		const std::string bytes ((std::istreambuf_iterator<char> (in)),
 								 std::istreambuf_iterator<char> ());
 		return ReadSheetBytes (bytes, rows, sheetRow, why);
+		}
+
+	bool ReadNamedSheet (const std::filesystem::path &file, const std::wstring &sheetName,
+						 std::vector<std::vector<std::wstring>> &rows,
+						 std::vector<size_t> &sheetRow, std::wstring &why)
+		{
+		std::ifstream in (file, std::ios::binary);
+		if (!in)
+			{
+			why = L"could not be opened";
+			return false;
+			}
+		const std::string bytes ((std::istreambuf_iterator<char> (in)),
+								 std::istreambuf_iterator<char> ());
+		return ReadNamedSheetBytes (bytes, sheetName, rows, sheetRow, why);
 		}
 	}

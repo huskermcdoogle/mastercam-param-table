@@ -1,10 +1,11 @@
 // Mastercam 2026 C++ Add-In: Parameter Table Tool
 //
-// Two entry points and no UI. Each is its own FUNCTION block in ParamTable.ft,
-// so each can sit on a ribbon or the Quick Access Toolbar:
+// Three entry points. Each is its own FUNCTION block in ParamTable.ft, so each
+// can sit on a ribbon or the Quick Access Toolbar:
 //
-//   LatheParamsDumpEntry  - lathe rough / finish / dynamic parameters to CSV
-//   LatheParamsLoadEntry  - edited CSVs back into the operations
+//   LatheParamsDumpEntry  - the operations' parameters to a workbook
+//   LatheParamsLoadEntry  - the edited workbook back into the operations
+//   LatheParamsUndoEntry  - the last load's old values back, from ParamTable.log
 
 #include "stdafx.h"
 #include "resource.h"
@@ -59,6 +60,26 @@ extern "C" __declspec(dllexport) int LatheParamsLoadEntry (int param)
 		// rather than swallowed - the log is what says how far it got.
 		Util::Say (L"The load failed unexpectedly. Check ParamTable.log beside "
 				   L"the part to see which operations were written before it "
+				   L"stopped.", MB_ICONERROR);
+		}
+	return MC_NOERROR | MC_UNLOADAPP;
+	}
+
+/// Its own command rather than a button in the load: a load is usually judged
+/// AFTER it - regenerated, backplotted, posted - when the load's window is long
+/// closed. Beside "load" on a ribbon, it is there when that moment comes.
+extern "C" __declspec(dllexport) int LatheParamsUndoEntry (int param)
+	{
+	ChangeResCl res (GetChookResourceHandle ());
+
+	try
+		{
+		Load::UndoLast ();
+		}
+	catch (...)
+		{
+		Util::Say (L"The undo failed unexpectedly. Check ParamTable.log beside "
+				   L"the part to see which operations were restored before it "
 				   L"stopped.", MB_ICONERROR);
 		}
 	return MC_NOERROR | MC_UNLOADAPP;

@@ -127,4 +127,11 @@ namespace Plan
 
 	/// Two cell texts equal AS VALUES for this column type.
 	bool SameValue (const Col &col, const std::wstring &a, const std::wstring &b);
+
+	/// Columns that only mean something together share a key: a feed and its
+	/// per rev / per min, a speed and its CSS / RPM and direction, a value and
+	/// the switch that turns it on. Leaving one of such a pair out of a load
+	/// while applying the other gives a value nobody typed (0.3 per minute), so
+	/// the preview ticks them as one. Any other column is its own key.
+	std::wstring LinkOf (const std::wstring &column);
 	}
