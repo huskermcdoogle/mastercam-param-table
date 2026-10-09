@@ -120,6 +120,7 @@
     <ClCompile Include="src\Coolant.cpp" />
     <ClCompile Include="src\Preview.cpp" />
     <ClCompile Include="src\Paths.cpp" />
+    <ClCompile Include="src\StockSim.cpp" />
     <ClCompile Include="src\Settings.cpp" />
     <ClCompile Include="src\DumpDialog.cpp" />
     <ClCompile Include="src\ToolPictures.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="src\Coolant.h" />
     <ClInclude Include="src\Preview.h" />
     <ClInclude Include="src\Paths.h" />
+    <ClInclude Include="src\StockSim.h" />
     <ClInclude Include="src\Settings.h" />
     <ClInclude Include="src\DumpDialog.h" />
     <ClInclude Include="src\ToolPictures.h" />
