@@ -33,14 +33,41 @@ try {
     "opened: $($xl.Windows.Item(1).Caption)  sheets: " + (($wb.Worksheets | ForEach-Object { $_.Name }) -join ', ') +
         "  modules: " + (($wb.VBProject.VBComponents | ForEach-Object { $_.Name }) -join ', ')
 
-    # The ribbon: every button's icon is one Office has (an unknown imageMso is a blank
-    # button), and every onAction is a ribbon callback in the macros.
+    # The ribbon: every icon really draws something, and every onAction is a ribbon
+    # callback in the macros. An unknown imageMso is a blank button - and some names
+    # Office knows have no picture at all (GoalSeek): Office hands back an orange dot
+    # for those, which on the ribbon is blank too. So each icon is drawn to a file (by a
+    # throwaway workbook's macro) and compared with that dot.
     $ribbon = [xml] (Get-Content -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) "vba\ribbon.xml") -Raw)
     $code = (Get-ChildItem (Join-Path (Split-Path -Parent $PSScriptRoot) "vba\*.bas") | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
     $badIcon = @(); $badAction = @()
+    $iconDir = Join-Path $env:TEMP ("pt_icons_" + [guid]::NewGuid().ToString("N").Substring(0, 8))
+    New-Item -ItemType Directory -Force -Path $iconDir | Out-Null
+    $iconIds = @("GoalSeek") + @($ribbon.SelectNodes("//*[@imageMso]") | ForEach-Object { $_.imageMso } | Select-Object -Unique)
+    $tmp = $xl.Workbooks.Add()
+    try {
+        $mod = $tmp.VBProject.VBComponents.Add(1)
+        $mod.CodeModule.AddFromString("Public Sub IconSave(ByVal ids As String, ByVal folder As String)`r`n" +
+            "    Dim v As Variant, p As Object`r`n" +
+            "    For Each v In Split(ids, "","")`r`n" +
+            "        Set p = Nothing`r`n" +
+            "        On Error Resume Next`r`n" +
+            "        Set p = Application.CommandBars.GetImageMso(CStr(v), 32, 32)`r`n" +
+            "        If Not p Is Nothing Then stdole.SavePicture p, folder & ""\"" & v & "".bmp""`r`n" +
+            "        On Error GoTo 0`r`n" +
+            "    Next`r`n" +
+            "End Sub")
+        $xl.Run("'" + $tmp.Name + "'!IconSave", ($iconIds -join ","), $iconDir)
+    } finally { $tmp.Close($false) }
+    $dot = [IO.File]::ReadAllBytes((Join-Path $iconDir "GoalSeek.bmp"))
+    foreach ($id in $iconIds | Select-Object -Skip 1) {
+        $f = Join-Path $iconDir "$id.bmp"
+        if (-not (Test-Path -LiteralPath $f)) { $badIcon += "$id (unknown)"; continue }
+        $bytes = [IO.File]::ReadAllBytes($f)
+        if ($bytes.Length -eq $dot.Length -and -not (Compare-Object $bytes $dot -SyncWindow 0)) { $badIcon += "$id (no picture)" }
+    }
+    Remove-Item -LiteralPath $iconDir -Recurse -Force -ErrorAction SilentlyContinue
     foreach ($b in $ribbon.SelectNodes("//*[@onAction]")) {
-        try { [void] $xl.CommandBars.GetImageMso($b.imageMso, 16, 16) }
-        catch { if ($_.Exception.Message -notlike "*Catastrophic*") { $badIcon += $b.imageMso } }   # a real icon fails only to marshal
         if ($code -notmatch ("Public Sub " + $b.onAction + "\(control As IRibbonControl\)")) { $badAction += $b.onAction }
     }
     Check ($badIcon.Count -eq 0) "every ribbon icon exists ($($badIcon -join ', '))"

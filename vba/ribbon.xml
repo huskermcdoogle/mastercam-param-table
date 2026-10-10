@@ -39,7 +39,7 @@
                   screentip="Tool inspection and insert use" supertip="How often each tool stops to turn its insert, and how much of each edge gets used. Suggests the edge time that uses every edge evenly."/>
         </group>
         <group id="ptImprove" label="Improve">
-          <button id="ptTarget" label="Hit a target time" size="large" imageMso="GoalSeek" onAction="RbTarget"
+          <button id="ptTarget" label="Hit a target time" size="large" imageMso="FunctionsDateTimeInsertGallery" onAction="RbTarget"
                   screentip="Hit a target time" supertip="Pick ops or a tool, type the time you want (12:30) or how much faster (10%). The feeds change by one amount, each inside its own limits. See before and after for every op before anything is written."/>
           <button id="ptCheck" label="Program check" size="large" imageMso="TraceError" onAction="RbCheck"
                   screentip="Program check" supertip="Looks over the whole program for things worth a second look before it goes to the floor - each one with why it matters and a link to the op."/>
