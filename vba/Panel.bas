@@ -42,6 +42,11 @@ Private lastKey As String               ' the rows they were last told
 Private marked As Boolean               ' the row mark is on the sheet
 Private lastFind As String              ' what Find op looked for last
 
+' A command is writing (its cells are being recorded for undo).
+Public Function Recording() As Boolean
+    Recording = jOn
+End Function
+
 ' Start recording a command's writes. Nested calls keep the outer command.
 Public Sub BeginEdit(ByVal label As String)
     If jOn Then Exit Sub
@@ -309,8 +314,24 @@ Public Function ShowColumns(ByVal names As String, Optional ByVal rows As Collec
         sel.Select
         On Error GoTo 0
         Following = False
+        ' A window moved the sheet: the other open windows follow it too, and a later click
+        ' on these same ops is not taken for a move.
+        TellWindows rows
     End If
 End Function
+
+' The open windows follow these rows (each ignores rows it already shows).
+Private Sub TellWindows(ByVal rows As Collection)
+    Dim f As Variant, k As String
+    k = RowsKey(rows)
+    If k = "" Or k = lastKey Then Exit Sub
+    lastKey = k
+    If wins Is Nothing Then Exit Sub
+    On Error Resume Next
+    For Each f In wins
+        f.FollowRows rows
+    Next
+End Sub
 
 ' Scroll so a column (and the first of the rows) is in view.
 Private Sub BringInView(ByVal col As Long, ByVal rows As Collection)
@@ -440,10 +461,11 @@ Public Sub SelectionMoved(ByVal Target As Range)
     On Error Resume Next
     MarkRow ActiveCell.Row
     If wins Is Nothing Then Exit Sub
-    If wins.Count = 0 Or Following Then Exit Sub
+    If wins.Count = 0 Then Exit Sub
     Set rows = OpRows(Target)
     If rows.Count = 0 Then Exit Sub
     k = RowsKey(rows)
+    If Following Then lastKey = k: Exit Sub ' a window moved it: remember, so clicking back is a move
     If k = lastKey Then Exit Sub
     lastKey = k
     For Each f In wins
@@ -572,18 +594,17 @@ Public Sub RbFindNext(control As IRibbonControl): FindNext: End Sub
 Public Sub RbSet(control As IRibbonControl): Recorded "Set selected", "ParamTable.SetSelected": End Sub
 Public Sub RbScale(control As IRibbonControl): Recorded "Scale", "ParamTable.ScaleSelected": End Sub
 Public Sub RbCopy(control As IRibbonControl): Recorded "Copy from op", "ParamTable.CopyFromOp": End Sub
-Public Sub RbToTool(control As IRibbonControl): Recorded "To all ops of tool", "ParamTable.ApplyToTool": End Sub
 Public Sub RbRevertSel(control As IRibbonControl): Recorded "Revert cells", "ParamTable.RevertSelected": End Sub
 Public Sub RbRevertRows(control As IRibbonControl): Recorded "Revert rows", "ParamTable.RevertRows": End Sub
 Public Sub RbRevertAll(control As IRibbonControl): Recorded "Revert everything", "ParamTable.RevertAll": End Sub
-Public Sub RbTarget(control As IRibbonControl): Recorded "Hit a target time", "Planner.ShowPlanWindow", "time": End Sub
+Public Sub RbTarget(control As IRibbonControl): Planner.ShowTargetWindow: End Sub
 Public Sub RbScenLoad(control As IRibbonControl): Recorded "Restore scenario", "ParamTable.ScenarioWindow", "scenload": End Sub
 
 ' The op windows (each its own window module; these just open them).
-Public Sub RbText(control As IRibbonControl): Recorded "Edit text", "ParamTable.EditManualText": End Sub
-Public Sub RbCoolant(control As IRibbonControl): Recorded "Coolant", "ParamTable.PickCoolant": End Sub
-Public Sub RbSpeed(control As IRibbonControl): Recorded "Speed and feed", "ParamTable.CalcSpeed": End Sub
-Public Sub RbInspect(control As IRibbonControl): Recorded "Inspection", "Planner.ShowPlanWindow", "flips": End Sub
+Public Sub RbText(control As IRibbonControl): ParamTable.ShowTextWindow: End Sub
+Public Sub RbCoolant(control As IRibbonControl): ParamTable.ShowCoolantWindow: End Sub
+Public Sub RbSpeed(control As IRibbonControl): ParamTable.CalcSpeed: End Sub      ' modeless: its own writes are each one undo
+Public Sub RbInspect(control As IRibbonControl): Planner.ShowInspectWindow: End Sub
 
 ' The Go to menu: every column group of this sheet, and All columns.
 Public Sub RbGoToMenu(control As IRibbonControl, ByRef content)

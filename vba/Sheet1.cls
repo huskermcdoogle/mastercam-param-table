@@ -7,6 +7,8 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     On Error GoTo Done
     Application.EnableEvents = False
     ParamTable.OnCellsChanged Target
+    ' Typed straight into the sheet: open windows show it (a command refreshes them itself).
+    If Not Panel.Recording() Then Panel.RefreshWindows
 Done:
     Application.EnableEvents = True
 End Sub
@@ -16,13 +18,11 @@ Private Sub Worksheet_SelectionChange(ByVal Target As Range)
     Panel.SelectionMoved Target
 End Sub
 
-' Double-click a comment, inspection comment or manual entry text cell: the editor
-' window instead of in-cell editing.
+' Double-click a comment, inspection comment or manual entry text cell: the Comments &
+' text window on that tab instead of in-cell editing (its Apply is what Undo takes back).
 Private Sub Worksheet_BeforeDoubleClick(ByVal Target As Range, Cancel As Boolean)
     If Target.Cells.Count <> 1 Or Target.Row < 3 Then Exit Sub
     If Not ParamTable.IsTextColumn(CStr(Me.Cells(2, Target.Column).Value)) Then Exit Sub
     Cancel = True
-    Panel.BeginEdit "Edit text"
     ParamTable.EditText Target
-    Panel.EndEdit
 End Sub

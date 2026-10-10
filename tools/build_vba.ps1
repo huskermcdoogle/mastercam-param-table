@@ -56,24 +56,68 @@ try {
         if ($fm.CountOfLines -gt 0) { $fm.DeleteLines(1, $fm.CountOfLines) }
         $fm.AddFromString($code)
     }
-    Add-Form "TextEditor" @(@("Forms.TextBox.1", "txt"), @("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblCount"),
-                            @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
-    Add-Form "CoolantPicker" (@(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblResult"),
-                                @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"),
-                                @("Forms.CommandButton.1", "btnClear")) +
-                              @(1..12 | ForEach-Object { , @("Forms.CheckBox.1", "chk$_") }))
-    Add-Form "EditBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblPrompt"), @("Forms.ComboBox.1", "cbo"),
+    Add-Form "TextEditor" @(@("Forms.Label.1", "lblOps"), @("Forms.CommandButton.1", "btnPrev"), @("Forms.CommandButton.1", "btnNext"),
+                            @("Forms.CommandButton.1", "btnHelp"), @("Forms.MultiPage.1", "mpg"), @("Forms.Label.1", "lblStatus"),
+                            @("Forms.CommandButton.1", "btnRevert"), @("Forms.CommandButton.1", "btnApply"), @("Forms.CommandButton.1", "btnClose"))
+    # Its tabs are the pages of mpg, each holding its own boxes: (page, control, name).
+    $pages = $vbp.VBComponents.Item("TextEditor").Designer.Controls.Item("mpg").Pages
+    while ($pages.Count -lt 3) { [void] $pages.Add() }
+    foreach ($c in @(@(0, "Forms.Label.1", "lblCmtHint"), @(0, "Forms.TextBox.1", "txtComment"), @(0, "Forms.Label.1", "lblCmtCount"),
+                     @(0, "Forms.Label.1", "lblCmtNow"),
+                     @(1, "Forms.Label.1", "lblInspHint"), @(1, "Forms.TextBox.1", "txtInsp"), @(1, "Forms.Label.1", "lblInspCount"),
+                     @(1, "Forms.Label.1", "lblQuick"), @(1, "Forms.CommandButton.1", "btnQ1"), @(1, "Forms.CommandButton.1", "btnQ2"),
+                     @(1, "Forms.CommandButton.1", "btnQ3"), @(1, "Forms.CommandButton.1", "btnQ4"), @(1, "Forms.Label.1", "lblQuickNote"),
+                     @(1, "Forms.CheckBox.1", "chkInspOn"), @(1, "Forms.Label.1", "lblInspNow"),
+                     @(2, "Forms.Label.1", "lblManOp"), @(2, "Forms.ComboBox.1", "cboOp"), @(2, "Forms.Label.1", "lblManHint"),
+                     @(2, "Forms.TextBox.1", "txtManual"), @(2, "Forms.Label.1", "lblManCount"))) {
+        [void] $pages.Item($c[0]).Controls.Add($c[1], $c[2], $true)
+    }
+    Add-Form "CoolantPicker" (@(@("Forms.Label.1", "lblOps"), @("Forms.CommandButton.1", "btnPrev"), @("Forms.CommandButton.1", "btnNext"),
+                                @("Forms.CommandButton.1", "btnHelp"), @("Forms.Label.1", "lblV9Head"), @("Forms.Label.1", "lblV9Hint"),
+                                @("Forms.Label.1", "lblV9Now"), @("Forms.Label.1", "linSep"), @("Forms.Label.1", "lblXHead"),
+                                @("Forms.Label.1", "lblXHint"), @("Forms.Label.1", "lblXB"), @("Forms.Label.1", "lblXW"),
+                                @("Forms.Label.1", "lblXA"), @("Forms.Label.1", "lblXNow"), @("Forms.Label.1", "lblXNote"),
+                                @("Forms.Label.1", "lblNone"), @("Forms.Label.1", "lblStatus"), @("Forms.CommandButton.1", "btnRevert"),
+                                @("Forms.CommandButton.1", "btnApply"), @("Forms.CommandButton.1", "btnClose")) +
+                              @(1..4 | ForEach-Object { , @("Forms.OptionButton.1", "optV$_") }) +
+                              @(1..12 | ForEach-Object { @("Forms.Label.1", "lblX$_"), @("Forms.CheckBox.1", "chkB$_"),
+                                                         @("Forms.CheckBox.1", "chkW$_"), @("Forms.CheckBox.1", "chkA$_") }))
+    Add-Form "EditBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblHint"), @("Forms.CommandButton.1", "btnHelp"),
+                         @("Forms.Label.1", "lblPrompt"), @("Forms.ComboBox.1", "cbo"),
+                         @("Forms.Label.1", "lblInto"), @("Forms.ComboBox.1", "cboInto"),
                          @("Forms.Label.1", "lblPreview"), @("Forms.ListBox.1", "lstDetail"),
                          @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
-    Add-Form "PlanBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblScope"), @("Forms.ComboBox.1", "cboScope"),
-                         @("Forms.Label.1", "lblTarget"), @("Forms.ComboBox.1", "cboTarget"), @("Forms.Label.1", "lblHow"),
-                         @("Forms.ComboBox.1", "cboHow"), @("Forms.CheckBox.1", "chk1"), @("Forms.CheckBox.1", "chk2"),
-                         @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblSummary"),
-                         @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
-    Add-Form "Calculator" (@(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblNote"), @("Forms.CheckBox.1", "chkMetric"),
-                             @("Forms.CommandButton.1", "btnClose"), @("Forms.Label.1", "lblChip"), @("Forms.Label.1", "lblThin"),
-                             @("Forms.CommandButton.1", "btnUseFeed"), @("Forms.CommandButton.1", "btnSetRow")) +
-                           @("Dia", "Surf", "Rpm", "Rev", "Min", "IC", "Ap", "Hex", "Fn" | ForEach-Object { @("Forms.Label.1", "lbl$_"), @("Forms.TextBox.1", "txt$_") }))
+    Add-Form "PlanBox" @(@("Forms.Label.1", "lblHead"), @("Forms.CommandButton.1", "btnHelp"),
+                         @("Forms.Label.1", "lblScope"), @("Forms.ComboBox.1", "cboScope"),
+                         @("Forms.Label.1", "lblTarget"), @("Forms.ComboBox.1", "cboTarget"), @("Forms.Label.1", "lblHint"),
+                         @("Forms.CheckBox.1", "chkMain"), @("Forms.CheckBox.1", "chkSpeeds"),
+                         @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblDetail"), @("Forms.Label.1", "lblNote"),
+                         @("Forms.Label.1", "lblSummary"), @("Forms.Label.1", "lblResult"),
+                         @("Forms.CommandButton.1", "btnRevert"), @("Forms.CommandButton.1", "btnPreview"),
+                         @("Forms.CommandButton.1", "btnApply"), @("Forms.CommandButton.1", "btnClose"))
+    Add-Form "InspectBox" (@(@("Forms.Label.1", "lblHead"), @("Forms.CommandButton.1", "btnHelp"),
+                             @("Forms.Label.1", "lblScope"), @("Forms.ComboBox.1", "cboScope"),
+                             @("Forms.Label.1", "lblGoal"), @("Forms.ComboBox.1", "cboGoal"),
+                             @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblDetail"),
+                             @("Forms.Label.1", "lblSummary"), @("Forms.Label.1", "lblResult"),
+                             @("Forms.CommandButton.1", "btnRevert"), @("Forms.CommandButton.1", "btnApply"),
+                             @("Forms.CommandButton.1", "btnClose")) +
+                           @(1..8 | ForEach-Object { , @("Forms.Label.1", "lblC$_") }))
+    # Speed & feed: a header over two tabs (a MultiPage). Each tab's controls are made ON
+    # its page - still the form's own controls, so the events in Calculator.vb find them.
+    Add-Form "Calculator" @(@("Forms.CommandButton.1", "btnPrev"), @("Forms.ComboBox.1", "cboOp"), @("Forms.CommandButton.1", "btnNext"),
+                            @("Forms.CommandButton.1", "btnHelp"), @("Forms.Label.1", "lblInfo"), @("Forms.MultiPage.1", "mpg"),
+                            @("Forms.Label.1", "lblResult"), @("Forms.CommandButton.1", "btnClose"))
+    $calcPages = $vbp.VBComponents.Item("Calculator").Designer.Controls.Item("mpg").Pages
+    $boxes = { param($names) $names | ForEach-Object { @("Forms.Label.1", "lbl$_"), @("Forms.TextBox.1", "txt$_"), @("Forms.Label.1", "hnt$_") } }
+    foreach ($c in (@(& $boxes @("Dia", "Surf", "Rpm", "Rev", "Min")) + @(@("Forms.Label.1", "lblNote"), @("Forms.CommandButton.1", "btnSetRow")))) {
+        [void] $calcPages.Item(0).Controls.Add($c[0], $c[1], $true)
+    }
+    foreach ($c in (@(@("Forms.Label.1", "lblInsert"), @("Forms.OptionButton.1", "optLead"), @("Forms.OptionButton.1", "optRound")) +
+                    @(& $boxes @("Kr", "Lead", "IC", "Ap", "Hex", "Fn")) +
+                    @(@("Forms.Label.1", "lblNow"), @("Forms.Label.1", "lblThin"), @("Forms.CommandButton.1", "btnSetChip")))) {
+        [void] $calcPages.Item(1).Controls.Add($c[0], $c[1], $true)
+    }
 
     $cm = $vbp.VBComponents.Item("Sheet1").CodeModule
     if ($cm.CountOfLines -gt 0) { $cm.DeleteLines(1, $cm.CountOfLines) }

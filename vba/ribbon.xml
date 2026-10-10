@@ -22,11 +22,9 @@
           <button id="ptSet" label="Set" size="large" imageMso="FillDown" onAction="RbSet"
                   screentip="Set selected cells" supertip="Put one value into every selected cell. The window shows how many cells will change, and which are refused, before anything is written."/>
           <button id="ptScale" label="Scale %" size="large" imageMso="PercentStyle" onAction="RbScale"
-                  screentip="Scale selected cells" supertip="Make the selected numbers bigger or smaller by a percentage, with a preview of the new values."/>
-          <button id="ptCopy" label="Copy from op" size="normal" imageMso="Copy" onAction="RbCopy"
-                  screentip="Copy from an operation" supertip="Copy one op's values into the selected rows, for the selected columns. Pick the op to copy from in the window."/>
-          <button id="ptToTool" label="To all ops of tool" size="normal" imageMso="Paste" onAction="RbToTool"
-                  screentip="Copy to every op of this tool" supertip="Select cells in one op's row (feed, speed ...). Their values go into every other op that uses the same tool."/>
+                  screentip="Scale selected cells" supertip="Make the selected numbers bigger or smaller: +10% is 10% more, -10% is 10% less. The window shows the new values before anything is written."/>
+          <button id="ptCopy" label="Copy from op" size="large" imageMso="Copy" onAction="RbCopy"
+                  screentip="Copy from an operation" supertip="Select the cells to copy (feed, speed ...). The op you are on is copied from - or pick another. Copy into the other selected rows, or into every other op of the same tool. A feed is not copied into a row whose feed is in other units (per rev / per min) unless you copy that too."/>
         </group>
         <group id="ptOps" label="Selected ops">
           <button id="ptText" label="Comments &amp; text" size="large" imageMso="EditDocument" onAction="RbText"
@@ -36,11 +34,11 @@
           <button id="ptSpeed" label="Speed &amp; feed" size="large" imageMso="Calculator" onAction="RbSpeed"
                   screentip="Speed, feed and chip thinning" supertip="A calculator filled in from the op you are on: SFM and RPM, feed per rev and per minute, and the real chip thickness for round and lead-angle inserts. Can write the new feed back to the op."/>
           <button id="ptInspect" label="Inspection &amp; inserts" size="large" imageMso="RecurrenceEdit" onAction="RbInspect"
-                  screentip="Tool inspection and insert use" supertip="How often each tool stops to turn its insert, and how much of each edge gets used. Suggests the edge time that uses every edge evenly."/>
+                  screentip="Tool inspection and insert use" supertip="Each tool of the ops you have selected: its insert, flips per part, how long each edge cuts and how much of the last edge gets used. Suggests the edge time that uses every edge evenly - or one flip fewer or more - and sets it on every op of the tool. Tools whose flips come from the toolpath itself say so."/>
         </group>
         <group id="ptImprove" label="Improve">
-          <button id="ptTarget" label="Hit a target time" size="large" imageMso="GoalSeek" onAction="RbTarget"
-                  screentip="Hit a target time" supertip="Pick ops or a tool, type the time you want (12:30) or how much faster (10%). The feeds change by one amount, each inside its own limits. See before and after for every op before anything is written."/>
+          <button id="ptTarget" label="Hit a target time" size="large" imageMso="FunctionsDateTimeInsertGallery" onAction="RbTarget"
+                  screentip="Hit a target time" supertip="Pick ops or a tool, type the time you want (12:30) or a change: -10% for 10% less time. The feeds change by one amount, each inside its own limits. Preview shows before and after for every op; Apply writes it."/>
           <button id="ptCheck" label="Program check" size="large" imageMso="TraceError" onAction="RbCheck"
                   screentip="Program check" supertip="Looks over the whole program for things worth a second look before it goes to the floor - each one with why it matters and a link to the op."/>
           <menu id="ptScen" label="Scenarios" size="large" imageMso="ReviewCompareTwoVersions"
