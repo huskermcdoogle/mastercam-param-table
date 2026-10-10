@@ -1,11 +1,12 @@
 // Mastercam 2026 C++ Add-In: Parameter Table Tool
 //
-// Four entry points. Each is its own FUNCTION block in ParamTable.ft, so each
+// Five entry points. Each is its own FUNCTION block in ParamTable.ft, so each
 // can sit on a ribbon or the Quick Access Toolbar:
 //
 //   LatheParamsDumpEntry  - the operations' parameters to a workbook
 //   LatheParamsLoadEntry  - the edited workbook back into the operations
 //   LatheParamsUndoEntry  - the last load's old values back, from ParamTable.log
+//   LatheParamsRegenEntry - regenerate what the last load changed, asked first
 //   ParamTableHelpEntry   - the user manual (help\index.html beside the DLL)
 
 #include "stdafx.h"
@@ -13,6 +14,7 @@
 #include "ParamTable.h"
 #include "Dump.h"
 #include "Load.h"
+#include "Regen.h"
 #include "Settings.h"
 #include "Util.h"
 
@@ -83,7 +85,8 @@ namespace
 		done = true;
 		std::vector<Ribbon::Button> buttons = {
 			{ L"LatheParamsDumpEntry", 0, L"D" }, { L"LatheParamsLoadEntry", 0, L"L" },
-			{ L"LatheParamsUndoEntry", 0, L"U" }, { L"ParamTableHelpEntry", 0, L"H" } };
+			{ L"LatheParamsUndoEntry", 0, L"U" }, { L"LatheParamsRegenEntry", 0, L"R" },
+			{ L"ParamTableHelpEntry", 0, L"H" } };
 		std::vector<unsigned> ids;
 		std::wstring said = std::wstring (L"ribbon (") + when + L"): command ids";
 		const Cnc::IFunctionTableManagerPtr ft = Cnc::GetFunctionTableManager ();
@@ -215,6 +218,26 @@ extern "C" __declspec(dllexport) int LatheParamsUndoEntry (int param)
 		Util::Say (L"The undo failed unexpectedly. Check ParamTable.log beside "
 				   L"the part to see which operations were restored before it "
 				   L"stopped.", MB_ICONERROR);
+		}
+	return MC_NOERROR | MC_UNLOADAPP;
+	}
+
+/// Regenerate the operations the last load changed - on purpose, never on the
+/// side: on a big part it takes twenty minutes. It asks first (No is the
+/// default), then puts each one's Mastercam cycle time beside the estimate the
+/// load's sheet showed, in the part's history.
+extern "C" __declspec(dllexport) int LatheParamsRegenEntry (int param)
+	{
+	ChangeResCl res (GetChookResourceHandle ());
+
+	try
+		{
+		Regen::LastLoad ();
+		}
+	catch (...)
+		{
+		Util::Say (L"The regeneration failed unexpectedly. Check ParamTable.log beside the part to see which "
+				   L"operations were regenerated before it stopped.", MB_ICONERROR);
 		}
 	return MC_NOERROR | MC_UNLOADAPP;
 	}

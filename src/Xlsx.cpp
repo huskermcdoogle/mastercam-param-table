@@ -779,47 +779,60 @@ namespace Xlsx
 			return cell (r, c, f.text, style);
 			};
 
-		// ---- "Summary": the page the workbook opens on - what to look at first.
-		const bool summaryPage = !s.summary.empty ();
-		std::string summaryXml;
-		if (summaryPage)
+		// ---- A page to read - the Summary, the History: rows of cells from A1, no
+		// gridlines, printed one page wide and as long as it needs.
+		auto readPage = [&] (const std::vector<std::vector<Sheet::FreeCell>> &rows, const std::vector<double> &widths,
+							 const std::vector<Sheet::Validation> &rules, bool selected)
 			{
-			// Printed one page wide, as long as it needs.
-			summaryXml = decl + "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
-						 "<sheetPr><pageSetUpPr fitToPage=\"1\"/></sheetPr><sheetViews><sheetView showGridLines=\"0\" tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews>"
-						 "<sheetFormatPr defaultRowHeight=\"15\"/>";
-			if (!s.summaryWidths.empty ())
+			std::string x = decl + "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
+							"<sheetPr><pageSetUpPr fitToPage=\"1\"/></sheetPr><sheetViews><sheetView showGridLines=\"0\""
+							+ std::string (selected ? " tabSelected=\"1\"" : "") + " workbookViewId=\"0\"/></sheetViews>"
+							"<sheetFormatPr defaultRowHeight=\"15\"/>";
+			if (!widths.empty ())
 				{
-				summaryXml += "<cols>";
-				for (size_t c = 0; c < s.summaryWidths.size (); ++c)
+				x += "<cols>";
+				for (size_t c = 0; c < widths.size (); ++c)
 					{
-					const double w = s.summaryWidths[c];
-					summaryXml += "<col min=\"" + std::to_string (c + 1) + "\" max=\"" + std::to_string (c + 1)
-								  + "\" width=\"" + std::to_string (w > 0 ? w : 8) + "\" customWidth=\"1\""
-								  + (w > 0 ? "" : " hidden=\"1\"") + "/>";
+					const double w = widths[c];
+					x += "<col min=\"" + std::to_string (c + 1) + "\" max=\"" + std::to_string (c + 1)
+						 + "\" width=\"" + std::to_string (w > 0 ? w : 8) + "\" customWidth=\"1\""
+						 + (w > 0 ? "" : " hidden=\"1\"") + "/>";
 					}
-				summaryXml += "</cols>";
+				x += "</cols>";
 				}
-			summaryXml += "<sheetData>";
-			for (size_t k = 0; k < s.summary.size (); ++k)
+			x += "<sheetData>";
+			for (size_t k = 0; k < rows.size (); ++k)
 				{
 				const size_t r = k + 1;
-				summaryXml += "<row r=\"" + std::to_string (r) + "\">";
-				for (size_t c = 0; c < s.summary[k].size (); ++c)
+				x += "<row r=\"" + std::to_string (r) + "\">";
+				for (size_t c = 0; c < rows[k].size (); ++c)
 					{
-					const Sheet::FreeCell &f = s.summary[k][c];
+					const Sheet::FreeCell &f = rows[k][c];
 					// An empty plain cell is no cell at all: text runs on over it.
 					if (f.text.empty () && f.formula.empty () && f.look != Sheet::FreeCell::Auto
 						&& f.look != Sheet::FreeCell::Input && !f.head)
 						continue;
-					summaryXml += freeCell (r, c, f);
+					x += freeCell (r, c, f);
 					}
-				summaryXml += "</row>";
+				x += "</row>";
 				}
-			summaryXml += "</sheetData>" + validationsXml (s.summaryValidations) + "<pageMargins left=\"0.5\" right=\"0.5\" top=\"0.6\" bottom=\"0.6\" "
-						  "header=\"0.3\" footer=\"0.3\"/><pageSetup orientation=\"landscape\" fitToWidth=\"1\" fitToHeight=\"0\"/>"
-						  "</worksheet>";
-			}
+			return x + "</sheetData>" + validationsXml (rules) + "<pageMargins left=\"0.5\" right=\"0.5\" top=\"0.6\" bottom=\"0.6\" "
+				   "header=\"0.3\" footer=\"0.3\"/><pageSetup orientation=\"landscape\" fitToWidth=\"1\" fitToHeight=\"0\"/>"
+				   "</worksheet>";
+			};
+
+		// ---- "Summary": the page the workbook opens on - what to look at first.
+		const bool summaryPage = !s.summary.empty ();
+		const std::string summaryXml = summaryPage ? readPage (s.summary, s.summaryWidths, s.summaryValidations, true)
+												   : std::string ();
+		// ---- The other pages to read (the History), straight after it. Their parts
+		// and relationships are named for them ("page1.xml", "rIdP1"), clear of the
+		// numbered sheets.
+		std::vector<std::string> pagesXml;
+		for (const Sheet::Page &pg : s.pages)
+			pagesXml.push_back (readPage (pg.rows, pg.widths, {}, false));
+		auto pagePart = [] (size_t k) { return "worksheets/page" + std::to_string (k + 1) + ".xml"; };
+		auto pageRel = [] (size_t k) { return "rIdP" + std::to_string (k + 1); };
 
 		// ---- "Tools": number, name, which operations use it, and its picture.
 		std::string toolsXml, drawingXml, drawingRels;
@@ -940,6 +953,32 @@ namespace Xlsx
 			ignoredXml += "</sheetData></worksheet>";
 			}
 
+		// The pages' entries in the package's lists: their type, their place in the
+		// workbook (after the Summary, with ids clear of the numbered sheets'), their
+		// relationship, and a heading row printed at the top of every page.
+		std::string pageTypes, pageSheets, pageRels, pageTitles;
+		const size_t firstPage = summaryPage ? 1 : 0;
+		for (size_t k = 0; k < s.pages.size (); ++k)
+			{
+			pageTypes += "<Override PartName=\"/xl/" + pagePart (k) + "\" ContentType=\"application/"
+						 "vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>";
+			pageSheets += "<sheet name=\"" + Esc (s.pages[k].name) + "\" sheetId=\"" + std::to_string (100 + k) + "\" r:id=\""
+						  + pageRel (k) + "\"/>";
+			pageRels += "<Relationship Id=\"" + pageRel (k) + "\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/"
+						"relationships/worksheet\" Target=\"" + pagePart (k) + "\"/>";
+			if (s.pages[k].titleRow > 0)
+				{
+				std::wstring quoted;
+				for (wchar_t ch : s.pages[k].name)
+					quoted += ch == L'\'' ? std::wstring (L"''") : std::wstring (1, ch);
+				const std::string row = std::to_string (s.pages[k].titleRow);
+				pageTitles += "<definedName name=\"_xlnm.Print_Titles\" localSheetId=\"" + std::to_string (firstPage + k)
+							  + "\">'" + Esc (quoted) + "'!$" + row + ":$" + row + "</definedName>";
+				}
+			}
+		// Where the main sheet sits: after the Summary and the pages.
+		const size_t mainAt = firstPage + s.pages.size ();
+
 		std::vector<std::pair<std::string, std::string>> parts;
 		parts.push_back ({ "[Content_Types].xml", decl +
 			"<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
@@ -955,6 +994,7 @@ namespace Xlsx
 			+ std::string (toolsPage ? "<Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (summaryPage ? "<Override PartName=\"/xl/worksheets/sheet4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (ignoredPage ? "<Override PartName=\"/xl/worksheets/sheet5.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
+			+ pageTypes
 			+ std::string (!drawingXml.empty () ? "<Override PartName=\"/xl/drawings/drawing1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\"/>" : "") +
 			"<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
 			"</Types>" });
@@ -973,22 +1013,24 @@ namespace Xlsx
 			// the macros find their sheets by name, and the main sheet by Sheet1.
 			"<bookViews><workbookView activeTab=\"0\"/></bookViews><sheets>"
 			+ std::string (summaryPage ? "<sheet name=\"Summary\" sheetId=\"4\" r:id=\"rId6\"/>" : "")
+			+ pageSheets
 			+ "<sheet name=\"Lathe params\" sheetId=\"1\" r:id=\"rId1\"/>"
 			+ std::string (toolsPage ? "<sheet name=\"Tools\" sheetId=\"3\" r:id=\"rId4\"/>" : "")
 			+ std::string (track ? "<sheet name=\"Dumped\" sheetId=\"2\" state=\"hidden\" r:id=\"rId3\"/>" : "")
 			+ std::string (ignoredPage ? "<sheet name=\"Ignored findings\" sheetId=\"5\" state=\"hidden\" r:id=\"rId7\"/>" : "")
 			+ "</sheets>"
-			// localSheetId is the main sheet's POSITION, which the Summary moves.
-			+ (filter || !s.helpFolder.empty () ? std::string ("<definedNames>") : std::string ())
+			// localSheetId is the main sheet's POSITION, which the Summary and the pages move.
+			+ (filter || !s.helpFolder.empty () || !pageTitles.empty () ? std::string ("<definedNames>") : std::string ())
 			+ (filter ? "<definedName name=\"_xlnm._FilterDatabase\" localSheetId=\""
-						+ std::string (summaryPage ? "1" : "0") + "\" "
+						+ std::to_string (mainAt) + "\" "
 						"hidden=\"1\">'Lathe params'!" + AbsRef (filterRef) + "</definedName>"
 					  : std::string ())
 			// Where the user manual is: the macros' help buttons open its pages.
 			+ (!s.helpFolder.empty ()
 				   ? "<definedName name=\"PT_Help\" hidden=\"1\">&quot;" + Esc (s.helpFolder) + "&quot;</definedName>"
 				   : std::string ())
-			+ (filter || !s.helpFolder.empty () ? std::string ("</definedNames>") : std::string ())
+			+ pageTitles
+			+ (filter || !s.helpFolder.empty () || !pageTitles.empty () ? std::string ("</definedNames>") : std::string ())
 			// Recalculate on open: the counts and highlights are formulas.
 			+ "<calcPr calcId=\"191029\" fullCalcOnLoad=\"1\"/>"
 			+ "</workbook>" });
@@ -1000,6 +1042,7 @@ namespace Xlsx
 			+ std::string (toolsPage ? "<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet3.xml\"/>" : "")
 			+ std::string (summaryPage ? "<Relationship Id=\"rId6\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet4.xml\"/>" : "")
 			+ std::string (ignoredPage ? "<Relationship Id=\"rId7\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet5.xml\"/>" : "")
+			+ pageRels
 			+ std::string (macros ? "<Relationship Id=\"rId5\" Type=\"http://schemas.microsoft.com/office/2006/relationships/vbaProject\" Target=\"vbaProject.bin\"/>" : "")
 			+ "</Relationships>" });
 		parts.push_back ({ "xl/styles.xml", st.Xml () });
@@ -1014,6 +1057,8 @@ namespace Xlsx
 			}
 		if (summaryPage)
 			parts.push_back ({ "xl/worksheets/sheet4.xml", summaryXml });
+		for (size_t k = 0; k < pagesXml.size (); ++k)
+			parts.push_back ({ "xl/" + pagePart (k), pagesXml[k] });
 		if (ignoredPage)
 			parts.push_back ({ "xl/worksheets/sheet5.xml", ignoredXml });
 		if (toolsPage)

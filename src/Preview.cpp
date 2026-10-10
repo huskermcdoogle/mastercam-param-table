@@ -22,7 +22,7 @@ namespace
 	const COLORREF kWhite      = RGB (0xFF, 0xFF, 0xFF);
 	const COLORREF kAccent     = RGB (0x25, 0x63, 0xEB);	//!< a ticked box
 
-	enum { IdList = 1001, IdTitle = 1002, IdSummary = 1003, IdFoot = 1004, IdImpact = 1005 };
+	enum { IdList = 1001, IdTitle = 1002, IdSummary = 1003, IdFoot = 1004, IdImpact = 1005, IdChoice = 1006 };
 
 	/// A value as one readable line: line breaks shown, nothing shown as such.
 	std::wstring Show1 (const std::wstring &v)
@@ -167,6 +167,14 @@ namespace
 						m_list.SetItemText (at, 1, l.detail.c_str ());
 					}
 
+				// The choice about what follows the Apply: unticked, every time.
+				if (m_opt.choice && m_offered > 0)
+					{
+					m_choice.Create (L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX, CRect (), this, IdChoice);
+					m_choice.SetFont (&m_font);
+					m_choice.SetCheck (BST_UNCHECKED);
+					}
+
 				m_apply.Create (m_opt.verb.c_str (), WS_CHILD | WS_TABSTOP | BS_DEFPUSHBUTTON
 								| (m_offered > 0 ? WS_VISIBLE : 0), CRect (), this, IDOK);
 				m_apply.SetFont (&m_bold);
@@ -204,6 +212,8 @@ namespace
 										   + (n == 1 ? L" change" : L" changes");
 				m_apply.SetWindowText (apply.c_str ());
 				m_apply.EnableWindow (n > 0);
+				if (m_choice.GetSafeHwnd () != nullptr)
+					m_choice.SetWindowText (m_opt.choice (m_lines).c_str ());
 				if (m_list.GetSafeHwnd () != nullptr)
 					m_list.Invalidate (FALSE);
 				}
@@ -218,6 +228,7 @@ namespace
 				const int pad = u, gap = u / 2, btnW = m_btnW, btnH = u * 2;
 				const int titleH = m_bigH + u / 4, summaryH = u * 3 / 2, footH = u * 3 / 2;
 				const int impactH = m_opt.impact ? m_midH + u / 2 : 0;
+				const int choiceH = m_choice.GetSafeHwnd () != nullptr ? u * 3 / 2 : 0;
 				int y = pad;
 				m_titleCtl.MoveWindow (pad, y, rc.Width () - 2 * pad, titleH);
 				y += titleH;
@@ -225,9 +236,11 @@ namespace
 				y += summaryH;
 				m_impactCtl.MoveWindow (pad, y, rc.Width () - 2 * pad, impactH);
 				y += impactH + gap;
-				const int bottom = rc.bottom - pad - btnH - gap - footH - gap;
+				const int bottom = rc.bottom - pad - btnH - gap - footH - gap - (choiceH > 0 ? choiceH + gap : 0);
 				m_list.MoveWindow (pad, y, rc.Width () - 2 * pad, (std::max) (60, bottom - y));
-				m_footCtl.MoveWindow (pad, bottom + gap, rc.Width () - 2 * pad, footH);
+				if (choiceH > 0)
+					m_choice.MoveWindow (pad, bottom + gap, rc.Width () - 2 * pad, choiceH);
+				m_footCtl.MoveWindow (pad, bottom + gap + (choiceH > 0 ? choiceH + gap : 0), rc.Width () - 2 * pad, footH);
 				m_cancel.MoveWindow (rc.right - pad - btnW, rc.bottom - pad - btnH, btnW, btnH);
 				m_apply.MoveWindow (rc.right - pad - 2 * btnW - gap, rc.bottom - pad - btnH, btnW, btnH);
 
@@ -244,6 +257,14 @@ namespace
 				{
 				CDialog::OnSize (type, cx, cy);
 				Layout ();
+				}
+
+			/// Apply: the choice as it stands goes back with it.
+			void OnOK () override
+				{
+				if (m_opt.chosen != nullptr)
+					*m_opt.chosen = m_choice.GetSafeHwnd () != nullptr && m_choice.GetCheck () == BST_CHECKED;
+				CDialog::OnOK ();
 				}
 
 			afx_msg void OnGetMinMaxInfo (MINMAXINFO *mmi)
@@ -545,6 +566,7 @@ namespace
 			CListCtrl m_list;
 			CImageList m_rowImages;
 			CButton m_apply, m_cancel;
+			CButton m_choice;			//!< Options::choice - made only when asked for
 		};
 
 	BEGIN_MESSAGE_MAP (PreviewDlg, CDialog)
@@ -563,6 +585,8 @@ namespace Preview
 	bool Show (const std::wstring &title, const std::wstring &summary,
 			   std::vector<Line> &lines, const Options &options)
 		{
+		if (options.chosen != nullptr)
+			*options.chosen = false;
 		PreviewDlg dlg (title, summary, lines, options, Ui::Host ());
 		return dlg.Run () == IDOK && CountTicked (lines) > 0;
 		}

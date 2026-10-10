@@ -75,6 +75,25 @@ namespace
 		return c;
 		}
 
+	/// A time shown as h:mm:ss or m:ss (or seconds) back to seconds; -1 for none.
+	/// The cached value of the sheet's own LEFT / MID reading of it.
+	double Secs (const std::wstring &t)
+		{
+		double total = 0, part = 0;
+		size_t from = 0;
+		for (;;)
+			{
+			const size_t colon = t.find (L':', from);
+			if (!Csv::ParseDouble (t.substr (from, colon == std::wstring::npos ? std::wstring::npos : colon - from), part)
+				|| part < 0)
+				return -1;
+			total = total * 60 + part;
+			if (colon == std::wstring::npos)
+				return total;
+			from = colon + 1;
+			}
+		}
+
 	/// A number rounded as the sheet's ROUND(...,2) would show it.
 	std::wstring Round2 (double v)
 		{
@@ -165,7 +184,8 @@ namespace Summary
 				 L"1. Edit feeds, speeds and depths on 'Lathe params'. Edited cells turn yellow; worked-out figures that move turn blue.",
 				 L"2. This page follows every edit: the part's totals as dumped and now, and where the time and inserts go.",
 				 L"3. On 'Tools', type the edges and cost per insert; type the batch quantity below for the cost of a batch.",
-				 L"4. Save, then run \"Lathe params - load\" in Mastercam: it shows every change before writing any." })
+				 L"4. Save, then run \"Lathe params - load\" in Mastercam: it shows every change before writing any.",
+				 L"5. After a run on the machine, type what a part really took under \"From the machine\": the History page keeps it." })
 			p.Add ({ Text (line, Cell::Note) });
 		// The user manual: a link that works with or without macros.
 		if (!w.manual.empty ())
@@ -218,6 +238,146 @@ namespace Summary
 			p.Add ();
 			}
 
+		// The Tools page's inserts table: its heading row, then rows to the first
+		// empty one - and a column of it as a range.
+		size_t insertFirst = 0, insertLast = 0;
+		const size_t after0 = s.tools.size () + 3;		// the Tools page row of toolsAfter[0]
+		for (size_t k = 0; k < s.toolsAfter.size () && insertFirst == 0; ++k)
+			{
+			const std::vector<Cell> &row = s.toolsAfter[k];
+			if (row.size () > CG && row[CA].head && row[CA].text == L"Inserts" && row[CG].text == CostHeads ()[0])
+				{
+				insertFirst = after0 + k + 1;
+				for (size_t e = k + 1; e < s.toolsAfter.size () && !s.toolsAfter[e].empty (); ++e)
+					insertLast = after0 + e;
+				}
+			}
+		auto tcol = [&] (const wchar_t *l)
+			{
+			return std::wstring (kTools) + L"$" + l + L"$" + std::to_wstring (insertFirst) + L":$" + l + L"$"
+				   + std::to_wstring (insertLast);
+			};
+
+		// ---- FROM THE MACHINE: what one part really took, typed in, against the
+		// estimate - the check on every figure above. The part's history keeps it
+		// when the workbook is next read (a dump or a load), each measurement once,
+		// and the next dump shows the newest one here again.
+		if (estCol >= 0)
+			{
+			using namespace Machine;
+			p.Add ({ Text (kSection, Cell::Section) });
+			p.Add ({ Text (L"Type what one part really took on the machine. The History page keeps it; the next dump shows it here again.",
+						   Cell::Note) });
+			auto input = [] (const std::wstring &v, const wchar_t *fmt, bool asText)
+				{
+				Cell c = Text (v, Cell::Input);
+				c.editable = true;
+				c.numFmt = fmt;
+				c.textFormat = asText;
+				return c;
+				};
+			auto rule = [&s] (size_t row, const char *type, const char *op, const std::wstring &f1, const std::wstring &f2,
+							  const wchar_t *title, const wchar_t *prompt, const wchar_t *error)
+				{
+				Xlsx::Sheet::Validation v;
+				v.cells = "C" + std::to_string (row);
+				v.type = type;
+				v.op = op;
+				v.f1 = f1;
+				v.f2 = f2;
+				v.title = title;
+				v.prompt = prompt;
+				v.error = error;
+				s.summaryValidations.push_back (v);
+				};
+
+			// The time as typed - formatted as Text, so 4:30 stays 4:30 - and its
+			// seconds in the hidden working column: m:ss, h:mm:ss or seconds, or a
+			// time Excel made a fraction of a day. Taken apart with LEFT and MID, not
+			// TIMEVALUE, which reads 26:32:07 as 2:32:07.
+			const size_t cycleRow = p.Next ();
+			const std::wstring c = L"$C$" + std::to_wstring (cycleRow), at = L"$I$" + std::to_wstring (cycleRow);
+			const std::wstring t = L"TRIM(" + c + L")", c1 = L"FIND(\":\"," + t + L")";
+			const std::wstring c2 = L"FIND(\":\"," + t + L"," + c1 + L"+1)";
+			const std::wstring parsed = L"CHOOSE(LEN(" + t + L")-LEN(SUBSTITUTE(" + t + L",\":\",\"\"))+1,--" + t
+										+ L",LEFT(" + t + L"," + c1 + L"-1)*60+MID(" + t + L"," + c1 + L"+1,99),LEFT(" + t + L","
+										+ c1 + L"-1)*3600+MID(" + t + L"," + c1 + L"+1," + c2 + L"-" + c1 + L"-1)*60+MID(" + t
+										+ L"," + c2 + L"+1,99))";
+			const double a0 = Secs (w.actualCycle), est0 = sumOf (estCol);
+			std::vector<Cell> cycle = { Blank (), Text (kCycle), input (w.actualCycle, L"", true) };
+			cycle.resize (CI, Blank ());
+			cycle.push_back (Fx (L"IF(" + t + L"=\"\",\"\",IFERROR(IF(ISNUMBER(" + c + L"),IF(" + c + L"<1," + c + L"*86400," + c
+								 + L")," + parsed + L"),\"\"))", a0 >= 0 ? Csv::Tidy (a0) : std::wstring ()));
+			p.Add (cycle);
+			rule (cycleRow, "custom", "",
+				  L"OR(C" + std::to_wstring (cycleRow) + L"=\"\",AND(ISNUMBER(C" + std::to_wstring (cycleRow) + L"),C"
+					  + std::to_wstring (cycleRow) + L">0),ISNUMBER(TIMEVALUE(\"0:\"&C" + std::to_wstring (cycleRow)
+					  + L")),ISNUMBER(TIMEVALUE(C" + std::to_wstring (cycleRow) + L")))", L"",
+				  L"Actual cycle time", L"What one part really took on the machine, door closed to door open: minutes:seconds "
+				  L"(4:30) or hours:minutes:seconds (1:02:30). The History page keeps it, with the estimate beside it.",
+				  L"Type a time: minutes:seconds (4:30) or hours:minutes:seconds (1:02:30).");
+			const size_t dateRow = p.Next ();
+			p.Add ({ Blank (), Text (kDate), input (w.actualDate, L"yyyy-mm-dd", false) });
+			rule (dateRow, "date", "between", L"36526", L"73050", L"Date measured",
+				  L"The day the time was measured, e.g. 2026-10-12. Blank: the day the workbook is next read stands in.",
+				  L"Type a date, e.g. 2026-10-12.");
+			const size_t partsRow = p.Next ();
+			p.Add ({ Blank (), Text (kParts), input (w.actualParts, L"", false) });
+			rule (partsRow, "whole", "greaterThanOrEqual", L"1", L"", L"Parts run",
+				  L"How many parts the run made - the inserts below are shared over them.", L"A whole number of parts, 1 or more.");
+			const size_t insRow = p.Next ();
+			p.Add ({ Blank (), Text (kInserts), input (w.actualInserts, L"", false) });
+			rule (insRow, "whole", "greaterThanOrEqual", L"0", L"", L"Inserts used",
+				  L"How many inserts the whole run used up, all kinds together - leave it blank if nobody counted.",
+				  L"A whole number of inserts, 0 or more - or blank.");
+			const size_t noteRow = p.Next ();
+			p.Add ({ Blank (), Text (kNote), input (w.actualNote, L"", true) });
+			rule (noteRow, "textLength", "lessThanOrEqual", L"200", L"", L"Note",
+				  L"Anything worth knowing about the run - a new operator, a different bar, a crash.", L"200 characters at most.");
+
+			// Live: the estimate now against it - the difference, its share, in words.
+			const std::wstring est = L"SUM(" + range (estCol) + L")", diff = at + L"-" + est;
+			p.Add ({ Blank (), Text (kEstimate), Right (Fx (L"TEXT(" + est + L"/86400," + kHmsFmt + L")", Hms (est0))) });
+			const bool have = a0 >= 0;
+			const double d0 = have ? std::round (a0) - std::round (est0) : 0;
+			p.Add ({ Blank (), Text (kAgainst),
+					 Right (Fx (L"IF(" + at + L"=\"\",\"\",IF(ROUND(" + diff + L",0)<0,\"-\",\"+\")&TEXT(ABS(ROUND(" + diff
+								+ L",0))/86400," + kHmsFmt + L"))", have ? (d0 < 0 ? L"-" : L"+") + Hms (std::fabs (d0)) : L"")),
+					 Right (Fx (L"IF(OR(" + at + L"=\"\"," + est + L"<=0),\"\",(" + diff + L")/" + est + L")",
+								have && est0 > 0 ? Csv::Tidy ((a0 - est0) / est0) : L"", L"+0.0%;-0.0%;0.0%")),
+					 Fx (L"IF(" + at + L"=\"\",\"Type the actual time above.\",IF(ROUND(" + diff
+						 + L",0)>0,\"The machine is slower than the estimate.\",IF(ROUND(" + diff
+						 + L",0)<0,\"The machine is faster than the estimate.\",\"The machine matches the estimate.\")))",
+						 !have ? L"Type the actual time above." : d0 > 0 ? L"The machine is slower than the estimate."
+						 : d0 < 0 ? L"The machine is faster than the estimate." : L"The machine matches the estimate.",
+						 L"", Cell::Note) });
+			// Inserts a part: counted on the machine, against the inserts table's own.
+			if (insertFirst > 0 && insertLast >= insertFirst)
+				{
+				const std::wstring parts = L"$C$" + std::to_wstring (partsRow), ins = L"$C$" + std::to_wstring (insRow);
+				double n0 = 0, i0 = 0, per0 = 0;
+				const bool counted = Csv::ParseDouble (w.actualParts, n0) && n0 > 0 && Csv::ParseDouble (w.actualInserts, i0);
+				for (size_t r = insertFirst; r <= insertLast; ++r)
+					{
+					double edges = 0, flips = 0;
+					const std::vector<Cell> *row = r >= after0 && r - after0 < s.toolsAfter.size () ? &s.toolsAfter[r - after0] : nullptr;
+					if (row != nullptr && row->size () > CE && Csv::ParseDouble ((*row)[CD].text, edges) && edges > 0
+						&& Csv::ParseDouble ((*row)[CE].text, flips))
+						per0 += flips / edges;
+					}
+				Cell estIns = Fx (L"SUM(IFERROR(" + tcol (L"E") + L"/" + tcol (L"D") + L",0))", Round2 (per0), L"0.00");
+				estIns.array = true;
+				p.Add ({ Blank (), Text (kInsertsPer),
+						 Right (Fx (L"IF(AND(N(" + parts + L")>0,ISNUMBER(" + ins + L"))," + ins + L"/" + parts + L",\"\")",
+									counted ? Csv::Tidy (i0 / n0) : L"", L"0.00")),
+						 Right (estIns) });
+				}
+			if (!w.wholePart)
+				p.Add ({ Text (L"Only some of the part's operations are on this sheet - the estimate covers those only, not the whole part.",
+							   Cell::Note) });
+			p.Add ();
+			}
+
 		// ---- A BATCH: the quantity typed in; time and insert cost for that many.
 		{
 		p.Add ({ Text (L"Batch", Cell::Section) });
@@ -243,26 +403,8 @@ namespace Summary
 		if (flipsCol >= 0)
 			p.Add ({ Blank (), Text (L"Insert flips per batch (now)"),
 					 Right (Fx (L"ROUND(SUM(" + range (flipsCol) + L")*" + q + L",2)", Round2 (sumOf (flipsCol)))) });
-		// The inserts table: its heading row, then rows to the first empty one.
-		size_t insertFirst = 0, insertLast = 0;
-		const size_t after0 = s.tools.size () + 3;		// the Tools page row of toolsAfter[0]
-		for (size_t k = 0; k < s.toolsAfter.size () && insertFirst == 0; ++k)
-			{
-			const std::vector<Cell> &row = s.toolsAfter[k];
-			if (row.size () > CG && row[CA].head && row[CA].text == L"Inserts" && row[CG].text == CostHeads ()[0])
-				{
-				insertFirst = after0 + k + 1;
-				for (size_t e = k + 1; e < s.toolsAfter.size () && !s.toolsAfter[e].empty (); ++e)
-					insertLast = after0 + e;
-				}
-			}
 		if (insertFirst > 0 && insertLast >= insertFirst)
 			{
-			auto tcol = [&] (const wchar_t *l)
-				{
-				return std::wstring (kTools) + L"$" + l + L"$" + std::to_wstring (insertFirst) + L":$" + l + L"$"
-					   + std::to_wstring (insertLast);
-				};
 			// What was typed at the dump (nothing, usually), for the cached figures.
 			double perPart0 = 0, batch0 = 0;
 			for (size_t r = insertFirst; r <= insertLast; ++r)

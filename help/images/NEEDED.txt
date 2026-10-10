@@ -5,7 +5,21 @@ help/images under this name, run  python tools/make_help.py  and it is put in.
 MASTERCAM SCREENS - capture by hand (crop to the window; no other windows; number
 callouts 1, 2, 3 as the page's steps say; no part paths or user names in the picture)
 
+  images/mc-regen-ask.png
+      on: load.html
+      show: The regenerate last load question: 1 the ops the last load changed, each marked needs regenerating or regenerated already, 2 the warning about the time, 3 the No button (the default).
+
   images/mc-ribbon-tab.png
       on: install.html
       show: Mastercam's ribbon with the Parameter Table tab picked and its four buttons (1 the tab, 2 dump to Excel, 3 load, 4 the user manual).
+
+SHEET PICTURES - run tools/make_help_images.ps1
+
+  images/sheet-history.png
+      on: history.html
+      show: The History sheet: 1 So far (time saved per part and per batch), 2 a load's line with before -> after and Saved / part, 3 the running total, 4 a measurement from the machine against the estimate.
+
+  images/sheet-summary-machine.png
+      on: history.html
+      show: The Summary's From the machine cells: 1 the actual time typed in, 2 the date, parts and inserts, 3 Machine against the estimate (difference, percent, in words).
 

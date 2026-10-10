@@ -36,6 +36,7 @@
 <ul>
 <li><a href="workbook.html">What is in the workbook</a></li>
 <li><a href="summary.html" aria-current="page">Summary page</a></li>
+<li><a href="history.html">History and the machine&#x27;s time</a></li>
 <li><a href="sheet.html">The main sheet</a></li>
 <li><a href="tools-page.html">Tools page</a></li>
 </ul>
@@ -90,8 +91,9 @@
 <section id="what">
 <h2>What this is for</h2>
 <p>The Summary is the whole part on one page. It shows the totals <strong>as dumped</strong> and <strong>now</strong>,
-with the change. It follows every edit you make, as you type. Under that: a batch, the longest ops, the tools that flip
-inserts most, the ops that cut the most air, and how many inserts a part uses.</p>
+with the change. It follows every edit you make, as you type. Under that: what a part really took on the machine
+(<strong>From the machine</strong>), a batch, the longest ops, the tools that flip inserts most, the ops that cut the
+most air, and how many inserts a part uses.</p>
 </section>
 
 <section id="when">
@@ -108,6 +110,9 @@ inserts most, the ops that cut the most air, and how many inserts a part uses.</
 <ol class="steps">
 <li>Look at <strong>Part totals</strong>. <span class="ui">As dumped</span> is the program as it is in Mastercam.
 <span class="ui">Now</span> is with your edits. <span class="ui">Change</span> is the difference (minus = less).</li>
+<li>After a run on the machine, type what one part really took under <strong>From the machine</strong>: the time, the
+date, the parts run and the inserts used. <span class="ui">Machine against the estimate</span> shows how far off the
+estimate is. The part's <a href="history.html">history</a> keeps it, and the next dump shows it here again.</li>
 <li>Type your <strong>batch quantity</strong> (how many parts in a run) in the box beside
 <span class="ui">Batch quantity (type it in)</span>. The cycle time, flips and insert cost per batch follow.</li>
 <li>Type the edges and cost of each insert on the <a href="tools-page.html#inserts">Tools page</a> to get
@@ -149,6 +154,9 @@ inserts most, the ops that cut the most air, and how many inserts a part uses.</
 <dd>No op has tool inspection stops that change the insert. See <a href="flips.html">How insert flips are counted</a>.</dd>
 <dt>Insert cost is blank</dt>
 <dd>Type the edges and the cost per insert on the Tools page.</dd>
+<dt><q>Type the actual time above.</q></dt>
+<dd>Nothing is typed under <strong>From the machine</strong> yet. See <a href="history.html#machine">Type what the machine
+really did</a>.</dd>
 </dl>
 </section>
 
@@ -156,6 +164,7 @@ inserts most, the ops that cut the most air, and how many inserts a part uses.</
 <h2>Related</h2>
 <ul>
 <li><a href="slowest.html">Slowest ops</a></li>
+<li><a href="history.html">History and the machine's time</a></li>
 <li><a href="tools-page.html">Tools page</a></li>
 <li><a href="estimate.html">How the cycle time estimate works</a></li>
 <li><a href="words.html#w-mrr">MRR and material removed</a></li>

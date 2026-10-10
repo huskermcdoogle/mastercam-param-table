@@ -731,6 +731,12 @@ try {
     [void] $xl.Run("Checks.ChangeReport")
     $rp = $wb.Worksheets.Item("Change report")
     Check ($rp.Cells.Item($fr, 8).Text -eq "tested on the floor") "a Why typed in stays when the report is made again"
+    # The part's history keeps that reason - read as a load, or the next dump, reads the saved workbook.
+    $rs = Join-Path $Dir "CIPART_lathe_params_report.xlsm"
+    if (Test-Path -LiteralPath $rs) { Remove-Item -LiteralPath $rs -Force }
+    $wb.SaveCopyAs($rs)
+    $harvest = @(& (Join-Path $Dir "history_test.exe") --harvest $rs)
+    Check ($harvest -contains "2026-10-13 07:05 | why | op: 1 | column: feed | change: 0.012 -> 0.014 | why: tested on the floor") "the part's history keeps the Why ($($harvest -join '; '))"
     Check ($rp.PageSetup.Orientation -eq 2 -and $rp.PageSetup.FitToPagesWide -eq 1 -and $rp.PageSetup.PrintTitleRows -ne "") "printable: landscape, one page wide, the heading on every page ($($rp.PageSetup.Orientation), $($rp.PageSetup.FitToPagesWide), $($rp.PageSetup.PrintTitleRows))"
     Check ($ws.Range("I3").Value2 -eq 0.014 -and $ws.Range("E3").Value2 -eq 1) "the tools wrote nothing on the sheet"
 

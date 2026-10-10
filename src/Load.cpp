@@ -12,6 +12,8 @@
 #include "Impact.h"
 #include "PartConfig.h"
 #include "Undo.h"
+#include "History.h"
+#include "Regen.h"
 
 #include <algorithm>
 #include <fstream>
@@ -90,9 +92,9 @@ namespace
 
 	/// Write each batch, one database round trip per operation, every old
 	/// value logged first (prefixed by `prefix`, "" for a load). Counts the
-	/// operations written and failed.
+	/// operations written and failed; `written` (when given) gets the ones written.
 	void WriteBatches (const std::filesystem::path &part, const std::vector<Batch> &batches,
-				const std::wstring &prefix, int &wrote, int &failed)
+				const std::wstring &prefix, int &wrote, int &failed, std::vector<long> *written = nullptr)
 		{
 		Cnc::Tool::TpPartOpList &opList = TpMainOpMgr.GetMainOpList ();
 		wrote = failed = 0;
@@ -150,8 +152,19 @@ namespace
 				continue;
 				}
 			++wrote;
+			if (written != nullptr && std::find (written->begin (), written->end (), b.op) == written->end ())
+				written->push_back (b.op);
 			}
 		}
+
+	/// A workbook loaded, as far as the part's history needs it: its sheets, for
+	/// the insert cost per part before and after.
+	struct Loaded
+		{
+		std::filesystem::path file;
+		std::vector<Csv::Row> main, dumped;
+		Xlsx::Grid tools;
+		};
 
 	/// A preview line.
 	Preview::Line MakeLine (Preview::Line::Kind k, const std::wstring &text,
@@ -268,6 +281,11 @@ namespace Load
 		// Each operation's time and flips, as dumped and as edited - the sheet's
 		// own estimate columns, which the plan never reads.
 		std::map<long, Impact::Op> figures;
+		// The part's history (<part>.pthistory), the workbooks as it needs them, and
+		// the batch quantity typed in them.
+		History::Book history = History::Open (part);
+		std::vector<Loaded> loaded;
+		std::wstring batch;
 
 		for (const std::filesystem::path &file : picked)
 			{
@@ -300,7 +318,22 @@ namespace Load
 				std::wstring cfgWhy;
 				if (PartConfig::Harvest (file, cfg, cfgWhy) && PartConfig::Save (cfgFile, cfg))
 					Util::Log (part, L"part config: took what was typed in " + file.filename ().wstring ());
+				batch = cfg.batchQty;
 				}
+				// What was measured on the machine (the Summary's "From the machine"
+				// cells) goes into the part's history - each measurement once.
+				{
+				const std::vector<History::Record> measured = History::Measured (file, history.records, History::Now ());
+				if (!measured.empty ())
+					Util::Log (part, history.Add (measured) ? L"history: a measurement from " + file.filename ().wstring ()
+															: L"history: could not write " + history.file.wstring ());
+				}
+				Loaded l;
+				l.file = file;
+				l.main = csv;
+				l.dumped = dumped;
+				Xlsx::ReadGrid (file, L"Tools", l.tools, why);
+				loaded.push_back (l);
 				}
 			else
 				{
@@ -586,6 +619,19 @@ namespace Load
 					s += L"  (partly ticked operations count all their edits)";
 				return s;
 				};
+		// Regenerating afterwards: a choice made here each time, unticked to start -
+		// on a big part it takes twenty minutes.
+		bool regenAfter = false;
+		options.choice = [] (const std::vector<Preview::Line> &ls)
+			{
+			int n = 0;
+			for (const Preview::Line &l : ls)
+				if (l.kind == Preview::Line::Op && l.box != Preview::Line::Unticked)
+					++n;
+			return L"Regenerate the " + std::to_wstring (n) + (n == 1 ? L" changed operation" : L" changed operations")
+				   + L" after loading - can take a long time on big parts";
+			};
+		options.chosen = &regenAfter;
 
 		if (!Preview::Show (L"Load " + files, summary, lines, options))
 			return 0;
@@ -627,18 +673,87 @@ namespace Load
 		// log serves every part in the folder.
 		Util::Log (part, Undo::BeginLine (part.filename ().wstring (), files));
 		int wrote = 0, failed = 0;
-		WriteBatches (part, batches, std::wstring (), wrote, failed);
+		std::vector<long> written;
+		WriteBatches (part, batches, std::wstring (), wrote, failed, &written);
 
 		Util::Log (part, L"load: " + std::to_wstring (wrote) + L" operation(s) written, "
 						 + std::to_wstring (failed) + L" failed");
 
+		// ---- THE PART'S HISTORY: what this load did to the part's figures - before
+		// as dumped, after as the sheet showed, for the operations written - each
+		// op's estimate (what a regeneration is measured against), and the reasons
+		// typed in the workbook's Change report.
+		const std::set<long> applied (written.begin (), written.end ());
+		const Impact::Total total = Impact::Sum (figures, applied);
+		{
+		History::LoadFigures f;
+		f.files = files;
+		f.changes = static_cast<int> (chosen.size ());
+		f.ops = wrote;
+		f.failed = failed;
+		if (total.timed > 0)
+			{
+			f.cycleWas = total.was;
+			f.cycleNow = total.now;
+			}
+		if (total.flipped > 0)
+			{
+			f.flipsWas = total.flipsWas;
+			f.flipsNow = total.flipsNow;
+			}
+		// Insert cost from the workbook's own Tools page - one workbook only: two
+		// would each have their own costs and their own share of the ops.
+		if (loaded.size () == 1)
+			{
+			f.costWas = History::InsertCost (loaded[0].main, loaded[0].dumped, loaded[0].tools, {});
+			f.costNow = History::InsertCost (loaded[0].main, loaded[0].dumped, loaded[0].tools, applied);
+			}
+		f.batch = batch;
+		for (long op : written)
+			{
+			const auto at = figures.find (op);
+			f.estimates.push_back ({ op, at != figures.end () ? at->second.now : std::nan ("") });
+			}
+		const std::wstring now = History::Now ();
+		std::vector<History::Record> recs = { History::LoadRecord (f, now) };
+		for (const Loaded &l : loaded)
+			for (const History::Record &w : History::Whys (l.file, history.records, now))
+				recs.push_back (w);
+		if (!history.Add (recs))
+			Util::Log (part, L"history: could not write " + history.file.wstring ());
+		}
+
+		// ---- REGENERATE, only when it was ticked in the preview.
+		std::wstring regenSaid;
+		if (regenAfter && !written.empty ())
+			{
+			std::map<long, double> estimates;
+			for (long op : written)
+				{
+				const auto at = figures.find (op);
+				if (at != figures.end ())
+					estimates[op] = at->second.now;
+				}
+			Regen::Outcome o;
+			{
+			CWaitCursor wait;
+			o = Regen::Run (part, written, estimates);
+			}
+			Regen::Keep (part, history, o, total.timed > 0 ? total.now : std::nan (""));
+			regenSaid = Regen::Said (o);
+			}
+
 		std::wstring done = L"Wrote " + std::to_wstring (wrote) + L" operation(s)";
 		if (failed != 0)
 			done += L", " + std::to_wstring (failed) + L" FAILED (see ParamTable.log)";
-		done += L".\r\n\r\nThey are marked for regeneration - regenerate them "
-				L"before posting, or the old values will still be in the "
-				L"toolpath. Then save the part."
-				L"\r\n\r\nTo put the old values back: \"Lathe params - undo last load\".";
+		if (!regenSaid.empty ())
+			done += L".\r\n\r\n" + regenSaid + L"\r\n\r\nThen save the part.";
+		else
+			done += L".\r\n\r\nThey are marked for regeneration - regenerate them "
+					L"before posting, or the old values will still be in the "
+					L"toolpath (\"Lathe params - regenerate last load\" does it, and "
+					L"checks the estimate against Mastercam). Then save the part.";
+		done += L"\r\n\r\nTo put the old values back: \"Lathe params - undo last load\".";
 		Util::Say (done, failed ? MB_ICONWARNING : MB_ICONINFORMATION);
 		return 0;
 		}
@@ -795,6 +910,25 @@ namespace Load
 		WriteBatches (part, batches, L"undo ", wrote, failed);
 		Util::Log (part, L"undo: " + std::to_wstring (wrote) + L" operation(s) restored, "
 						 + std::to_wstring (failed) + L" failed");
+
+		// The part's history: the load taken back - all of it (its saving then no
+		// longer counts), or only part.
+		{
+		size_t values = 0, offered = 0;
+		for (const Batch &b : batches)
+			values += b.changes.size ();
+		for (const Preview::Line &l : lines)
+			if (l.kind == Preview::Line::Change)
+				++offered;
+		History::Record u;
+		u.when = History::Now ();
+		u.kind = L"undo";
+		u.Set (L"load", last.stamp).Set (L"restored", std::to_wstring (values));
+		u.Set (L"complete", r.skipped.empty () && failed == 0 && values == offered ? L"yes" : L"no");
+		History::Book history = History::Open (part);
+		if (!history.Add ({ u }))
+			Util::Log (part, L"history: could not write " + history.file.wstring ());
+		}
 
 		std::wstring done = L"Restored " + std::to_wstring (wrote) + L" operation(s)";
 		if (failed != 0)
