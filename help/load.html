@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Load the changes - Parameter Table Tool manual</title>
 <meta name="description" content="Put your edits back into the part: read the preview, untick what to leave out, Apply.">
-<meta name="keywords" content="load import apply write back preview tick untick refused impact cycle time flips regenerate">
+<meta name="keywords" content="load import apply write back preview tick untick refused impact cycle time flips regenerate regenerate last load dirty Mastercam cycle time estimate check">
 <link rel="stylesheet" href="style.css">
 <script src="search.js" defer></script>
 <script src="help.js" defer></script>
@@ -37,6 +37,7 @@
 <ul>
 <li><a href="workbook.html">What is in the workbook</a></li>
 <li><a href="summary.html">Summary page</a></li>
+<li><a href="history.html">History and the machine&#x27;s time</a></li>
 <li><a href="sheet.html">The main sheet</a></li>
 <li><a href="tools-page.html">Tools page</a></li>
 </ul>
@@ -110,6 +111,9 @@ Each change has a tick box. Nothing is written until you click <span class="ui">
 <li><strong>Read the list.</strong> Each op shows its own time and flips, then each change.
 Untick anything you want to leave out. Unticking an op unticks all of its changes. The top line follows.</li>
 <li>Look at the <span class="ui">Refused</span> part, if there is one. Those rows are not written at all (see below).</li>
+<li>Under the list, the box <span class="ui">Regenerate the ... changed operations after loading</span> is
+<strong>not ticked</strong>. Leave it that way unless you want to wait for the regeneration now (see
+<a href="#regenerate">Regenerate</a> below).</li>
 <li>Click <span class="ui">Apply</span> (it says how many, e.g. <span class="ui">Apply 4 changes</span>), or
 <span class="ui">Cancel</span> to write nothing.</li>
 <li><strong>Regenerate</strong> the changed ops (they are marked dirty), check them, then save the part.</li>
@@ -137,6 +141,43 @@ so do a speed and its CSS / RPM, and a value and the switch that turns it on. Ha
 The button now reads <span class="ui">Apply 2 changes</span>. Click it; regenerate ops 7 and 8.</p>
 </section>
 
+<section id="regenerate">
+<h2>Regenerate &ndash; only when you choose</h2>
+<p>After a load, the changed ops are marked dirty: their toolpath is still the old one until Mastercam
+<a href="words.html#w-regenerate">regenerates</a> them. On a big part that can take a long time &ndash; twenty minutes
+or more &ndash; and Mastercam cannot be used while it runs. So the tool <strong>never</strong> regenerates by itself.
+You pick the moment, one of two ways:</p>
+<ol class="steps">
+<li><strong>Right away:</strong> in the load window, tick <span class="ui">Regenerate the 2 changed operations after
+loading - can take a long time on big parts</span>, then click <span class="ui">Apply</span>. The box starts unticked
+every time.</li>
+<li><strong>Later:</strong> click <span class="ui">Lathe params - regenerate last load</span> (on the Parameter Table tab).
+It lists the ops the last load changed and which still need it, and warns about the time. <span class="ui">No</span>
+is the default &ndash; click <span class="ui">Yes</span> to start.</li>
+<li>When it is done, a message gives Mastercam's own cycle time for those ops beside the estimate the workbook showed.
+Save the part.</li>
+</ol>
+<p>Either way the result goes into the part's <a href="history.html">history</a>: each op's estimate and Mastercam's
+time after. That is the check on the estimate. If every op is regenerated already (you did it by hand), the command only
+reads their times &ndash; nothing is regenerated again.</p>
+<figure class="shot todo" data-img="mc-regen-ask.png" data-kind="mastercam" data-need="The regenerate last load question: 1 the ops the last load changed, each marked needs regenerating or regenerated already, 2 the warning about the time, 3 the No button (the default).">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The regenerate last load question: 1 the ops the last load changed, each marked needs regenerating or regenerated already, 2 the warning about the time, 3 the No button (the default)."><strong>Picture coming: mc-regen-ask.png</strong>The regenerate last load question: 1 the ops the last load changed, each marked needs regenerating or regenerated already, 2 the warning about the time, 3 the No button (the default). <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The ops the last load changed. (2) The warning about the time. (3) No is the default.</figcaption>
+</figure>
+<h3 id="regen-example">Worked example</h3>
+<p>You loaded new feeds into ops 7 and 8, then ran <span class="ui">Lathe params - regenerate last load</span> at lunch:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">Before the load</th><th class="num">Estimate after</th><th class="num">Mastercam after regenerating</th><th class="num">Difference</th></tr></thead>
+<tbody>
+<tr><td>op 7 &middot; rough bore</td><td class="num">0:41:10</td><td class="num moved">0:34:20</td><td class="num">0:34:31</td><td class="num">+0:00:11</td></tr>
+<tr><td>op 8 &middot; finish bore</td><td class="num">0:12:05</td><td class="num moved">0:10:05</td><td class="num">0:10:02</td><td class="num">-0:00:03</td></tr>
+<tr><td>Both</td><td class="num">0:53:15</td><td class="num moved">0:44:25</td><td class="num">0:44:33</td><td class="num">+0:00:08 (+0.3%)</td></tr>
+</tbody>
+</table></div>
+<p>The message says: <q>Mastercam's cycle time for them: 0:44:33. The estimate was 0:44:25 - Mastercam's is 0:00:08
+longer (+0.3%).</q> The estimate was right to within seconds, so the 8:50 a part it promised is real.</p>
+</section>
+
 <section id="messages">
 <h2>What the messages mean</h2>
 <p>A <strong>refused</strong> row is left out whole &ndash; half a row is a state nobody chose. The reason is beside it:</p>
@@ -159,6 +200,20 @@ The button now reads <span class="ui">Apply 2 changes</span>. Click it; regenera
 <dd>Save the workbook in Excel and try again. If it still fails, close it in Excel.</dd>
 <dt><q>Wrote 2 operation(s). They are marked for regeneration ...</q></dt>
 <dd>Done. Regenerate before you post, or the old values are still in the toolpath.</dd>
+<dt><q>Regenerated 2 operation(s) in 0:12:31.</q></dt>
+<dd>The regeneration you asked for is done. The cycle times are in the part's history. Save the part.</dd>
+<dt><q>... 1 had been regenerated already.</q></dt>
+<dd>That op was clean, so it was not regenerated again &ndash; only its cycle time was read.</dd>
+<dt><q>... 1 FAILED - see ParamTable.log.</q></dt>
+<dd>Mastercam could not regenerate that op. Open it in Mastercam to see why (missing geometry, a stock problem),
+fix it, and regenerate it there.</dd>
+<dt><q>Mastercam is still regenerating in the background, so the cycle times were not read.</q></dt>
+<dd>Wait until Mastercam is done, then run <span class="ui">Lathe params - regenerate last load</span> again: it reads
+the times without regenerating again.</dd>
+<dt><q>Mastercam is regenerating operations already, so nothing was started.</q></dt>
+<dd>Mastercam was busy with its own regeneration. Wait until it is done and try again.</dd>
+<dt><q>No load of ... was found ...</q></dt>
+<dd>The part has no load in its history or in <code>ParamTable.log</code>, so there is nothing to regenerate.</dd>
 </dl>
 <p>Every old value goes into <code>ParamTable.log</code> beside the part first. That is how
 <a href="undo-load.html">undo last load</a> puts them back.</p>
@@ -168,6 +223,7 @@ The button now reads <span class="ui">Apply 2 changes</span>. Click it; regenera
 <h2>Related</h2>
 <ul>
 <li><a href="undo-load.html">Undo a load</a></li>
+<li><a href="history.html">History and the machine's time</a> (what each load saved)</li>
 <li><a href="changes.html">List changes</a> (check your edits before you load)</li>
 <li><a href="estimate.html">How the cycle time estimate works</a></li>
 <li><a href="words.html#w-regenerate">Regenerate</a></li>

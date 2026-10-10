@@ -77,6 +77,15 @@ namespace Preview
 		/// and returns the line for the top of the window (`tone` as on a
 		/// line). Empty = no such line.
 		std::function<std::wstring (std::vector<Line> &, int &tone)> impact;
+
+		/// A CHOICE ABOUT WHAT FOLLOWS THE APPLY, as a tick box under the list -
+		/// "regenerate the changed operations". UNTICKED at every start and never
+		/// remembered: on a big part it can cost twenty minutes, so it is chosen
+		/// fresh each time. Its label is asked for at the start and after every
+		/// tick (it counts what is ticked); empty = no box. `chosen` gets whether
+		/// it was ticked when Apply was clicked.
+		std::function<std::wstring (const std::vector<Line> &)> choice;
+		bool *chosen = nullptr;
 		};
 
 	/// Show the preview. With no ticked changes the window only offers Close.

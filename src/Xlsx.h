@@ -152,6 +152,18 @@ namespace Xlsx
 		/// Its column widths in characters, from A; 0 = a hidden working column.
 		std::vector<double> summaryWidths;
 
+		/// MORE PAGES TO READ, after the Summary and laid out like it - rows of
+		/// cells from A1, no gridlines, printed landscape one page wide: the
+		/// part's History. Nothing on them is typed in.
+		struct Page
+			{
+			std::wstring name;							//!< the sheet's tab
+			std::vector<std::vector<FreeCell>> rows;
+			std::vector<double> widths;					//!< characters, from A; 0 = hidden
+			size_t titleRow = 0;						//!< a heading row printed at the top of every page (1-based), 0 = none
+			};
+		std::vector<Page> pages;
+
 		/// Main-sheet cells that link to a Tools row: (A1 cell, index into tools).
 		std::vector<std::pair<std::string, size_t>> toolLinks;
 

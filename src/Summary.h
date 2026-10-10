@@ -3,7 +3,8 @@
 // what to improve. No Mastercam SDK.
 //
 // Everything on it is a FORMULA over the other sheets, so it follows the edits:
-// the part's totals as dumped and now, a batch (quantity typed in) with its
+// the part's totals as dumped and now, what the part really took on the
+// machine (typed in) against the estimate, a batch (quantity typed in) with its
 // insert cost, the longest operations, the tools that flip inserts most, and
 // the operations that cut the most air.
 //
@@ -30,7 +31,34 @@ namespace Summary
 		std::wstring subtitle;		//!< when it was dumped, how many operations
 		std::wstring batchQty;		//!< remembered (the part's .ptconfig); "" = 1
 		std::wstring manual;		//!< the user manual's front page (index.html), "" = none
+
+		/// The newest measurement from the machine (the part's history), shown
+		/// again in the "From the machine" cells; "" = none yet.
+		std::wstring actualCycle;	//!< h:mm:ss
+		std::wstring actualDate;	//!< an Excel date (days since 1899-12-30); "" = it was not typed
+		std::wstring actualParts, actualInserts, actualNote;
+
+		/// False: only some of the part's operations are on the sheet, so its
+		/// estimate is not the part's - said beside the measurement.
+		bool wholePart = true;
 		};
+
+	/// THE "FROM THE MACHINE" CELLS: what the part really took, typed in, against
+	/// the estimate. The part's history (History.h) finds them again in a saved
+	/// workbook by these labels - column B, the value in C - so they are named
+	/// once, here.
+	namespace Machine
+		{
+		const wchar_t *const kSection = L"From the machine";
+		const wchar_t *const kCycle = L"Actual cycle time per part (m:ss or h:mm:ss)";
+		const wchar_t *const kDate = L"Date it was measured";
+		const wchar_t *const kParts = L"Parts run";
+		const wchar_t *const kInserts = L"Inserts used for that run (total, if known)";
+		const wchar_t *const kNote = L"Note about the run";
+		const wchar_t *const kEstimate = L"Estimate now, per part";
+		const wchar_t *const kAgainst = L"Machine against the estimate";
+		const wchar_t *const kInsertsPer = L"Inserts per part: machine, estimate";
+		}
 
 	/// Fill s.summary and s.summaryWidths from the sheet as it will be written:
 	/// s.rows (the main sheet, columns found by name - op_idn, type, tool,

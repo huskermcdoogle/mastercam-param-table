@@ -15,6 +15,7 @@
 #include "Settings.h"
 #include "Inspect.h"
 #include "PartConfig.h"
+#include "History.h"
 #include "MillMrr.h"
 #include "Xform.h"
 #include "DependentOperations_CH.h"
@@ -796,7 +797,7 @@ namespace
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
 					const std::vector<Stats> &stats, std::vector<Xlsx::Sheet::ToolRow> tools,
 					const std::vector<int> &toolOfRow, bool macros, const std::wstring &title,
-					const std::wstring &subtitle, PartConfig::Config &cfg, bool wholePart, Xlsx::Sheet &s)
+					const std::wstring &subtitle, PartConfig::Config &cfg, bool wholePart, History::Book &history, Xlsx::Sheet &s)
 		{
 		s.rows = out;
 		s.groupNames = kGroupNames;
@@ -2078,14 +2079,41 @@ namespace
 			s.helpFolder = Settings::AddinFolder () + L"help";
 			where.manual = s.helpFolder + L"\\index.html";
 			}
+		// The newest measurement from the machine (the part's history) shown again.
+		where.wholePart = wholePart;
+		if (const History::Record *a = History::NewestActual (history.records))
+			{
+			where.actualCycle = a->Get (L"cycle");
+			if (a->Get (L"date typed") != L"no" && !std::isnan (History::SerialOfDate (a->Get (L"measured"))))
+				where.actualDate = Csv::Tidy (History::SerialOfDate (a->Get (L"measured")));
+			where.actualParts = a->Get (L"parts");
+			where.actualInserts = a->Get (L"inserts");
+			where.actualNote = a->Get (L"note");
+			}
 		Summary::Add (s, where);
+
+		// ---- The History page, after the Summary: the part's history with this dump
+		// on top - written to the history file once the workbook is.
+		const History::Record dumped = History::DumpRecord (s, file.filename ().wstring (), wholePart, cfg.batchQty,
+															History::Now ());
+		{
+		std::vector<History::Record> all = history.records;
+		all.push_back (dumped);
+		const size_t dash = title.find (L" - ");		// "Summary - <part>"
+		s.pages.push_back (History::Page (all, dash == std::wstring::npos ? title : title.substr (dash + 3),
+										  history.file.wstring (), cfg.batchQty));
+		}
 
 		// ---- The Program check's ignored findings, kept in the part's .ptconfig:
 		// the hidden list the macros go on from.
 		for (const auto &kv : cfg.ignore)
 			s.ignored.push_back (kv);
 
-		return Xlsx::Write (file, s);
+		if (!Xlsx::Write (file, s))
+			return false;
+		if (!history.Add ({ dumped }))
+			Util::Log (Util::PartFile (), L"history: could not write " + history.file.wstring ());
+		return true;
 		}
 	}
 
@@ -2215,6 +2243,7 @@ namespace
 		// earlier workbook - saved there is enough, it need not have been loaded.
 		const std::filesystem::path cfgFile = PartConfig::PathFor (part);
 		PartConfig::Config cfg = PartConfig::Load (cfgFile);
+		History::Book history = History::Open (part);
 		{
 		const std::filesystem::path newest = PartConfig::NewestDump (part, settings.folder);
 		std::error_code ec;
@@ -2226,6 +2255,19 @@ namespace
 			Util::Log (part, L"part config: took what was typed in " + newest.filename ().wstring ());
 		else if (newer)
 			Util::Log (part, L"part config: could not read " + newest.filename ().wstring () + L" - " + why);
+		// Into the part's history: what was measured on the machine and the reasons
+		// typed for the changes in that workbook - each once, however often it is read.
+		if (!newest.empty ())
+			{
+			const std::wstring now = History::Now ();
+			std::vector<History::Record> found = History::Measured (newest, history.records, now);
+			for (const History::Record &w : History::Whys (newest, history.records, now))
+				found.push_back (w);
+			if (!found.empty ())
+				Util::Log (part, history.Add (found) ? L"history: " + std::to_wstring (found.size ()) + L" record(s) from "
+													   + newest.filename ().wstring ()
+													 : L"history: could not write " + history.file.wstring ());
+			}
 		}
 
 		// What each lathe op really removes: a 2D stock simulation of the toolpaths,
@@ -2744,7 +2786,7 @@ namespace
 									  + (rows.size () == 1 ? L" operation" : L" operations") + (onlySelected ? L" (a selection)" : L"")
 									  + L" - " + part.wstring ();
 		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow, settings.macros,
-						L"Summary - " + part.filename ().wstring (), subtitle, cfg, !onlySelected, result.sheet))
+						L"Summary - " + part.filename ().wstring (), subtitle, cfg, !onlySelected, history, result.sheet))
 			{
 			result.file = file;
 			result.why = L"could not write " + file.wstring () + L" - check the folder can be written to";

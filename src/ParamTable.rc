@@ -61,6 +61,7 @@ BEGIN
     IDS_FT_UNDO     "Parameter Table Tool\nLathe params - undo last load"
     IDS_FT_HELP     "Parameter Table Tool\nParameter Table - user manual"
     IDS_FT_GROUP    "Parameter Table Tool\nParameter Table"
+    IDS_FT_REGEN    "Parameter Table Tool\nLathe params - regenerate last load"
     IDS_FT_BATCH    "Parameter Table Tool\nParameter Table - dump a folder of parts"
 END
 

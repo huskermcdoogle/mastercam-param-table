@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History and the machine's time - Parameter Table Tool manual</title>
+<meta name="description" content="Prove a change paid off: what each load saved per part and per batch, and the estimate against what the machine really took.">
+<meta name="keywords" content="history pthistory saved time savings proof improvement actual machine measured real cycle time estimate against batch insert cost running total print shop lead from the machine">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="batch.html">Dump a folder of parts</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="history.html" aria-current="page">History and the machine&#x27;s time</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>History and the machine's time</h1>
+<p class="where">Workbook: the <b>History</b> sheet (the second tab) and <b>From the machine</b> on the Summary &middot;
+File: <code>&lt;part&gt;.pthistory</code> beside the part</p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>The tool keeps a diary for each part. Every dump, load, undo and regeneration goes in it, with the cycle time,
+insert flips and insert cost <strong>before</strong> and <strong>after</strong>. You can add what a part really took
+on the machine, and the reason for each change.</p>
+<p>The diary is a small text file next to the part, called <code>&lt;part&gt;.pthistory</code>. Every dump shows it on
+the <span class="ui">History</span> sheet, newest first. The sheet adds up what the loads saved, per part and per batch.
+This is how you show a shop lead that a change really saved time and inserts.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>After a load: to see what it saved, and the total so far.</li>
+<li>After a run on the machine: type the real time per part, so the estimate gets checked.</li>
+<li>When someone asks <q>did that change help?</q> &ndash; print the History sheet.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<h3 id="machine">Type what the machine really did</h3>
+<ol class="steps">
+<li>Run the part on the machine. Time one part, door closed to door open. Count the inserts the run used up, if you can.</li>
+<li>Open the newest workbook of the part. On the <a href="summary.html">Summary</a> page, find <strong>From the machine</strong>.</li>
+<li>Type the time for one part beside <span class="ui">Actual cycle time per part</span>: minutes:seconds
+(<code>4:30</code>) or hours:minutes:seconds (<code>1:02:30</code>). A time over 24 hours is fine (<code>26:32:07</code>).</li>
+<li>Type the <span class="ui">Date it was measured</span> (<code>2026-10-12</code>), the <span class="ui">Parts run</span>,
+the <span class="ui">Inserts used</span> (leave it blank if nobody counted) and a note if you like.</li>
+<li>Read the line under it: <span class="ui">Machine against the estimate</span> shows the difference and the percent.
+<strong>Slower</strong> means the machine took longer than the estimate.</li>
+<li><strong>Save</strong> the workbook. The next dump or load copies it into the part's history. No macros are needed,
+and the workbook does not have to be loaded.</li>
+</ol>
+<figure class="shot todo" data-img="sheet-summary-machine.png" data-kind="sheet" data-need="The Summary's From the machine cells: 1 the actual time typed in, 2 the date, parts and inserts, 3 Machine against the estimate (difference, percent, in words).">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Summary&#x27;s From the machine cells: 1 the actual time typed in, 2 the date, parts and inserts, 3 Machine against the estimate (difference, percent, in words)."><strong>Picture coming: sheet-summary-machine.png</strong>The Summary&#x27;s From the machine cells: 1 the actual time typed in, 2 the date, parts and inserts, 3 Machine against the estimate (difference, percent, in words). <em>(made by tools/make_help_images.ps1)</em></div><!-- /img -->
+<figcaption>(1) The time one part took. (2) Date, parts, inserts. (3) The machine against the estimate.</figcaption>
+</figure>
+<h3 id="sheet">Read the History sheet</h3>
+<ol class="steps">
+<li>Dump the part (<a href="dump.html">Dump to Excel</a>). Click the <span class="ui">History</span> tab, next to Summary.</li>
+<li>Read <strong>So far</strong> at the top: the time saved per part and per batch, the inserts and their cost, the
+last time measured on the machine, and the last regeneration against Mastercam.</li>
+<li>Read the list under it, newest first. A load shows the cycle time before &rarr; after, the time
+<span class="ui">Saved / part</span>, <span class="ui">Saved / batch</span> (with the batch quantity) and
+<span class="ui">Saved so far</span>. The reasons typed in the <a href="report.html">Change report</a> sit under their load.</li>
+<li>To print it: <kbd>Ctrl</kbd>+<kbd>P</kbd>. It is set up landscape, one page wide, with the headings on every page.</li>
+</ol>
+<figure class="shot todo" data-img="sheet-history.png" data-kind="sheet" data-need="The History sheet: 1 So far (time saved per part and per batch), 2 a load's line with before -> after and Saved / part, 3 the running total, 4 a measurement from the machine against the estimate.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The History sheet: 1 So far (time saved per part and per batch), 2 a load&#x27;s line with before -&gt; after and Saved / part, 3 the running total, 4 a measurement from the machine against the estimate."><strong>Picture coming: sheet-history.png</strong>The History sheet: 1 So far (time saved per part and per batch), 2 a load&#x27;s line with before -&gt; after and Saved / part, 3 the running total, 4 a measurement from the machine against the estimate. <em>(made by tools/make_help_images.ps1)</em></div><!-- /img -->
+<figcaption>(1) What the loads saved so far. (2) One load. (3) The running total. (4) What the machine took.</figcaption>
+</figure>
+<div class="note"><p>An <a href="undo-load.html">undo of a load</a> takes that load's saving back off the total. A regeneration
+(see <a href="load.html#regenerate">Regenerate</a>) puts Mastercam's own cycle time beside the estimate.</p></div>
+<h3 id="file">The history file</h3>
+<p><code>&lt;part&gt;.pthistory</code> is plain text. Open it with Notepad to read it. Each line is one thing that
+happened, oldest first. The tool only ever adds lines to the end:</p>
+<pre><code>2026-10-10 11:02 | load | file: shaft_params_1.xlsx | changes: 14 | ops: 6 | cycle: 26:32:07 -&gt; 25:10:40 | ...
+2026-10-13 07:05 | actual | measured: 2026-10-12 | cycle: 25:40:00 | parts: 40 | inserts: 31 | estimate: 25:10:40</code></pre>
+<p>Each measurement and each reason is kept <strong>once</strong>, however often the workbook is read. Delete the file to
+start a new history.</p>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>A shaft was dumped at 26:32:07 a part. Batches are 40 parts. The History sheet shows (newest first):</p>
+<div class="table-scroll"><table>
+<thead><tr><th>When</th><th>What happened</th><th class="num">Cycle time / part</th><th class="num">Saved / part</th><th class="num">Saved / batch</th><th class="num">Saved so far</th></tr></thead>
+<tbody>
+<tr><td>2026-10-13</td><td>Measured on the machine on 2026-10-12: 40 parts</td><td class="num">25:40:00</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+<tr><td>2026-10-11 10:30</td><td>Undid the last load: 2 values put back</td><td class="num"></td><td class="num worse">-0:10:00</td><td class="num worse">-6:40:00 (40)</td><td class="num">1:21:27</td></tr>
+<tr><td>2026-10-11 10:00</td><td>Loaded 2 changes on 1 operation</td><td class="num">25:10:40 -&gt; 25:00:40</td><td class="num better">0:10:00</td><td class="num better">6:40:00 (40)</td><td class="num">1:31:27</td></tr>
+<tr><td>2026-10-10 11:02</td><td>Loaded 14 changes on 6 operations</td><td class="num">26:32:07 -&gt; 25:10:40</td><td class="num better">1:21:27</td><td class="num better">54:18:00 (40)</td><td class="num">1:21:27</td></tr>
+<tr><td>2026-10-10 09:14</td><td>Dumped 42 operations (the whole part)</td><td class="num">26:32:07</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+</tbody>
+</table></div>
+<p>The first load saved 1:21:27 a part &ndash; 54 hours on a batch of 40. The second load was undone, so its 10 minutes
+come off the total again. On the machine a part took 25:40:00. That is 0:29:20 slower than the estimate of 25:10:40
+(+1.9%), so the real saving is a little less than the estimate says. <strong>So far</strong> reads:
+<q>2 loads (1 undone). Time saved per part: 1:21:27 - 5.1% of the first dump's 26:32:07.</q></p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>Type the actual time above.</q></dt>
+<dd>Nothing is typed under <strong>From the machine</strong> yet, so there is nothing to compare.</dd>
+<dt>Excel says <q>Type a time: minutes:seconds (4:30) or hours:minutes:seconds (1:02:30).</q></dt>
+<dd>The time is not written as a time. Type it with colons, like <code>4:30</code>.</dd>
+<dt><q>Only some of the part's operations are on this sheet ...</q></dt>
+<dd>The workbook holds only some ops (a selection), so its estimate is not the whole part's. Dump all ops to compare
+with the machine.</dd>
+<dt><q>No loads yet.</q> / <q>Nothing measured on the machine yet ...</q></dt>
+<dd>The part has no load, or no measurement, in its history. Savings count from the first load.</dd>
+<dt><q>partly undone ... - its saving still counts</q></dt>
+<dd>An undo put back only some of that load's values (you unticked some, or some had changed since), so the load's
+saving is still in the total.</dd>
+<dt><code>history: could not write ...</code> in <code>ParamTable.log</code></dt>
+<dd>The folder of the part cannot be written to, or the history file is open in another program. Close it and try again.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="summary.html">Summary page</a> (the <strong>From the machine</strong> cells)</li>
+<li><a href="load.html#regenerate">Regenerate after a load</a> &ndash; the estimate against Mastercam</li>
+<li><a href="report.html">Change report</a> (its Why column goes into the history)</li>
+<li><a href="undo-load.html">Undo a load</a></li>
+<li><a href="estimate.html">How the cycle time estimate works</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

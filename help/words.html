@@ -37,6 +37,7 @@
 <ul>
 <li><a href="workbook.html">What is in the workbook</a></li>
 <li><a href="summary.html">Summary page</a></li>
+<li><a href="history.html">History and the machine&#x27;s time</a></li>
 <li><a href="sheet.html">The main sheet</a></li>
 <li><a href="tools-page.html">Tools page</a></li>
 </ul>
@@ -107,7 +108,7 @@ every <a href="#columns">column</a>, by the name it has on the sheet (row 2 of <
 </ol>
 <ul class="letters">
 <li><a href="#l-a">A</a></li><li><a href="#l-b">B</a></li><li><a href="#l-c">C</a></li><li><a href="#l-d">D</a></li>
-<li><a href="#l-e">E</a></li><li><a href="#l-f">F</a></li><li><a href="#l-g">G</a></li><li><a href="#l-i">I</a></li>
+<li><a href="#l-e">E</a></li><li><a href="#l-f">F</a></li><li><a href="#l-g">G</a></li><li><a href="#l-h">H</a></li><li><a href="#l-i">I</a></li>
 <li><a href="#l-l">L</a></li><li><a href="#l-m">M</a></li><li><a href="#l-n">N</a></li><li><a href="#l-o">O</a></li>
 <li><a href="#l-p">P</a></li><li><a href="#l-r">R</a></li><li><a href="#l-s">S</a></li><li><a href="#l-t">T</a></li>
 <li><a href="#l-u">U</a></li><li><a href="#l-w">W</a></li><li><a href="#l-y">Y</a></li><li><a href="#columns">Columns</a></li>
@@ -181,9 +182,14 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dd>How fast the tool moves while cutting: <a href="#w-per-rev">per rev or per minute</a>. On the sheet, the number is <code>feed</code> (always positive) and the unit is <code>feed_mode</code>.</dd>
 <dt id="w-flip">Flip (insert flip)</dt>
 <dd>Turning, flipping or changing the insert to a fresh edge. The tool counts a tool inspection stop as a flip when its comment says ROTATE, FLIP, CHANGE or INDEX &ndash; and works out stops with no comment from the edge life. See <a href="flips.html">How insert flips are counted</a>.</dd>
+<dt id="w-from-the-machine">From the machine</dt>
+<dd>Cells on the Summary page where you type what one part really took on the machine: the time, the date, the parts run and the inserts used. Beside them, the estimate against it. The part's <a href="#w-history">history</a> keeps each measurement. See <a href="history.html#machine">History and the machine's time</a>.</dd>
 
 <dt id="l-g"><span id="w-grey">Grey cell</span></dt>
 <dd>A cell you cannot type in: read-only, or a setting that is not part of that kind of op.</dd>
+
+<dt id="l-h"><span id="w-history">History, .pthistory file</span></dt>
+<dd>The part's diary: a small text file next to the part (<code>&lt;part&gt;.pthistory</code>) where the tool writes down every dump, load, undo and regeneration, with the cycle time and insert cost before and after, what was measured on the machine, and the reasons typed in the Change report. Each dump shows it on the <span class="ui">History</span> sheet. See <a href="history.html">History and the machine's time</a>.</dd>
 
 <dt id="l-i"><span id="w-insert">Insert</span></dt>
 <dd>The replaceable carbide (or other) cutting tip clamped in the holder. The Tools page names each one by shape and nose radius, like <code>C 80&deg; r0.031</code> (an 80&deg; diamond, 0.031&Prime; nose radius).</dd>
@@ -236,7 +242,7 @@ Always type the sign &ndash; a bare <code>10%</code> is refused, because it does
 <dt id="l-r"><span id="w-radius-diameter">Radius and diameter</span></dt>
 <dd>The X travel columns (<code>travel_x_min</code>, <code>travel_x_max</code>) are a radius &ndash; double them for the diameter. The tool works speeds at the diameter.</dd>
 <dt id="w-regenerate">Regenerate</dt>
-<dd>Making Mastercam work out an op's toolpath again after its settings changed. After a load, the changed ops are marked dirty (needing regeneration). Until you regenerate, the NC code and the times are the old ones.</dd>
+<dd>Making Mastercam work out an op's toolpath again after its settings changed. After a load, the changed ops are marked dirty (needing regeneration). Until you regenerate, the NC code and the times are the old ones. On a big part it can take a long time, so the tool only does it when you ask: see <a href="load.html#regenerate">Regenerate after a load</a>.</dd>
 <dt id="w-ribbon">Ribbon</dt>
 <dd>The band of buttons across the top of Excel (or Mastercam), in tabs. The tool adds a <span class="ui">Parameter Table</span> tab to Excel's.</dd>
 <dt id="w-rpm">RPM</dt>

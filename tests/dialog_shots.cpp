@@ -893,6 +893,17 @@ namespace
 					s += L"  (partly ticked operations count all their edits)";
 				return s;
 				};
+		bool regenAfter = false;
+		options.choice = [] (const std::vector<Preview::Line> &ls)
+			{
+			int n = 0;
+			for (const Preview::Line &l : ls)
+				if (l.kind == Preview::Line::Op && l.box != Preview::Line::Unticked)
+					++n;
+			return L"Regenerate the " + std::to_wstring (n) + (n == 1 ? L" changed operation" : L" changed operations")
+				   + L" after loading - can take a long time on big parts";
+			};
+		options.chosen = &regenAfter;
 
 		Scene scene;
 		scene.name = L"load";

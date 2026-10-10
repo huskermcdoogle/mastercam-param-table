@@ -37,6 +37,7 @@
 <ul>
 <li><a href="workbook.html" aria-current="page">What is in the workbook</a></li>
 <li><a href="summary.html">Summary page</a></li>
+<li><a href="history.html">History and the machine&#x27;s time</a></li>
 <li><a href="sheet.html">The main sheet</a></li>
 <li><a href="tools-page.html">Tools page</a></li>
 </ul>
@@ -113,7 +114,8 @@ ribbon (at the top) to see the tools below.</li>
 <div class="table-scroll"><table>
 <thead><tr><th>Sheet</th><th>What it holds</th><th>You type in it?</th></tr></thead>
 <tbody>
-<tr><td>Summary</td><td>Cycle time, flips, material removed &ndash; as dumped and now. A batch quantity and insert cost. The longest ops.</td><td>Batch quantity only</td></tr>
+<tr><td>Summary</td><td>Cycle time, flips, material removed &ndash; as dumped and now. What a part took on the machine. A batch quantity and insert cost. The longest ops.</td><td>Batch quantity and <a href="history.html#machine">From the machine</a></td></tr>
+<tr><td>History</td><td>The part's <a href="history.html">history</a>, newest first: every dump, load, undo and regeneration, what each load saved, what the machine took.</td><td>No</td></tr>
 <tr><td>Lathe params</td><td>One row per op: every setting the tool reads.</td><td>Yes &ndash; the white cells</td></tr>
 <tr><td>Tools</td><td>One row per tool; an inserts table under it.</td><td>Insert names, edges, cost, edge life</td></tr>
 <tr><td>Dumped (hidden)</td><td>A copy of every value as dumped. It is how changed cells light up, and how <span class="ui">Back to the dump</span> works.</td><td>Never</td></tr>
@@ -149,6 +151,8 @@ ribbon (at the top) to see the tools below.</li>
 <p>What you type on the Tools page and the Summary (insert names, edges, cost, parts per edge, edge life, batch
 quantity) is kept in a small file next to the part, called <code>&lt;part&gt;.ptconfig</code>. The next dump starts
 with those values, so you type them once. Delete the file to start over.</p>
+<p>A second file, <code>&lt;part&gt;.pthistory</code>, is the part's <a href="history.html">history</a>: every dump,
+load, undo and regeneration, and what you typed under <strong>From the machine</strong>.</p>
 </section>
 
 <section id="example">

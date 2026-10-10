@@ -11,10 +11,11 @@ RES_DLL  "ParamTable\ParamTable.dll"
 
 CATEGORY "Parameter Table Tool"
 
-# Five entry points: dump the operation parameters to a workbook, dump a whole
+# Six entry points: dump the operation parameters to a workbook, dump a whole
 # folder of parts (and compare them), load the edited workbook back, undo the last
-# load, and open the user manual. Each is its own FUNCTION block so each gets its
-# own Customize entry and can be put on a ribbon or the Quick Access Toolbar.
+# load, regenerate what the last load changed, and open the user manual. Each is its
+# own FUNCTION block so each gets its own Customize entry and can be put on a ribbon
+# or the Quick Access Toolbar.
 # Icons (tools\make_icons.ps1): sheet + blue arrow in = dump, orange arrow out = load,
 # blue "?" = the manual.
 FUNCTION CPP "LatheParamsDumpEntry"
@@ -39,6 +40,15 @@ END_FUNCTION
 # Undo the last load: the load's own icons - it is the load, backwards.
 FUNCTION CPP "LatheParamsUndoEntry"
   TIP  3
+  SPNG 18003
+  LPNG 18004
+END_FUNCTION
+
+# Regenerate the operations the last load changed - only when asked (it can take
+# twenty minutes on a big part), then Mastercam's cycle times beside the estimate
+# in the part's history. The load's own icons: it finishes a load.
+FUNCTION CPP "LatheParamsRegenEntry"
+  TIP  6
   SPNG 18003
   LPNG 18004
 END_FUNCTION

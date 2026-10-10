@@ -79,7 +79,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(SDKDir)x64\$(Configuration);$(SDKDir)3rdParty\BCGCBPro\libx64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Mastercam.lib;MCCore.lib;MCCoreBase.lib;MCGuiBase.lib;SysTypes.lib;CHookAPI.lib;TlCore.lib;MCTool.lib;UICtrls.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- MCMill.lib: operation_manager, the operation regeneration (src\Regen.cpp). -->
+      <AdditionalDependencies>Mastercam.lib;MCCore.lib;MCCoreBase.lib;MCGuiBase.lib;SysTypes.lib;CHookAPI.lib;TlCore.lib;MCTool.lib;MCMill.lib;UICtrls.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <!-- Only the .pdb file NAME goes into the DLL, not the build folder's full path. -->
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
@@ -118,6 +119,7 @@
     <ClCompile Include="src\Dump.cpp" />
     <ClCompile Include="src\Batch.cpp" />
     <ClCompile Include="src\Load.cpp" />
+    <ClCompile Include="src\Regen.cpp" />
     <ClCompile Include="src\Util.cpp" />
     <ClCompile Include="src\LatheFields.cpp" />
     <ClCompile Include="src\Coolant.cpp" />
@@ -171,6 +173,9 @@
     <ClCompile Include="src\Summary.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\History.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\Pick.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -219,6 +224,8 @@
     <ClInclude Include="src\Undo.h" />
     <ClInclude Include="src\PartConfig.h" />
     <ClInclude Include="src\Summary.h" />
+    <ClInclude Include="src\History.h" />
+    <ClInclude Include="src\Regen.h" />
     <ClInclude Include="src\Pick.h" />
     <ClInclude Include="src\Inspect.h" />
     <ClInclude Include="src\MillMrr.h" />
