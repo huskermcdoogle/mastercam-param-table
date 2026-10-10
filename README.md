@@ -133,12 +133,32 @@ NCI's time. Other kinds are listed by the dump as "not read yet".
 2. Close Mastercam.
 3. Copy `ParamTable.ft` **and** the `ParamTable` folder into
    `Documents\My Mastercam 2026\Mastercam\Add-Ins`.
-4. Start Mastercam. The three functions appear under **Customize** as
-   *Parameter Table Tool* - "Lathe params - dump to Excel", "Lathe params - load" and
-   "Lathe params - undo last load".
+4. Start Mastercam. The four functions appear under **Customize** as
+   *Parameter Table Tool* - "Lathe params - dump to Excel", "Lathe params - load",
+   "Lathe params - undo last load" and "Parameter Table - user manual".
 
-`ParamTable\SHA256SUMS.txt` has the hash of each file; `BUILD-INFO.txt` says which commit and
-toolset built it. The add-in uses only Mastercam's own DLLs, MFC and Windows - no networking.
+`ParamTable\SHA256SUMS.txt` has the hash of each file (the manual's pages too); `BUILD-INFO.txt`
+says which commit and toolset built it. The add-in uses only Mastercam's own DLLs, MFC and
+Windows - no networking.
+
+## User manual
+
+A plain-language manual for the people who use the tool - one short page per command, each
+with steps, a worked example and what the messages mean, a word list for every column, and an
+instant search. It is a folder of web pages (`help\`, shipped as `Add-Ins\ParamTable\help`)
+that opens in any browser with no internet. Open it from:
+
+- Mastercam: **Parameter Table - user manual** (Customize > *Parameter Table Tool*);
+- Excel: the **User manual** button on the *Parameter Table* tab, the **?** in any of its
+  windows, or the link on the workbook's Summary page;
+- or double-click `help\index.html`. *Print the whole manual* (`help\print.html`) prints it,
+  or saves it as a PDF.
+
+`python tools\make_help.py` rebuilds its generated parts - the menu, the search index, the
+word list's columns (from `src\ColumnHelp.cpp`, so they match the sheet's own tooltips) and the
+print page - and checks every link, anchor and picture. `tools\make_help_images.ps1` makes the
+pictures from a sample workbook in a hidden Excel (no screenshots); `help\images\NEEDED.txt`
+lists the pictures still to make.
 
 ## Use
 
@@ -194,6 +214,7 @@ the build machine; `package.ps1` makes the release zip.
 | `src\Summary.*`, `src\PartConfig.*` | the Summary page, and the part's kept typed values |
 | `src\Coolant.*` | X-style coolant: codes, machine labels, write-back |
 | `vba\` | the workbook macros (module, sheet events, ribbon XML) |
+| `help\` | the user manual (plain HTML; `tools\make_help.py` builds and checks it) |
 
 ## Licence
 

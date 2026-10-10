@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dump to Excel - Parameter Table Tool manual</title>
+<meta name="description" content="Write the part's ops to a workbook: which ops, where, and what to call it.">
+<meta name="keywords" content="dump export excel workbook xlsx xlsm save to file name pick operations saved ticks include macros tool pictures simulate stock">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html" aria-current="page">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Dump to Excel</h1>
+<p class="where">Mastercam: <b>Lathe params - dump to Excel</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>The <a href="words.html#w-dump">dump</a> writes your part's ops into one Excel workbook. A window asks which ops,
+which folder, and what to call the file. It never writes over a file that is already there.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>Every time you start working on a part in Excel.</li>
+<li>Again after a load and a regenerate, so the sheet shows the new times.</li>
+<li>To look over a program without changing anything (dump, read, close).</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Save the part. Then click <span class="ui">Lathe params - dump to Excel</span>.</li>
+<li><strong>Pick the ops.</strong> Every op is listed by toolpath group, with a tick box. Use the buttons:
+<span class="ui">All</span>, <span class="ui">None</span>, <span class="ui">Selected in Operation Manager</span>,
+or pick a kind (ROUGH, FINISH ...) and click <span class="ui">Tick kind</span> / <span class="ui">Untick kind</span>.</li>
+<li><strong>Or find them.</strong> Type part of a comment, a tool, a type or an op number in <span class="ui">Find</span>.
+Matching ops light up. Click <span class="ui">Tick matches</span>.</li>
+<li><strong>Keep a pick for next time</strong> (if you like): type a name under <span class="ui">Saved ticks</span>
+and click <span class="ui">Save ticks</span>. Next time, pick the name to tick the same ops.</li>
+<li><strong>Where:</strong> under <span class="ui">Save to</span>, click <span class="ui">Beside the part</span> or
+<span class="ui">Browse...</span>.</li>
+<li><strong>Name:</strong> leave <span class="ui">File name</span> as it is, or change it. The line under it shows the
+name you will get.</li>
+<li><strong>Options:</strong> tick <span class="ui">Include macros (.xlsm)</span> to get the
+<span class="ui">Parameter Table</span> tab in Excel (most of this manual needs it). Leave the other boxes ticked.</li>
+<li>Click <span class="ui">Dump</span> (it says how many ops, e.g. <span class="ui">Dump 18 operations</span>).
+The workbook opens in Excel.</li>
+</ol>
+<figure class="shot todo" data-img="mc-dump-window.png" data-kind="mastercam" data-need="The dump window in Mastercam with a few ops ticked: 1 the op list, 2 Find with Tick matches, 3 Save to, 4 File name and the name line under it, 5 Include macros ticked, 6 the Dump button.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The dump window in Mastercam with a few ops ticked: 1 the op list, 2 Find with Tick matches, 3 Save to, 4 File name and the name line under it, 5 Include macros ticked, 6 the Dump button."><strong>Picture coming: mc-dump-window.png</strong>The dump window in Mastercam with a few ops ticked: 1 the op list, 2 Find with Tick matches, 3 Save to, 4 File name and the name line under it, 5 Include macros ticked, 6 the Dump button. <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The ops. (2) Find. (3) Save to. (4) File name. (5) Include macros. (6) Dump.</figcaption>
+</figure>
+<h3 id="names">The file name</h3>
+<p>The name can hold these words in braces; the tool fills them in:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Type</th><th>You get</th></tr></thead>
+<tbody>
+<tr><td><code>{part}</code></td><td>the part's file name, e.g. <code>Oil Spool Head_2026</code></td></tr>
+<tr><td><code>{date}</code> <code>{time}</code></td><td>today's date and the time, e.g. <code>20261009</code> <code>155309</code></td></tr>
+<tr><td><code>{scope}</code></td><td><code>all</code>, or <code>selected</code> when you dump only some ops</td></tr>
+<tr><td><code>{ops}</code></td><td>how many ops, e.g. <code>18</code></td></tr>
+</tbody>
+</table></div>
+<p>If a file by that name is already there, the new one gets <code>(2)</code> on the end. Nothing is ever written over.</p>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>You only want to work on the boring ops of the Oil Spool Head.</p>
+<ol>
+<li>In <span class="ui">Find</span>, type <code>bore</code>. Two ops light up: 7 Rough Bore ID and 8 Finish Bore ID.</li>
+<li>Click <span class="ui">None</span>, then <span class="ui">Tick matches</span>.</li>
+<li>Type <code>Bore ops</code> under <span class="ui">Saved ticks</span> and click <span class="ui">Save ticks</span>.</li>
+<li>Click <span class="ui">Dump 2 operations</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>Ops ticked</td><td>18 (all)</td><td class="edited">2 (ops 7 and 8)</td></tr>
+<tr><td>Button</td><td>Dump 18 operations</td><td class="edited">Dump 2 operations</td></tr>
+<tr><td>Saved ticks</td><td>(none)</td><td class="edited">Bore ops</td></tr>
+</tbody>
+</table></div>
+<p class="tip">Dump the whole part when you can. The Summary page and the Tools page add up only the ops in the
+workbook, so a part-dump gives the true cycle time and flips.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>Save the part first ...</q></dt>
+<dd>The part has never been saved. Save it, then dump again.</dd>
+<dt><q>This part has no operations of a kind this tool reads ...</q></dt>
+<dd>The tool reads lathe ops (rough, finish, face, groove, drill, PrimeTurning, dynamic rough, manual entry ...) and
+some mill ops (contour, drill, dynamic mill). Other kinds are listed as <span class="ui">Not read yet (left out)</span>.</dd>
+<dt><q>Could not write ... Check the folder can be written to ...</q></dt>
+<dd>The folder is read-only, full, or on a network drive that went away. Pick another folder.</dd>
+<dt><span class="ui">that folder does not exist</span> (under the file name)</dt>
+<dd>Fix the <span class="ui">Save to</span> folder, or click <span class="ui">Beside the part</span>.</dd>
+<dt><q>Dumped 18 operation(s) ...</q></dt>
+<dd>Done. It says how many of each kind, and where the file went.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="words.html#w-ptconfig">The part's .ptconfig file</a> (what you typed, kept for the next dump)</li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

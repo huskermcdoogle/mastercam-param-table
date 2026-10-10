@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word list - Parameter Table Tool manual</title>
+<meta name="description" content="Every column and every word in plain language: flips, CSS, SFM, RPM, per rev, edge life, MRR, chip thinning and more.">
+<meta name="keywords" content="word list glossary meaning what does it mean column names definitions terms abbreviations">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html" aria-current="page">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Word list</h1>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Plain meanings for the words in this manual and on the sheet. The first part is general words. The second part is
+every <a href="#columns">column</a>, by the name it has on the sheet (row 2 of <span class="ui">Lathe params</span>).</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>When a word or a column name is new to you. On the sheet itself, hover over a column name for the same help.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Press <kbd>Ctrl</kbd>+<kbd>F</kbd> in your browser and type the word or the column name, e.g. <code>max_ss</code>.</li>
+<li>Or click a letter below to jump to it.</li>
+<li>Follow the <span class="ui">See also</span> links for the bigger picture.</li>
+</ol>
+<ul class="letters">
+<li><a href="#l-a">A</a></li><li><a href="#l-b">B</a></li><li><a href="#l-c">C</a></li><li><a href="#l-d">D</a></li>
+<li><a href="#l-e">E</a></li><li><a href="#l-f">F</a></li><li><a href="#l-g">G</a></li><li><a href="#l-i">I</a></li>
+<li><a href="#l-l">L</a></li><li><a href="#l-m">M</a></li><li><a href="#l-n">N</a></li><li><a href="#l-o">O</a></li>
+<li><a href="#l-p">P</a></li><li><a href="#l-r">R</a></li><li><a href="#l-s">S</a></li><li><a href="#l-t">T</a></li>
+<li><a href="#l-u">U</a></li><li><a href="#l-w">W</a></li><li><a href="#l-y">Y</a></li><li><a href="#columns">Columns</a></li>
+</ul>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Row 2 of the sheet says <code>feed_mode</code> and the cell says <code>per rev</code>. Look up <code>feed_mode</code> in
+the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) for feed</q>. Then
+<a href="#w-per-rev">per rev / per min</a> above it tells you what that means at the machine.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>On the sheet</th><th>In plain words</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code> 0.012, <code>feed_mode</code> per rev</td><td>The tool moves 0.012&Prime; for every turn of the spindle (G95 F.012).</td></tr>
+<tr><td><code>speed</code> 200, <code>speed_mode</code> CSS</td><td>200 feet per minute at the cutting edge; the RPM changes with the diameter (G96 S200).</td></tr>
+<tr><td><code>max_ss</code> 3500</td><td>The spindle never goes above 3500 RPM, however small the diameter (G50 S3500).</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="general">
+<h2>General words</h2>
+<dl class="words">
+<dt id="l-a"><span id="w-add-in">Add-in</span></dt>
+<dd>A program that plugs into Mastercam and adds commands to it. This tool is one.</dd>
+<dt id="w-air-cutting">Air cutting (<code>air_pct</code>)</dt>
+<dd>Time the tool spends feeding but touching nothing &ndash; usually a pass that starts too far out, or stock that is not there any more. Cutting air costs time and nothing else.</dd>
+
+<dt id="l-b"><span id="w-batch">Batch</span></dt>
+<dd>How many parts you run in one go. Type it on the <a href="summary.html">Summary</a> to get time and insert cost per batch.</dd>
+<dt id="w-blue">Blue cell</dt>
+<dd>A worked-out number (time, flips, MRR) that moved because of your edits. You did not type it.</dd>
+
+<dt id="l-c"><span id="w-cell">Cell, row, column</span></dt>
+<dd>A cell is one box of the spreadsheet. A row goes across (one op); a column goes down (one setting). Columns have letters at the top (A, B, C); rows have numbers on the left.</dd>
+<dt id="w-chip-thinning">Chip thinning, chip thickness</dt>
+<dd>With a round insert, or an insert with a lead angle, the chip is thinner than the feed: <strong>real chip = feed &times; sin(entering angle)</strong>. A chip that is too thin rubs instead of cutting and wears the insert. To get the chip you want, program a higher feed. See <a href="calculator.html#chip">Speed &amp; feed</a>.</dd>
+<dt id="w-column-group">Column group</dt>
+<dd>A set of columns under one name in row 1 (Feeds and speeds, Coolant ...). Groups fold away with the small <span class="ui">+</span> / <span class="ui">-</span> above the columns. See <a href="sheet.html">The main sheet</a>.</dd>
+<dt id="w-coolant">Coolant: Off, Flood, Mist, Thru-tool</dt>
+<dd>Flood: a stream over the cut. Mist: a fine spray. Thru-tool: through the tool or the holder, at the edge. Machines are set up one of two ways: one coolant setting per op (<code>coolant</code>, also called V9 style), or coolants turned on <em>before</em>, <em>with</em> or <em>after</em> the move, by the machine's own names (<code>coolant_before</code>, <code>coolant_with</code>, <code>coolant_after</code>, also called X style). See <a href="coolant.html">Coolant</a>.</dd>
+<dt id="w-css">CSS (constant surface speed)</dt>
+<dd>The spindle speeds up as the tool moves toward the center, so the edge always sees the same <a href="#w-sfm">surface speed</a>. G96 on most controls. The opposite is fixed <a href="#w-rpm">RPM</a> (G97). Always set a <a href="#w-max-rpm">max RPM</a> with CSS.</dd>
+<dt id="w-ctrl-z">Ctrl+Z</dt>
+<dd>Undo. Hold <kbd>Ctrl</kbd> and press <kbd>Z</kbd>. See <a href="undo.html">Undo</a>.</dd>
+<dt id="w-cut-time">Cutting time (<code>cut_seconds_est</code>)</dt>
+<dd>The part of the cycle time spent feeding (cutting or air cutting). Rapids and tool changes are not in it.</dd>
+<dt id="w-cycle-time">Cycle time</dt>
+<dd>How long the op (or the whole part) takes. <code>cycle_time</code> is Mastercam's own figure, as dumped.</dd>
+
+<dt id="l-d"><span id="w-depth-of-cut">Depth of cut (<code>step</code>, DOC)</span></dt>
+<dd>How deep each roughing pass cuts. On a lathe, usually per side (radius). A finish op's <code>step</code> is the stepover between finish passes.</dd>
+<dt id="w-dropdown">Dropdown</dt>
+<dd>A cell with a small arrow on its right when you click it. Click the arrow and pick from the list.</dd>
+<dt id="w-dump">Dump</dt>
+<dd>Writing the part's ops out to an Excel workbook. See <a href="dump.html">Dump to Excel</a>.</dd>
+<dt id="w-dynamic">Dynamic (dynamic rough, dynamic mill)</dt>
+<dd>Toolpaths that keep the tool's engagement even, with a small stepover and a high feed. Their feed and stepover go together &ndash; see <a href="#w-chip-thinning">chip thinning</a>.</dd>
+
+<dt id="l-e"><span id="w-edge">Edge</span></dt>
+<dd>One cutting corner of an insert. A CNMG has 4 usable edges (2 on each side); a VCMT has 2; a round insert has many.</dd>
+<dt id="w-edge-life">Edge life</dt>
+<dd>How much cutting time one edge lasts before it should be turned. The Tools page's <span class="ui">Edge life (fallback)</span> is used for ops that stop for inspection but set no <code>insp_time</code> of their own. Typed as minutes:seconds (<code>8:00</code>).</dd>
+<dt id="w-entering-angle">Entering angle, lead angle</dt>
+<dd>The angle between the cutting edge and the direction of feed. A 90&deg; entering angle (0&deg; lead) makes a chip as thick as the feed. A 45&deg; entering angle makes it about 0.7 of the feed. Makers give one or the other &ndash; entering angle = 90&deg; &minus; lead angle.</dd>
+<dt id="w-estimate">Estimate (<code>est_cycle_time</code>)</dt>
+<dd>The live cycle time: it starts equal to Mastercam's and moves with your feed and speed edits. See <a href="estimate.html">The cycle time estimate</a>.</dd>
+
+<dt id="l-f"><span id="w-feed">Feed</span></dt>
+<dd>How fast the tool moves while cutting: <a href="#w-per-rev">per rev or per minute</a>. On the sheet, the number is <code>feed</code> (always positive) and the unit is <code>feed_mode</code>.</dd>
+<dt id="w-flip">Flip (insert flip)</dt>
+<dd>Turning, flipping or changing the insert to a fresh edge. The tool counts a tool inspection stop as a flip when its comment says ROTATE, FLIP, CHANGE or INDEX &ndash; and works out stops with no comment from the edge life. See <a href="flips.html">How insert flips are counted</a>.</dd>
+
+<dt id="l-g"><span id="w-grey">Grey cell</span></dt>
+<dd>A cell you cannot type in: read-only, or a setting that is not part of that kind of op.</dd>
+
+<dt id="l-i"><span id="w-insert">Insert</span></dt>
+<dd>The replaceable carbide (or other) cutting tip clamped in the holder. The Tools page names each one by shape and nose radius, like <code>C 80&deg; r0.031</code> (an 80&deg; diamond, 0.031&Prime; nose radius).</dd>
+<dt id="w-insert-size">Insert size (IC)</dt>
+<dd>The size of an insert's inscribed circle &ndash; for a round insert, its diameter. Chip thinning on round inserts needs it.</dd>
+<dt id="w-inspection-comment">Inspection comment (<code>insp_comment</code>)</dt>
+<dd>The message that comes out at a tool inspection stop, for the operator: <code>ROTATE INSERT</code>, <code>CHECK INSERT</code> ... Its words decide whether the stop counts as a flip.</dd>
+<dt id="w-insp-time">Tool inspection, <code>insp_time</code></dt>
+<dd>Mastercam can stop the machine during an op so the operator can look at or turn the insert: every so much cutting time (<code>insp_time</code>, minutes:seconds), distance, or number of cuts, and at the end. These settings are the <span class="ui">Tool inspection</span> column group.</dd>
+
+<dt id="l-l"><span id="w-load">Load</span></dt>
+<dd>Putting the edited values from the workbook back into the part. See <a href="load.html">Load the changes</a>.</dd>
+
+<dt id="l-m"><span id="w-macro">Macro</span></dt>
+<dd>A small program inside the workbook. With macros (an <code>.xlsm</code> file) you get the <span class="ui">Parameter Table</span> tab on Excel's ribbon. Without them (<code>.xlsx</code>) the workbook still works and still loads.</dd>
+<dt id="w-manual-entry">Manual entry</dt>
+<dd>An op that puts your own text into the NC program, as a comment or as code. Its text is <code>manual_text</code>.</dd>
+<dt id="w-max-rpm">Max RPM (<code>max_ss</code>)</dt>
+<dd>The highest spindle speed the op may use. With <a href="#w-css">CSS</a>, the RPM climbs as the diameter shrinks; max RPM stops it there (G50 S on many lathes). Too high near the center is a safety risk; too low slows small diameters.</dd>
+<dt id="w-mixed">Mixed</dt>
+<dd>In a window that works on several ops: the ops do not all have the same value. Whatever you apply replaces them all.</dd>
+<dt id="w-mrr">MRR, material removed</dt>
+<dd>Metal removal rate: how much material is cut per minute (in&sup3;/min or cm&sup3;/min). <code>mrr</code> is the theory while cutting (12 &times; SFM &times; feed per rev &times; depth for turning). <code>mrr_avg</code> is the real one over the whole op, including air and rapids. <code>removed</code> is the total the op takes off &ndash; fixed by the toolpath.</dd>
+
+<dt id="l-n"><span id="w-nci">NCI</span></dt>
+<dd>Mastercam's own record of a toolpath's moves, before the post turns it into G-code. The tool reads it for times, lengths and stops.</dd>
+
+<dt id="l-o"><span id="w-op">Op (operation)</span></dt>
+<dd>One toolpath in Mastercam's Operation Manager: a rough, a finish, a groove, a drill ... Each op is one row of the sheet.</dd>
+<dt id="w-op-number">Op number (<code>op_idn</code>)</dt>
+<dd>The op's ID number in Mastercam. It is how the load finds the right op &ndash; never change it.</dd>
+<dt id="w-operation-manager">Operation Manager</dt>
+<dd>The list of ops in Mastercam (the Toolpaths tab). The sheet keeps its order.</dd>
+
+<dt id="l-p"><span id="w-per-rev">Per rev / per min (IPR, IPM)</span></dt>
+<dd><strong>Per rev</strong>: how far the tool moves for each turn of the spindle (inches per rev, IPR, or mm per rev; G95 / G99). <strong>Per min</strong>: how far it moves in a minute (IPM or mm/min; G94 / G98). Per min = per rev &times; RPM. Lathes mostly use per rev; live tools use per min.</dd>
+<dt id="w-percent">Percent: +10%, -10%</dt>
+<dd><code>+10%</code> means 10% more than now: 0.010 becomes 0.011. <code>-10%</code> means 10% less: 0.010 becomes 0.009.
+Always type the sign &ndash; a bare <code>10%</code> is refused, because it does not say which way. In
+<a href="target-time.html">Hit a target time</a>, <code>-10%</code> means 10% less <em>time</em>.</dd>
+<dt id="w-post">Post</dt>
+<dd>The post processor: it turns Mastercam's toolpaths into G-code for your machine.</dd>
+<dt id="w-primeturning">PrimeTurning</dt>
+<dd>Sandvik's turning method that cuts in both directions with a small entering angle and high feeds, using A-type and B-type inserts. Its ops keep their own feeds and speeds (<code>pt_rough_speed</code>, <code>pt_rough_feed_axial</code> ...) &ndash; the plain <code>feed</code> and <code>speed</code> columns do not drive them.</dd>
+<dt id="w-ptconfig">.ptconfig file</dt>
+<dd>A small file next to the part (<code>&lt;part&gt;.ptconfig</code>) that keeps what you typed on the Tools page and the Summary: insert names, edges, cost, parts per edge, edge life, batch quantity. The next dump starts from it. Delete it to start over.</dd>
+
+<dt id="l-r"><span id="w-radius-diameter">Radius and diameter</span></dt>
+<dd>The X travel columns (<code>travel_x_min</code>, <code>travel_x_max</code>) are a radius &ndash; double them for the diameter. The tool works speeds at the diameter.</dd>
+<dt id="w-regenerate">Regenerate</dt>
+<dd>Making Mastercam work out an op's toolpath again after its settings changed. After a load, the changed ops are marked dirty (needing regeneration). Until you regenerate, the NC code and the times are the old ones.</dd>
+<dt id="w-ribbon">Ribbon</dt>
+<dd>The band of buttons across the top of Excel (or Mastercam), in tabs. The tool adds a <span class="ui">Parameter Table</span> tab to Excel's.</dd>
+<dt id="w-rpm">RPM</dt>
+<dd>Revolutions per minute: how fast the spindle turns. With CSS the RPM changes with the diameter; with fixed RPM (G97) it does not.</dd>
+
+<dt id="l-s"><span id="w-scenario">Scenario</span></dt>
+<dd>A set of edits saved under a name inside the workbook, to restore or compare later. See <a href="scenarios.html">Scenarios</a>.</dd>
+<dt id="w-sfm">SFM (surface speed, m/min)</dt>
+<dd>Surface feet per minute: how fast the material passes the cutting edge. RPM = SFM &times; 3.82 &divide; diameter in inches. Metric: m/min, and RPM = m/min &times; 318.3 &divide; diameter in mm. Insert boxes give a range of SFM for each material.</dd>
+<dt id="w-status-bar">Status bar</dt>
+<dd>The thin bar along the very bottom of the Excel window. The tool writes short messages there (&ldquo;3 cell(s) set ...&rdquo;).</dd>
+<dt id="w-stepover">Stepover</dt>
+<dd>How far the tool moves over between passes, side to side. For dynamic toolpaths, often given as a percent of the tool (<code>stepover_percent</code>).</dd>
+<dt id="w-stock-to-leave">Stock to leave</dt>
+<dd>Material a rough leaves on for the finish pass, in X (<code>stock_x</code>, usually per side) and Z (<code>stock_z</code>).</dd>
+
+<dt id="l-t"><span id="w-tool-number">Tool number (T12)</span></dt>
+<dd>The turret or pocket number of the tool. In <span class="ui">Find op</span>, type <code>T12</code> to find tool 12's ops.</dd>
+<dt id="w-toolpath">Toolpath</dt>
+<dd>The moves an op makes. Mastercam works it out from the op's settings (see <a href="#w-regenerate">regenerate</a>).</dd>
+<dt id="w-tooltip">Tooltip</dt>
+<dd>The little note that appears when you hover the mouse over something, or click a cell. Every column name and cell on the sheet has one.</dd>
+<dt id="w-transform">Transform</dt>
+<dd>An op that copies other ops' toolpaths (mirror, rotate, translate). The sheet shows transforms read-only; their copies count in the part's time and flips.</dd>
+
+<dt id="l-u"><span id="w-usual-edge-time">Usual edge time</span></dt>
+<dd>What one edge of an insert normally lasts in your shop. You type it in the last column of the Tools page's
+<a href="tools-page.html#usual">inserts table</a>; the <a href="check.html">Program check</a> warns about a tool whose
+edge runs more than 25% longer.</dd>
+
+<dt id="l-w"><span id="w-workbook">Workbook, sheet</span></dt>
+<dd>A workbook is one Excel file. A sheet is one page of it, chosen by the tabs along the bottom (Summary, Lathe params, Tools).</dd>
+
+<dt id="l-y"><span id="w-yellow">Yellow cell</span></dt>
+<dd>A cell you changed: it differs from the dump. It goes white again if you put the dumped value back.</dd>
+</dl>
+</section>
+
+<section id="columns">
+<h2>Columns on the sheet</h2>
+<!-- columns -->
+<p class="note">This part is made from the sheet's own tooltips (the text you see when you hover a column name), so it always matches your sheet. A column not listed here (most of the Tool inspection and Filter settings, the planes, home and reference points) has its own tooltip on the sheet: hover its name.</p>
+<h3 id="c-identity-and-context">Identity and context</h3>
+<dl class="words">
+<dt id="col-changes"><span class="col">changes</span></dt>
+<dd>How many cells in this row differ from the dump. Edited cells are highlighted.</dd>
+<dt id="col-comment"><span class="col">comment</span></dt>
+<dd>The operation&#x27;s comment, as the Operation Manager shows it. Edit it here and it loads back (up to 119 characters).</dd>
+<dt id="col-group_name"><span class="col">group_name</span></dt>
+<dd>The toolpath group the operation is in.</dd>
+<dt id="col-needs_regen"><span class="col">needs_regen</span></dt>
+<dd>yes = the toolpath is out of date; regenerate before posting. Stats are stale until then. <span class="also">See also: <a href="#w-regenerate">regenerate</a>.</span></dd>
+<dt id="col-op_idn"><span class="col">op_idn</span></dt>
+<dd>The operation&#x27;s ID - how a load finds its row&#x27;s operation. Do not change.</dd>
+<dt id="col-tool"><span class="col">tool</span></dt>
+<dd>Tool number.</dd>
+<dt id="col-tool_name"><span class="col">tool_name</span></dt>
+<dd>The tool&#x27;s description.</dd>
+<dt id="col-tool_radius"><span class="col">tool_radius</span></dt>
+<dd>The tool radius the percent columns are a percent of (dynamic rough).</dd>
+<dt id="col-type"><span class="col">type</span></dt>
+<dd>The kind of operation - ROUGH, FINISH, FACE, GROOVE, DRILL, MANUAL, DYNAMIC MILL and so on.</dd>
+<dt id="col-units"><span class="col">units</span></dt>
+<dd>in or mm - the units every length on this row is in.</dd>
+</dl>
+<h3 id="c-toolpath-stats">Toolpath stats</h3>
+<dl class="words">
+<dt id="col-back_feed"><span class="col">back_feed</span></dt>
+<dd>Dynamic mill back feed - the feed of the repositioning moves (per minute).</dd>
+<dt id="col-cut_length"><span class="col">cut_length</span></dt>
+<dd>Total length of the feed moves (lines and arcs) in the toolpath.</dd>
+<dt id="col-cycle_time"><span class="col">cycle_time</span></dt>
+<dd>Mastercam&#x27;s estimated cycle time for this operation, h:mm:ss (matches the Operation Manager to within seconds).</dd>
+<dt id="col-cycle_time_raw"><span class="col">cycle_time_raw</span></dt>
+<dd>The cycle time in seconds, as Mastercam returned it.</dd>
+<dt id="col-dcut_fin_n"><span class="col">dcut_fin_n</span></dt>
+<dd>Mill depth cuts: number of finish cuts.</dd>
+<dt id="col-dcut_finish"><span class="col">dcut_finish</span></dt>
+<dd>Mill depth cuts: finish step.</dd>
+<dt id="col-dcut_rough"><span class="col">dcut_rough</span></dt>
+<dd>Mill depth cuts: max rough step.</dd>
+<dt id="col-est_cycle_time"><span class="col">est_cycle_time</span></dt>
+<dd>LIVE estimate: Mastercam&#x27;s cycle time, moved by your feed / speed / CSS / max_ss edits on this row. Equals cycle_time until you edit. <span class="also">See also: <a href="#w-estimate">estimate</a>.</span></dd>
+<dt id="col-est_seconds"><span class="col">est_seconds</span></dt>
+<dd>The live estimate in seconds (the formula behind est_cycle_time).</dd>
+<dt id="col-feed_groups"><span class="col">feed_groups</span></dt>
+<dd>Feed-move length at each feed rate, longest first - a dynamic mill&#x27;s back feed is its own entry.</dd>
+<dt id="col-fr_override"><span class="col">fr_override</span></dt>
+<dd>Contour feed rate override, used when fr_override_on is 1.</dd>
+<dt id="col-mcut_fin_n"><span class="col">mcut_fin_n</span></dt>
+<dd>Mill multi passes: number of finish passes.</dd>
+<dt id="col-mcut_rough_n"><span class="col">mcut_rough_n</span></dt>
+<dd>Mill multi passes: number of rough passes.</dd>
+<dt id="col-rapid_length"><span class="col">rapid_length</span></dt>
+<dd>Total length of the rapid moves WITHIN the operation - backplot also counts the moves to and from it, so its figure is larger.</dd>
+<dt id="col-ss_override"><span class="col">ss_override</span></dt>
+<dd>Contour spindle speed override, used when ss_override_on is 1.</dd>
+<dt id="col-time_change"><span class="col">time_change</span></dt>
+<dd>How much the live estimate differs from Mastercam&#x27;s cycle time.</dd>
+<dt id="col-travel_x_max"><span class="col">travel_x_max</span></dt>
+<dd>Largest X the toolpath reaches - a RADIUS (double it for diameter).</dd>
+<dt id="col-travel_x_min"><span class="col">travel_x_min</span></dt>
+<dd>Smallest X the toolpath reaches - a RADIUS (double it for diameter).</dd>
+<dt id="col-travel_z_max"><span class="col">travel_z_max</span></dt>
+<dd>Largest Z the toolpath reaches, in the tool plane.</dd>
+<dt id="col-travel_z_min"><span class="col">travel_z_min</span></dt>
+<dd>Smallest Z the toolpath reaches, in the tool plane.</dd>
+</dl>
+<h3 id="c-feeds-and-speeds">Feeds and speeds</h3>
+<dl class="words">
+<dt id="col-feed"><span class="col">feed</span></dt>
+<dd>Cutting feed rate - always positive here. Per rev or per minute is set in feed_mode. <span class="also">See also: <a href="#w-per-rev">per rev</a>.</span></dd>
+<dt id="col-feed_mode"><span class="col">feed_mode</span></dt>
+<dd>per rev (IPR / mm per rev) or per min (IPM / mm per min) for feed. <span class="also">See also: <a href="#w-per-rev">per rev</a>.</span></dd>
+<dt id="col-max_ss"><span class="col">max_ss</span></dt>
+<dd>Maximum spindle speed (RPM) - the cap when running CSS. <span class="also">See also: <a href="#w-max-rpm">max rpm</a>.</span></dd>
+<dt id="col-plunge"><span class="col">plunge</span></dt>
+<dd>Plunge feed rate - per rev or per minute is set in plunge_mode.</dd>
+<dt id="col-plunge_mode"><span class="col">plunge_mode</span></dt>
+<dd>per rev or per min for plunge. <span class="also">See also: <a href="#w-per-rev">per rev</a>.</span></dd>
+<dt id="col-plunge_surf_fin"><span class="col">plunge_surf_fin</span></dt>
+<dd>1 = plunge holds a surface finish value instead of a feed rate.</dd>
+<dt id="col-retract"><span class="col">retract</span></dt>
+<dd>Retract feed rate - per rev or per minute is set in retract_mode.</dd>
+<dt id="col-retract_mode"><span class="col">retract_mode</span></dt>
+<dd>per rev or per min for retract. <span class="also">See also: <a href="#w-per-rev">per rev</a>.</span></dd>
+<dt id="col-speed"><span class="col">speed</span></dt>
+<dd>Spindle speed - surface speed when speed_mode is CSS, RPM when it is RPM. <span class="also">See also: <a href="#w-sfm">sfm</a>.</span></dd>
+<dt id="col-speed_mode"><span class="col">speed_mode</span></dt>
+<dd>CSS = constant surface speed (speed is SFM or m/min); RPM = fixed spindle speed. <span class="also">See also: <a href="#w-css">css</a>.</span></dd>
+<dt id="col-spindle_dir"><span class="col">spindle_dir</span></dt>
+<dd>CW (M03) or CCW (M04).</dd>
+<dt id="col-surf_fin_feed"><span class="col">surf_fin_feed</span></dt>
+<dd>1 = feed holds a surface finish value instead of a feed rate.</dd>
+</dl>
+<h3 id="c-depth-of-cut">Depth of cut</h3>
+<dl class="words">
+<dt id="col-min_step"><span class="col">min_step</span></dt>
+<dd>Smallest depth of cut the rough will take.</dd>
+<dt id="col-n_cuts"><span class="col">n_cuts</span></dt>
+<dd>Number of finish passes.</dd>
+<dt id="col-peck1"><span class="col">peck1</span></dt>
+<dd>Drill: first peck depth.</dd>
+<dt id="col-peck2"><span class="col">peck2</span></dt>
+<dd>Drill: subsequent peck depth.</dd>
+<dt id="col-step"><span class="col">step</span></dt>
+<dd>Rough: depth of cut per pass. Finish: stepover between finish passes. <span class="also">See also: <a href="#w-depth-of-cut">depth of cut</a>.</span></dd>
+<dt id="col-stepover"><span class="col">stepover</span></dt>
+<dd>Dynamic rough stepover. Change this and stepover_percent follows. <span class="also">See also: <a href="#w-stepover">stepover</a>.</span></dd>
+<dt id="col-stepover_percent"><span class="col">stepover_percent</span></dt>
+<dd>Stepover as a percent of tool radius - calculated from stepover. Typing here replaces the formula.</dd>
+</dl>
+<h3 id="c-stock-to-leave">Stock to leave</h3>
+<dl class="words">
+<dt id="col-fin_stock_x"><span class="col">fin_stock_x</span></dt>
+<dd>Semi-finish passes: stock to leave in X.</dd>
+<dt id="col-fin_stock_z"><span class="col">fin_stock_z</span></dt>
+<dd>Semi-finish passes: stock to leave in Z.</dd>
+<dt id="col-stock_x"><span class="col">stock_x</span></dt>
+<dd>Stock to leave in X. <span class="also">See also: <a href="#w-stock-to-leave">stock to leave</a>.</span></dd>
+<dt id="col-stock_z"><span class="col">stock_z</span></dt>
+<dd>Stock to leave in Z. <span class="also">See also: <a href="#w-stock-to-leave">stock to leave</a>.</span></dd>
+</dl>
+<h3 id="c-coolant">Coolant</h3>
+<dl class="words">
+<dt id="col-canned_text_raw"><span class="col">canned_text_raw</span></dt>
+<dd>The operation&#x27;s canned text and coolant codes, raw.</dd>
+<dt id="col-coolant"><span class="col">coolant</span></dt>
+<dd>V9 coolant - the one coolant setting on a machine set up for V9 coolant: Off, Flood, Mist or Thru-tool. <span class="also">See also: <a href="#w-coolant">coolant</a>.</span></dd>
+<dt id="col-coolant_after"><span class="col">coolant_after</span></dt>
+<dd>Coolant turned on AFTER the move - pick from this machine&#x27;s coolants, or none.</dd>
+<dt id="col-coolant_before"><span class="col">coolant_before</span></dt>
+<dd>Coolant turned on BEFORE the move - pick from this machine&#x27;s coolants, or none. <span class="also">See also: <a href="#w-coolant">coolant</a>.</span></dd>
+<dt id="col-coolant_text"><span class="col">coolant_text</span></dt>
+<dd>The V9 coolant field in words.</dd>
+<dt id="col-coolant_with"><span class="col">coolant_with</span></dt>
+<dd>Coolant turned on WITH the move - pick from this machine&#x27;s coolants, or none.</dd>
+</dl>
+<h3 id="c-prime-turning-s-own-feeds-and-speeds">Prime turning&#x27;s own feeds and speeds</h3>
+<dl class="words">
+<dt id="col-finish_feed"><span class="col">finish_feed</span></dt>
+<dd>Finish-pass feed rate, used when use_finish_feed is 1.</dd>
+<dt id="col-finish_ss"><span class="col">finish_ss</span></dt>
+<dd>Finish-pass spindle speed, used when use_finish_ss is 1.</dd>
+<dt id="col-finish_step"><span class="col">finish_step</span></dt>
+<dd>Finish pass cut amount.</dd>
+<dt id="col-pt_fin_feed_axial"><span class="col">pt_fin_feed_axial</span></dt>
+<dd>Prime turning FINISH feed along Z; unit in pt_fin_axial_type.</dd>
+<dt id="col-pt_fin_feed_radial"><span class="col">pt_fin_feed_radial</span></dt>
+<dd>Prime turning FINISH feed along X; unit in pt_fin_radial_type.</dd>
+<dt id="col-pt_fin_speed"><span class="col">pt_fin_speed</span></dt>
+<dd>Prime turning FINISH spindle speed - CSS when pt_fin_css is 1, else RPM.</dd>
+<dt id="col-pt_rough_css"><span class="col">pt_rough_css</span></dt>
+<dd>1 = prime turning rough speed is CSS.</dd>
+<dt id="col-pt_rough_feed_axial"><span class="col">pt_rough_feed_axial</span></dt>
+<dd>Prime turning ROUGH feed along Z; unit in pt_rough_axial_type.</dd>
+<dt id="col-pt_rough_feed_from"><span class="col">pt_rough_feed_from</span></dt>
+<dd>user defined = the feeds as typed; chip thickness = Mastercam works them out from pt_rough_chip.</dd>
+<dt id="col-pt_rough_feed_radial"><span class="col">pt_rough_feed_radial</span></dt>
+<dd>Prime turning ROUGH feed along X; unit in pt_rough_radial_type.</dd>
+<dt id="col-pt_rough_speed"><span class="col">pt_rough_speed</span></dt>
+<dd>Prime turning ROUGH spindle speed - CSS (SFM / m/min) when pt_rough_css is 1, else RPM. <span class="also">See also: <a href="#w-primeturning">primeturning</a>.</span></dd>
+<dt id="col-pt_strategy"><span class="col">pt_strategy</span></dt>
+<dd>Prime turning roughing strategy.</dd>
+<dt id="col-rough_step"><span class="col">rough_step</span></dt>
+<dd>Face: rough stepover. Groove / plunge rough: step across the groove.</dd>
+<dt id="col-rough_step_by"><span class="col">rough_step_by</span></dt>
+<dd>Groove rough step from: 0 number of steps, 1 step amount, 2 percent of tool width.</dd>
+</dl>
+<h3 id="c-toolpath-specific">Toolpath-specific</h3>
+<dl class="words">
+<dt id="col-cycle"><span class="col">cycle</span></dt>
+<dd>Drill cycle number.</dd>
+<dt id="col-direction"><span class="col">direction</span></dt>
+<dd>Cut direction: 0 OD, 1 ID, 2 face, 3 back. Shown, never written.</dd>
+<dt id="col-do_finish"><span class="col">do_finish</span></dt>
+<dd>1 = take semi-finish passes.</dd>
+<dt id="col-entry_amt"><span class="col">entry_amt</span></dt>
+<dd>Rough: entry amount.</dd>
+<dt id="col-exit_amt"><span class="col">exit_amt</span></dt>
+<dd>Rough: exit amount.</dd>
+<dt id="col-fin_n_cuts"><span class="col">fin_n_cuts</span></dt>
+<dd>Number of semi-finish passes.</dd>
+<dt id="col-fin_step"><span class="col">fin_step</span></dt>
+<dd>Semi-finish stepover.</dd>
+<dt id="col-linear_tol"><span class="col">linear_tol</span></dt>
+<dd>Tolerance for turning spline geometry into lines. Only matters on spline chains.</dd>
+<dt id="col-manual_gcode"><span class="col">manual_gcode</span></dt>
+<dd>Manual entry output: 1005 = as a comment, 1006 = as code.</dd>
+<dt id="col-manual_save"><span class="col">manual_save</span></dt>
+<dd>How the manual entry is saved. Shown, never written.</dd>
+<dt id="col-manual_source"><span class="col">manual_source</span></dt>
+<dd>Where the manual entry text comes from. Shown, never written.</dd>
+<dt id="col-manual_text"><span class="col">manual_text</span></dt>
+<dd>The manual entry&#x27;s text (up to 3111 characters). Alt+Enter for a new line; with macros, double-click for a bigger editor.</dd>
+<dt id="col-nonCuttingRegionAngle"><span class="col">nonCuttingRegionAngle</span></dt>
+<dd>Dynamic rough non-cutting region angle, degrees.</dd>
+<dt id="col-overlap"><span class="col">overlap</span></dt>
+<dd>Rough: overlap amount between passes.</dd>
+<dt id="col-radius"><span class="col">radius</span></dt>
+<dd>Dynamic rough toolpath radius. Change this and radius_percent follows.</dd>
+<dt id="col-radius_percent"><span class="col">radius_percent</span></dt>
+<dd>Toolpath radius as a percent of tool radius - calculated from radius. Typing here replaces the formula.</dd>
+<dt id="col-rough_angle"><span class="col">rough_angle</span></dt>
+<dd>Rough: cut angle, in RADIANS.</dd>
+<dt id="col-zigzag"><span class="col">zigzag</span></dt>
+<dd>0 = one way, 1 = zigzag.</dd>
+</dl>
+<h3 id="c-home-planes-filter">Home, planes, filter</h3>
+<dl class="words">
+<dt id="col-clearance_pln"><span class="col">clearance_pln</span></dt>
+<dd>Clearance plane value.</dd>
+<dt id="col-feed_pln"><span class="col">feed_pln</span></dt>
+<dd>Feed plane value.</dd>
+<dt id="col-filter_on"><span class="col">filter_on</span></dt>
+<dd>1 = arc filter / tolerance on: runs of short moves become arcs and longer lines.</dd>
+<dt id="col-filter_reduce_type"><span class="col">filter_reduce_type</span></dt>
+<dd>0 = neither, 1 = reduce line tolerance, 2 = reduce arc tolerance.</dd>
+<dt id="col-filter_tol"><span class="col">filter_tol</span></dt>
+<dd>Arc filter tolerance.</dd>
+<dt id="col-home_mode"><span class="col">home_mode</span></dt>
+<dd>Home position: 0 from machine, 1 user defined, 2 from tool.</dd>
+<dt id="col-retract_pln"><span class="col">retract_pln</span></dt>
+<dd>Retract plane value.</dd>
+</dl>
+<h3 id="c-where-it-sits">Where it sits</h3>
+<dl class="words">
+<dt id="col-group_id"><span class="col">group_id</span></dt>
+<dd>Toolpath group ID. Shown, never written.</dd>
+<dt id="col-tplane_id"><span class="col">tplane_id</span></dt>
+<dd>Tool plane ID. Shown, never written.</dd>
+<dt id="col-wcs_id"><span class="col">wcs_id</span></dt>
+<dd>Work coordinate system ID. Shown, never written.</dd>
+</dl>
+<h3 id="c-tool-inspection-and-insert-flips">Tool inspection and insert flips</h3>
+<dl class="words">
+<dt id="col-air_pct"><span class="col">air_pct</span></dt>
+<dd>Share of the op&#x27;s feed time cutting nothing (stock simulation). <span class="also">See also: <a href="#w-air-cutting">air cutting</a>.</span></dd>
+<dt id="col-cut_dia"><span class="col">cut_dia</span></dt>
+<dd>Mean cutting diameter over the feed moves (from the NCI) - where an RPM op&#x27;s surface speed, and CSS&#x27;s max_ss cap, are taken. A drill: the tool diameter. <span class="also">See also: <a href="#w-sfm">sfm</a>.</span></dd>
+<dt id="col-cut_seconds_est"><span class="col">cut_seconds_est</span></dt>
+<dd>Feed time in seconds, LIVE - the cutting part of the estimate; the Tools page sums it per tool.</dd>
+<dt id="col-edge_after"><span class="col">edge_after</span></dt>
+<dd>Cut time (seconds) the tool&#x27;s edge has done since its last flip, leaving this op - the next op of the same tool carries on from it.</dd>
+<dt id="col-edge_limit"><span class="col">edge_limit</span></dt>
+<dd>Cut time (seconds) an edge takes before a comment-less stop counts as a flip: the op&#x27;s insp_time when filled in, else the tool&#x27;s edge life on the Tools page (8:00). <span class="also">See also: <a href="#w-edge-life">edge life</a>.</span></dd>
+<dt id="col-flip_longest"><span class="col">flip_longest</span></dt>
+<dd>The most feed time between flips (or from the start / to the end) - the longest any edge cuts.</dd>
+<dt id="col-flips"><span class="col">flips</span></dt>
+<dd>Insert flips in the toolpath as it is: inspection stops whose comment changes the insert (CHANGE/ROTATE INSERT). <span class="also">See also: <a href="#w-flip">flip</a>.</span></dd>
+<dt id="col-flips_est"><span class="col">flips_est</span></dt>
+<dd>Insert flips per part, LIVE: follows feeds, speeds and the inspection settings. Equal to flips until something changes. <span class="also">See also: <a href="#w-flip">flip</a>.</span></dd>
+<dt id="col-flips_part"><span class="col">flips_part</span></dt>
+<dd>All the flips of the op per part, LIVE: commented (flips_est) + inferred (flips_uncommented). The Tools page sums it per tool. <span class="also">See also: <a href="#w-flip">flip</a>.</span></dd>
+<dt id="col-flips_uncommented"><span class="col">flips_uncommented</span></dt>
+<dd>Flips from stops with NO comment, LIVE - inferred from the settings (they leave nothing in the NCI): one each time the edge has cut edge_limit, carrying short ops&#x27; time over to the tool&#x27;s next op.</dd>
+<dt id="col-flips_why"><span class="col">flips_why</span></dt>
+<dd>Why each flip happened: time, distance, cuts (number of cuts, first cut, each depth) or end of the operation.</dd>
+<dt id="col-insp_at_end"><span class="col">insp_at_end</span></dt>
+<dd>Tool inspection stop at the end of the operation.</dd>
+<dt id="col-insp_between_cuts"><span class="col">insp_between_cuts</span></dt>
+<dd>1 = stop only between cuts (the real interval runs over the setting); 0 = stop mid-cut.</dd>
+<dt id="col-insp_dist"><span class="col">insp_dist</span></dt>
+<dd>Tool inspection: cut length between stops.</dd>
+<dt id="col-insp_min_cut"><span class="col">insp_min_cut</span></dt>
+<dd>Mid-cut stops: a pass with less than this left is finished first.</dd>
+<dt id="col-insp_mode"><span class="col">insp_mode</span></dt>
+<dd>How stops are placed: between cuts only, or mid-cut (finishing a pass that is nearly done).</dd>
+<dt id="col-insp_time"><span class="col">insp_time</span></dt>
+<dd>Tool inspection: feed time between stops, as minutes:seconds (9:00) - or seconds (540). <span class="also">See also: <a href="#w-insp-time">insp time</a>.</span></dd>
+<dt id="col-mrr"><span class="col">mrr</span></dt>
+<dd>Metal removal rate while cutting, LIVE, in3/min (cm3/min metric). Turning: 12 x SFM x feed/rev x depth; drill: pi D^2/4 x feed/min; mill: ae x ap x feed/min (see mrr_basis). Follows speed, feed and depth edits. <span class="also">See also: <a href="#w-mrr">mrr</a>.</span></dd>
+<dt id="col-mrr_avg"><span class="col">mrr_avg</span></dt>
+<dd>Actual MRR over the whole operation, LIVE: removed / op time - rapids, leads and air cuts included. Follows feed and speed edits through the estimate. <span class="also">See also: <a href="#w-mrr">mrr</a>.</span></dd>
+<dt id="col-mrr_basis"><span class="col">mrr_basis</span></dt>
+<dd>What mrr is worked from: the depth-of-cut column, the diameter, and whether max_ss caps the speed. A mill op: its ae (contour: full tool width unless multi passes - an upper bound; dynamic: stepover) and ap.</dd>
+<dt id="col-mrr_engaged"><span class="col">mrr_engaged</span></dt>
+<dd>Actual MRR while in metal, LIVE: removed / (cut time less its air share). Set it beside mrr (theoretical) - a big gap says the depth or engagement is not what the parameters suggest. <span class="also">See also: <a href="#w-mrr">mrr</a>.</span></dd>
+<dt id="col-removed"><span class="col">removed</span></dt>
+<dd>Material the op removes (in3, cm3 metric) - fixed by its toolpath, so feed and speed edits do not change it (a depth edit does only once the op is regenerated). From a 2D stock simulation where it covers the op, else mrr x cut time - see removed_from. <span class="also">See also: <a href="#w-mrr">mrr</a>.</span></dd>
+<dt id="col-removed_check"><span class="col">removed_check</span></dt>
+<dd>The stock simulation set against Mastercam&#x27;s own stock boundaries: &#x27;agrees&#x27;, or both figures when they differ by more than 20% - usually a tool whose outline in Mastercam is not its real insert.</dd>
+<dt id="col-removed_from"><span class="col">removed_from</span></dt>
+<dd>Where removed comes from: the stock simulation (the toolpath swept through the stock), or an estimate (mrr x cut time, which counts air as cutting). Drill cycles, mill moves and ops after a stock flip are not simulated.</dd>
+<dt id="col-xf_copies"><span class="col">xf_copies</span></dt>
+<dd>A transform: how many copies of its source operations its toolpath holds (measured). A source: how many more times transforms cut it - the Tools page counts its tool time and flips that many more times.</dd>
+<dt id="col-xf_detail"><span class="col">xf_detail</span></dt>
+<dd>The transform in words: its kind and numbers (steps, angle or distance, about where).</dd>
+<dt id="col-xf_instances"><span class="col">xf_instances</span></dt>
+<dd>Copies the transform makes, as its dialog counts them: rotate - its steps; rectangular array - X steps x Y steps; mirror - 1.</dd>
+<dt id="col-xf_make_ops"><span class="col">xf_make_ops</span></dt>
+<dd>1 = the transform makes new operations (and geometry); 0 = it transforms the toolpath only.</dd>
+<dt id="col-xf_source_geom"><span class="col">xf_source_geom</span></dt>
+<dd>1 = transforms the source operations&#x27; geometry; 0 = their NCI.</dd>
+<dt id="col-xf_sources"><span class="col">xf_sources</span></dt>
+<dd>The op_idn of each operation the transform copies, as Mastercam lists them.</dd>
+<dt id="col-xf_type"><span class="col">xf_type</span></dt>
+<dd>Transform kind: mirror, rotate or translate. Transforms are shown, never written.</dd>
+</dl>
+<!-- /columns -->
+<h3 id="c-tools-page">Tools page columns</h3>
+<dl class="words">
+<dt id="t-insert"><span class="col">Insert</span></dt><dd>The insert the tool carries, worked out from its shape. Type over it if it is wrong; tools with the same name count as one insert.</dd>
+<dt id="t-flips"><span class="col">Flips / part</span></dt><dd>The tool's insert flips per part, from all its ops (live).</dd>
+<dt id="t-cut-time"><span class="col">Cut time / part</span></dt><dd>The tool's cutting time per part (live).</dd>
+<dt id="t-longest"><span class="col">Longest between flips</span></dt><dd>The most cutting time any edge of this tool does between flips.</dd>
+<dt id="t-inspection"><span class="col">Inspection</span></dt><dd>What the tool's ops stop on, in words (&ldquo;every 8:00 of cutting, at end&rdquo;).</dd>
+<dt id="t-edge-life"><span class="col">Edge life (fallback)</span></dt><dd>Cut time one edge lasts, for ops that stop for inspection but set no <code>insp_time</code>. See <a href="#w-edge-life">edge life</a>.</dd>
+<dt id="t-edges"><span class="col">Edges per insert</span></dt><dd>How many cutting edges one insert has (inserts table).</dd>
+<dt id="t-inserts"><span class="col">Inserts / part</span></dt><dd>Flips per part &divide; edges per insert, in whole inserts (a fraction for an insert that outlasts a part).</dd>
+<dt id="t-cost"><span class="col">Cost per insert</span>, <span class="col">Insert cost / part</span></dt><dd>Type what one insert costs; the cost per part follows.</dd>
+<dt id="t-parts-per-edge"><span class="col">Parts per edge</span></dt><dd>For an insert that lasts more than one part: how many parts one edge makes.</dd>
+<dt id="t-usual"><span class="col">Usual edge time</span></dt><dd>How long one edge of this insert usually cuts before it is turned (inserts table). See <a href="#w-usual-edge-time">usual edge time</a>.</dd>
+<dt id="t-ic"><span class="col">Insert size (IC)</span></dt><dd>The insert's size across its inscribed circle &ndash; a round insert's diameter &ndash; in the part's units. Chip thinning uses it.</dd>
+<dt id="t-angle"><span class="col">Entering angle</span></dt><dd>Degrees from the cutting edge to the feed, from the holder's ISO code (PCLNR: 95). 90 = square shoulder, no chip thinning. US lead angle = 90 minus this. See <a href="#w-entering-angle">entering angle</a>.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undo - Parameter Table Tool manual</title>
+<meta name="description" content="Take back a command (Ctrl+Z or Undo), or put cells back as they were dumped.">
+<meta name="keywords" content="undo ctrl+z mistake take back revert back to the dump put back selected cells whole rows everything reset start over">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html" aria-current="page">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Undo</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Undo and review</b> &rsaquo; <b>Undo</b> / <b>Back to the dump</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Two ways back in Excel:</p>
+<ul>
+<li><strong>Undo</strong> (or <kbd>Ctrl</kbd>+<kbd>Z</kbd>) takes back the last Parameter Table command &ndash; a whole
+Set, Scale, Copy or Apply at once. Press it again to go further back, up to 20 commands.</li>
+<li><strong>Back to the dump</strong> puts cells back to the values they had when the sheet was dumped: the
+<span class="ui">Selected cells</span>, the <span class="ui">Selected ops (whole rows)</span>, or
+<span class="ui">Everything</span>.</li>
+</ul>
+<p>To take back a load that already went into Mastercam, see <a href="undo-load.html">Undo a load</a>.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>Undo: right after a command did something you did not mean.</li>
+<li>Back to the dump: when an idea did not work out and you want a clean start on some ops &ndash; or on all of them.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<h3 id="undo-steps">Undo a command</h3>
+<ol class="steps">
+<li>Press <kbd>Ctrl</kbd>+<kbd>Z</kbd>, or click <span class="ui">Undo</span> on the ribbon.</li>
+<li>The status bar says what was undone and how many cells went back.</li>
+<li>Press again to undo the command before that.</li>
+</ol>
+<p class="note">A cell you have typed over since the command is <strong>left alone</strong> &ndash; Undo never throws away
+your typing. The status bar counts those cells as &ldquo;left alone (changed since)&rdquo;. Plain typing in a cell is
+undone by Excel's own <kbd>Ctrl</kbd>+<kbd>Z</kbd>, as usual.</p>
+<h3 id="back">Back to the dump</h3>
+<ol class="steps">
+<li>Select the cells (or any cell in the op rows) to put back.</li>
+<li>Click <span class="ui">Back to the dump</span> and pick <span class="ui">Selected cells</span>,
+<span class="ui">Selected ops (whole rows)</span> or <span class="ui">Everything</span>.</li>
+<li><span class="ui">Everything</span> asks first and says how many cells. Save a <a href="scenarios.html">scenario</a>
+first if you might want these edits again.</li>
+<li>The cells go back to their dumped values; the yellow goes away.</li>
+</ol>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>You used <span class="ui">Set</span> to put 0.012 in the feed of ops 1, 7 and 8. Then you typed 0.011 into op 8's feed
+by hand. Now you click <span class="ui">Undo</span> on the ribbon:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">Dumped</th><th class="num">After Set</th><th class="num">Now</th><th class="num">After Undo</th></tr></thead>
+<tbody>
+<tr><td>1 feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="num">0.012</td><td class="num">0.01</td></tr>
+<tr><td>7 feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="num">0.012</td><td class="num">0.01</td></tr>
+<tr><td>8 feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="num edited">0.011 (typed)</td><td class="num edited">0.011 (left alone)</td></tr>
+</tbody>
+</table></div>
+<p>Ops 1 and 7 go back. Op 8 keeps your 0.011, because you typed it after the Set. To clear op 8 too, use
+<span class="ui">Back to the dump</span> &rsaquo; <span class="ui">Selected cells</span> on it.</p>
+<p>The ribbon's <span class="ui">Undo</span> button always takes back the last <em>command</em>. <kbd>Ctrl</kbd>+<kbd>Z</kbd>
+does the same right after a command; right after you typed in a cell, it takes back that typing first (Excel's own undo).</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>undid Set selected - 3 cell(s) put back.</q></dt>
+<dd>Done.</dd>
+<dt><q>... 1 left alone (changed since).</q></dt>
+<dd>That cell was typed over after the command. Your typing stays.</dd>
+<dt><q>nothing to undo.</q></dt>
+<dd>No command to take back (or more than 20 ago, or the workbook was closed since).</dd>
+<dt><q>nothing to revert - the sheet is as dumped.</q></dt>
+<dd><span class="ui">Everything</span> found no edits.</dd>
+<dt><q>3 cell(s) put back to their dumped value.</q></dt>
+<dd>Back to the dump is done.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="undo-load.html">Undo a load (in Mastercam)</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

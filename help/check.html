@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Program check - Parameter Table Tool manual</title>
+<meta name="description" content="A list of things worth a second look before the program goes to the floor, each with why and how to fix it.">
+<meta name="keywords" content="program check review prove out before the floor findings look at FYI ignore edge runs long usual edge time CSS no max RPM coolant off air cutting tool changes regenerate no comment wrong unit">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html" aria-current="page">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Program check</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Improve</b> &rsaquo; <b>Program check</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>A second pair of eyes. It looks over every op and makes a <span class="ui">Program check</span> sheet of
+<strong>findings</strong>. Each finding says why it matters, how to fix it, and links to the op.
+<span class="ui">Look at</span> findings are worth a look before the program runs; <span class="ui">FYI</span> ones are
+just good to know. It changes nothing.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>Before a program goes to the floor for the first time.</li>
+<li>After you edited a lot of ops.</li>
+<li>When you take over a program someone else wrote.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Click <span class="ui">Program check</span>. The <span class="ui">Program check</span> sheet opens. The top lines say
+how many findings there are: so many to look at, so many FYI.</li>
+<li>Read the <span class="ui">Look at</span> findings first (they are at the top, most useful first). Each line has the
+<span class="ui">Op</span>, the <span class="ui">Tool</span>, <span class="ui">What was found</span>,
+<span class="ui">Why it matters</span> and <span class="ui">How to fix</span>.</li>
+<li>Click the op link to go to that op's row. Fix it there (or in Mastercam).</li>
+<li>If a finding is fine as it is (you meant it), set its <span class="ui">Ignore</span> cell to <code>yes</code>. It
+stays ignored on the next check &ndash; and after the next dump too (it is kept in the part's
+<a href="words.html#w-ptconfig">.ptconfig</a> file). Ignored findings show greyed at the bottom.</li>
+<li>Run the check again after your fixes. It makes the sheet new each time and changes nothing on your other sheets.</li>
+</ol>
+<h3 id="what-it-checks">What it looks for</h3>
+<div class="table-scroll"><table>
+<thead><tr><th>Finding</th><th>Kind</th><th>When</th></tr></thead>
+<tbody>
+<tr><td><strong>An edge runs much longer than usual</strong> (the main check)</td><td>Look at</td><td>A tool's edge time (its cut time
+per part &divide; flips per part) is more than 1.25 &times; the insert's <span class="ui">Usual edge time</span> that you
+type in the <a href="tools-page.html#inserts">inserts table</a>. With none typed: more than 1.5 &times; the other tools
+carrying the same insert in this program (their middle value) <em>and</em> at least 2 minutes longer.</td></tr>
+<tr><td>Ops needing <a href="words.html#w-regenerate">regeneration</a></td><td>Look at</td><td><code>needs_regen</code> is yes: the toolpath, and its times, are out of date.</td></tr>
+<tr><td>A feed that looks like the wrong unit</td><td>Look at</td><td>Per minute but under 1 in (25 mm), or per rev but over 0.1 in (2.5 mm).</td></tr>
+<tr><td>CSS with no max RPM</td><td>Look at</td><td>Near the center, CSS asks for a huge RPM. Set a <a href="words.html#w-max-rpm">max RPM</a>.</td></tr>
+<tr><td>Lots of <a href="words.html#w-air-cutting">air cutting</a></td><td>Look at</td><td>Over 30% of an op's cut time in air, and over 1 minute.</td></tr>
+<tr><td>The same tool at different speeds or feeds</td><td>FYI</td><td>Same tool and kind of op, speeds or feeds more than 10% apart.</td></tr>
+<tr><td>Extra tool changes</td><td>FYI</td><td>One tool put in more than once in a toolpath group.</td></tr>
+<tr><td>Coolant off on a cutting op</td><td>FYI</td><td>Usually forgotten. Dry on purpose? Ignore it.</td></tr>
+<tr><td>Ops with no comment</td><td>FYI</td><td>The setup sheet and the operator see a blank name.</td></tr>
+</tbody>
+</table></div>
+<div class="note"><p>Two things it does <strong>not</strong> do: it never flags tool inspection being off by itself
+(plenty of ops need no stops), and the words in an inspection comment do not decide what it counts as a flip.
+For a tool that never flips, its edge time is its cut time per part &times; the parts per edge you typed.</p></div>
+<figure class="shot" data-img="sheet-check.png" data-kind="window" data-need="The Program check sheet on the Oil Spool Head: Look at and FYI findings, with why, how to fix, op links and the Ignore column.">
+<!-- img --><a class="zoom" href="images/sheet-check.png" title="Open the picture full size"><img src="images/sheet-check.png" alt="The Program check sheet on the Oil Spool Head: Look at and FYI findings, with why, how to fix, op links and the Ignore column." width="3268" height="1585" loading="lazy"></a><!-- /img -->
+<figcaption>The Program check sheet: Look at first, then FYI. Click an op to go to it.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>On the Oil Spool Head the check finds 19 things: 3 to look at, 16 FYI. Two of them:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Severity</th><th>Op</th><th>What was found</th><th>How to fix</th><th>Ignore</th></tr></thead>
+<tbody>
+<tr><td>Look at</td><td>ops 7, 8 (T12)</td><td>T12 cuts about 9:00 on each edge &ndash; T11, the other C 80&deg; r0.031 tool
+in this program, runs 5:15.</td><td>Turn the insert sooner on T12: <code>insp_time</code> about 5:15 (Inspection &amp;
+inserts on the ribbon) &ndash; or, if its edge really lasts, type the usual edge time for that insert on Tools.</td><td></td></tr>
+<tr><td>FYI</td><td>op 2 (T1)</td><td>op 2 cuts with no coolant on (coolant: Off).</td><td>Turn the coolant on for op 2 &ndash;
+or Ignore this if it runs dry on purpose.</td><td class="edited">yes</td></tr>
+</tbody>
+</table></div>
+<p>The PrimeTurning rough runs dry on purpose, so its coolant finding is set to <code>yes</code> in Ignore. On the next
+check it moves to the bottom, greyed. The T12 finding stays until you fix it &ndash; or type a
+<span class="ui">Usual edge time</span> of 9:00 or more for the insert, if 9:00 is normal in your shop.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>Nothing found - the program looks clean.</q></dt>
+<dd>Nothing to look at (ignored findings are not counted).</dd>
+<dt><q>19 findings ... 3 to look at, 16 FYI</q></dt>
+<dd>The count, at the top of the sheet.</dd>
+<dt>A finding came back after a new dump</dt>
+<dd>It is a different finding now (another op or another tool), so it is not the one you ignored. Set Ignore to yes again.</dd>
+<dt><q>?  (the user manual is not installed)</q> in the top corner</dt>
+<dd>The link to this page could not find the manual. See <a href="install.html">Install</a>.</dd>
+<dt><q>The program check stopped: ...</q></dt>
+<dd>Something went wrong while checking. Save your work and tell whoever looks after the tool what it said.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="slowest.html">Slowest ops</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

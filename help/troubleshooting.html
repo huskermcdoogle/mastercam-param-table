@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting - Parameter Table Tool manual</title>
+<meta name="description" content="Problems and messages, and what to do about them.">
+<meta name="keywords" content="troubleshooting problem error not working help fix message no ribbon tab enable content macros disabled protected view unblock refused locked open in Excel stale times log crash">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html" aria-current="page">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Troubleshooting</h1>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Something did not work, or a message came up. Find it below. Each topic page also has its own
+&ldquo;What the messages mean&rdquo;.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>When the tool does not do what you expect &ndash; before you give up on a change.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Read the message word for word. Type a few of its words into the search box at the top of this page.</li>
+<li>Look for it in the list below.</li>
+<li>Nothing went into the part yet? Then nothing is lost: Excel edits stay in the workbook until you load.</li>
+<li>Something went into the part and it is wrong? Run <a href="undo-load.html">Lathe params - undo last load</a>.</li>
+</ol>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p><strong>Problem:</strong> the workbook opened, but there is no <span class="ui">Parameter Table</span> tab on Excel's ribbon.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Check</th><th>What you see</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>The file name ends in</td><td><code>.xlsx</code></td><td>It was dumped without macros. Dump again with
+<span class="ui">Include macros</span> ticked (you get an <code>.xlsm</code>).</td></tr>
+<tr><td>A yellow bar under the ribbon</td><td><q>Macros have been disabled</q></td><td>Click <span class="ui">Enable Content</span>.</td></tr>
+<tr><td>A red bar</td><td><q>Microsoft has blocked macros ...</q></td><td>The file came from email or the internet. Close it,
+right-click the file, <span class="ui">Properties</span>, tick <span class="ui">Unblock</span>, OK, open it again.</td></tr>
+<tr><td>A yellow bar</td><td><q>Protected View</q></td><td>Click <span class="ui">Enable Editing</span>.</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="messages">
+<h2>Problems and messages</h2>
+<h3 id="in-mastercam">In Mastercam</h3>
+<dl class="messages">
+<dt>The commands are not in Mastercam at all</dt>
+<dd>See <a href="install.html">Install</a>: both <code>ParamTable.ft</code> and the <code>ParamTable</code> folder must be
+in the <code>Add-Ins</code> folder, and Mastercam must be restarted.</dd>
+<dt><q>Save the part first ...</q></dt>
+<dd>Save the part (File, Save). The dump and load work beside the saved part file.</dd>
+<dt><q>The dump failed unexpectedly. Nothing was changed in the part.</q></dt>
+<dd>Something in the part upset the tool. Try dumping fewer ops to find which one, and tell whoever looks after the tool.</dd>
+<dt><q>The load failed unexpectedly. Check ParamTable.log ...</q></dt>
+<dd>The load stopped part way. <code>ParamTable.log</code> beside the part lists which ops were written. Run
+<a href="undo-load.html">undo last load</a> to put them back.</dd>
+<dt><q>... could not be opened (is it still open in Excel?)</q></dt>
+<dd>Save in Excel first. If it still fails, close the workbook in Excel and load again.</dd>
+<dt>The load found no changes</dt>
+<dd>The workbook was not saved after the edits, or you picked an older file. Save, and pick the right file (the load starts
+on the one you dumped last).</dd>
+<dt>Refused rows in the load preview</dt>
+<dd>See <a href="load.html#messages">Load: what the messages mean</a>.</dd>
+<dt>The NC code still has the old feed</dt>
+<dd>The changed ops need regenerating (they are marked dirty). Regenerate, then post again.</dd>
+</dl>
+<h3 id="in-excel">In Excel</h3>
+<dl class="messages">
+<dt>No Parameter Table tab</dt>
+<dd>See the worked example above.</dd>
+<dt>A cell will not take what I type</dt>
+<dd>The value is outside what the setting takes, or the cell is grey (read-only, or not for this kind of op). The message
+says which. See <a href="sheet.html#rules">The main sheet</a>.</dd>
+<dt>The cycle time did not change when I changed a depth</dt>
+<dd>Depths change the toolpath itself; the estimate can only follow feeds and speeds. See
+<a href="estimate.html">How the estimate works</a>.</dd>
+<dt>Times or flips are blank, or <code>needs_regen</code> says yes</dt>
+<dd>The op needed regenerating when it was dumped. Regenerate in Mastercam and dump again.</dd>
+<dt>Flips per part look wrong</dt>
+<dd>See <a href="flips.html">How insert flips are counted</a>. Check the inspection comment and the edge life on the Tools page.</dd>
+<dt>Insert cost is blank</dt>
+<dd>Type the edges and the cost per insert in the <a href="tools-page.html#inserts">inserts table</a>.</dd>
+<dt><q>Select cells on the 'Lathe params' sheet first.</q></dt>
+<dd>Click the <span class="ui">Lathe params</span> tab and select cells in the op rows.</dd>
+<dt><q>Something went wrong: ...</q></dt>
+<dd>A ribbon command hit an error. Press <span class="ui">Undo</span> on the ribbon to take back anything it did, save
+your work, and tell whoever looks after the tool what the message said.</dd>
+<dt><q>The user manual is not installed ...</q></dt>
+<dd>The <code>help</code> folder is not beside the add-in. Copy the whole <code>ParamTable</code> folder from the zip again.</dd>
+<dt>I lost my edits</dt>
+<dd>Only if the workbook was closed without saving. Edits you saved are in the file; a saved
+<a href="scenarios.html">scenario</a> is too.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="install.html">Install the add-in</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo.html">Undo</a> and <a href="undo-load.html">Undo a load</a></li>
+<li><a href="words.html">Word list</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

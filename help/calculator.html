@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speed &amp; feed - Parameter Table Tool manual</title>
+<meta name="description" content="SFM and RPM, feed per rev and per minute, and chip thinning for round and lead-angle inserts.">
+<meta name="keywords" content="calculator speed feed SFM RPM surface speed spindle speed m/min per rev per minute IPR IPM diameter max RPM chip thinning chip thickness round insert lead angle entering angle dynamic turning">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html" aria-current="page">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Speed &amp; feed</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Speed &amp; feed</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>A calculator that fills itself in from the op you are on. It has two tabs:</p>
+<ul>
+<li><strong>Speed &amp; feed</strong> &ndash; <a href="words.html#w-sfm">SFM</a> and <a href="words.html#w-rpm">RPM</a> at a
+diameter, and feed <a href="words.html#w-per-rev">per rev and per minute</a>. Type in any box; the others follow. It warns
+when the RPM would go past the op's <a href="words.html#w-max-rpm">max RPM</a>.</li>
+<li><strong>Chip thinning</strong> &ndash; how thick the chip really is with a round insert or an insert with a
+<a href="words.html#w-entering-angle">lead angle</a>, and the feed to program for the chip you want. It can write that
+feed back to the op.</li>
+</ul>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>The insert box says 650 SFM and you want to know the RPM at your diameter.</li>
+<li>You need the feed in inches per minute for a per-minute op.</li>
+<li>A round insert or a 45&deg; lead insert is rubbing instead of cutting &ndash; the chip is thinner than the feed.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<h3 id="speed">Speed &amp; feed tab</h3>
+<ol class="steps">
+<li>Click a cell in the op's row, then click <span class="ui">Speed &amp; feed</span>. (Or pick the op in the window's op
+list, or use <span class="ui">&lt;</span> / <span class="ui">&gt;</span> for the op above or below.)</li>
+<li>The boxes fill in from the op, in the op's own units (inch or mm): <span class="ui">Diameter</span> (the op's average
+cutting diameter, <code>cut_dia</code>, when it is known), <span class="ui">Surface speed (SFM)</span>,
+<span class="ui">Spindle speed (RPM)</span>, <span class="ui">Feed per rev</span>, <span class="ui">Feed per minute</span>.</li>
+<li>Type a new value in any box. The others work it out:
+RPM = SFM &times; 3.82 &divide; diameter (inch), feed per minute = feed per rev &times; RPM.</li>
+<li>Watch the note under the boxes: above the op's max RPM (<code>max_ss</code>) the spindle stops at the max, so the
+real surface speed is lower &ndash; and the feed per minute is worked out at the max RPM.</li>
+<li>To use a new feed, click the button under the boxes &ndash; it says what it will do, e.g.
+<span class="ui">Set this op's feed: 0.01 -&gt; 0.012</span>. The cell turns yellow; <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</li>
+</ol>
+<h3 id="chip">Chip thinning tab</h3>
+<ol class="steps">
+<li>Click the <span class="ui">Chip thinning</span> tab. The line at the top says the tool and its insert.</li>
+<li>Pick the insert kind if it is not right: a <strong>round insert</strong> (type its size and the depth of cut) or a
+<strong>straight edge</strong> (type the holder's <span class="ui">Entering angle</span> &ndash; or the US
+<span class="ui">Lead angle</span>, which is 90&deg; minus it; type either one).</li>
+<li>Read the chip at today's feed: <strong>real chip = feed &times; sin(entering angle)</strong>. A round insert's
+angle comes from its size and the depth: the shallower the cut, the thinner the chip.</li>
+<li>Type the <strong>chip thickness you want</strong>. It shows the <strong>feed per rev to program</strong>.</li>
+<li>Click <span class="ui">Set this op's feed</span> to write it (as a per-minute feed if the op runs per minute).</li>
+</ol>
+<p>The insert size and entering angle come from the <a href="tools-page.html">Tools page</a> columns
+<span class="ui">Insert size (IC)</span> and <span class="ui">Entering angle</span>. The angle is read from the holder's
+ISO code (PCLNL: an L-style holder, 95&deg;). Type over either one there if it is wrong &ndash; it is remembered.
+PrimeTurning, grooving, mill and drill ops get a short explanation instead of a guess.</p>
+<p>The window stays open beside the sheet and follows the op you click.</p>
+<figure class="shot" data-img="win-calculator.png" data-kind="window" data-need="The Speed &amp; feed window on op 7 (Speed &amp; feed tab): diameter about 6.9, 200 SFM, about 111 RPM, 0.01 per rev, about 1.1 per min.">
+<!-- img --><a class="zoom" href="images/win-calculator.png" title="Open the picture full size"><img src="images/win-calculator.png" alt="The Speed &amp; feed window on op 7 (Speed &amp; feed tab): diameter about 6.9, 200 SFM, about 111 RPM, 0.01 per rev, about 1.1 per min." width="782" height="839" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The op it is on &ndash; pick another here. (2) The two tabs.</figcaption>
+</figure>
+<figure class="shot" data-img="win-calculator-chip.png" data-kind="window" data-need="The Chip thinning tab on op 1 with an entering angle of 45 typed: a 0.01 feed makes a 0.00707 chip."><!-- img --><a class="zoom" href="images/win-calculator-chip.png" title="Open the picture full size"><img src="images/win-calculator-chip.png" alt="The Chip thinning tab on op 1 with an entering angle of 45 typed: a 0.01 feed makes a 0.00707 chip." width="782" height="839" loading="lazy"></a><!-- /img -->
+<figcaption>The Chip thinning tab (1), with an entering angle of 45&deg; typed: a 0.01 feed makes a 0.00707 chip.
+(This sample's holder is really a 95&deg; one, which barely thins the chip.)</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<h3 id="example-speed">Speed and feed</h3>
+<p>Op 7 (Rough Bore ID) cuts at about 6.905&Prime; diameter, 200 SFM, 0.010 per rev.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">You type 260 SFM</th></tr></thead>
+<tbody>
+<tr><td>Surface speed (SFM)</td><td class="num">200</td><td class="num edited">260</td></tr>
+<tr><td>RPM at 6.905&Prime;</td><td class="num">110.6</td><td class="num moved">143.8</td></tr>
+<tr><td>Feed per rev</td><td class="num">0.010</td><td class="num">0.010</td></tr>
+<tr><td>Feed per minute</td><td class="num">1.11</td><td class="num moved">1.44</td></tr>
+</tbody>
+</table></div>
+<h3 id="example-chip">Chip thinning</h3>
+<p>A 0.5&Prime; round insert cutting 0.050&Prime; deep. Its entering angle works out to about 37&deg;
+(sin = 0.6), so the chip is only 60% of the feed.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Programmed now</th><th class="num">For a 0.006&Prime; chip</th></tr></thead>
+<tbody>
+<tr><td>Feed per rev</td><td class="num">0.006</td><td class="num edited">0.010</td></tr>
+<tr><td>Real chip</td><td class="num">0.0036</td><td class="num moved">0.006</td></tr>
+</tbody>
+</table></div>
+<p>A 45&deg; lead insert is the same idea: sin 45&deg; = 0.71, so a 0.010 feed gives a 0.0071 chip.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>Above this op's max spindle speed of 3500 RPM: at this diameter the spindle stops at ...</q></dt>
+<dd>The RPM you asked for is more than the op allows. The machine runs at the max, so the surface speed is lower than you typed.</dd>
+<dt><q>This op's speed is CSS with no max spindle speed.</q></dt>
+<dd>Near the center the spindle could run to the machine's top speed. Set a <a href="words.html#w-max-rpm">max RPM</a>.</dd>
+<dt><q>At half the insert or deeper the chip is as thick as the feed - no thinning.</q></dt>
+<dd>A round insert cutting half its size deep (or more) has no chip thinning. Program the feed you want as the chip.</dd>
+<dt><q>Type the insert diameter and the depth of cut.</q> / <q>Type the holder's entering angle ... - or its US lead angle.</q></dt>
+<dd>The Tools page has no size or angle for this tool. Type it here (and on the Tools page, to keep it).</dd>
+<dt><q>PrimeTurning ops set their own feeds from a chip thickness (pt_rough_chip) - not worked out here.</q></dt>
+<dd>Change a PrimeTurning op's chip in its own columns (<code>pt_rough_chip</code> ...).</dd>
+<dt><q>op 7 feed 0.01 -&gt; 0.012 per rev - Ctrl+Z to undo</q></dt>
+<dd>The feed was written to the sheet.</dd>
+<dt><q>Refused - op 7 feed: ... is outside this feed's limits, or this op takes no feed.</q></dt>
+<dd>The feed it worked out is past what the op takes. Nothing was written.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="words.html#w-chip-thinning">Chip thinning</a>, <a href="words.html#w-entering-angle">entering angle</a></li>
+<li><a href="words.html#w-css">CSS</a> and <a href="words.html#w-max-rpm">max RPM</a></li>
+<li><a href="estimate.html">How the cycle time estimate works</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

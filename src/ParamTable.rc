@@ -42,6 +42,8 @@ IDB_DUMP_SMALL   PNG        "..\\res\\Resources\\dump_small.png"
 IDB_DUMP_LARGE   PNG        "..\\res\\Resources\\dump_large.png"
 IDB_LOAD_SMALL   PNG        "..\\res\\Resources\\load_small.png"
 IDB_LOAD_LARGE   PNG        "..\\res\\Resources\\load_large.png"
+IDB_HELP_SMALL   PNG        "..\\res\\Resources\\help_small.png"
+IDB_HELP_LARGE   PNG        "..\\res\\Resources\\help_large.png"
 
 // The workbook macros, compiled by tools\\build_vba.ps1 from vba\\ - written into a dump
 // when macros are switched on.
@@ -57,6 +59,7 @@ BEGIN
     IDS_FT_DUMP     "Parameter Table Tool\nLathe params - dump to Excel"
     IDS_FT_LOAD     "Parameter Table Tool\nLathe params - load"
     IDS_FT_UNDO     "Parameter Table Tool\nLathe params - undo last load"
+    IDS_FT_HELP     "Parameter Table Tool\nParameter Table - user manual"
 END
 
 #endif

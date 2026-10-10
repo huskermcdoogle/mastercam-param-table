@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The main sheet - Parameter Table Tool manual</title>
+<meta name="description" content="The Lathe params sheet: one row per op, columns in groups, how to edit safely.">
+<meta name="keywords" content="Lathe params main sheet row column group fold unfold plus minus outline dropdown tooltip hover read-only grey empty cell edit type">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html" aria-current="page">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>The main sheet</h1>
+<p class="where">Workbook: the <b>Lathe params</b> sheet</p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>This is where you edit. Each row is one op, in the same order as Mastercam's
+<a href="words.html#w-operation-manager">Operation Manager</a>. Row 1 has the <strong>group</strong> names
+(Feeds and speeds, Coolant ...). Row 2 has the <strong>column</strong> names (<code>feed</code>, <code>speed</code> ...).
+The first columns &ndash; op number, type, tool, comment &ndash; stay in view when you scroll right.</p>
+<figure>
+<svg class="diagram" viewBox="0 0 640 388" role="img" aria-labelledby="groups-t groups-d">
+<title id="groups-t">The column groups, left to right</title>
+<desc id="groups-d">Sixteen boxes in reading order, as they sit left to right on the sheet: Identity, Feeds and speeds, Depth of cut, Stock to leave, Coolant (you edit these); Toolpath stats, Insert flips, Material removal (read-only); Working numbers (read-only, folded at first); Toolpath; Home position; Reference points (folded); Planes; Filter (folded); Where it sits (read-only, folded); Tool inspection (folded).</desc>
+<g stroke-width="2">
+<g fill="#ffffff" stroke="#1d4ed8">
+<rect x="4" y="34" width="151" height="64" rx="7"/><rect x="163" y="34" width="151" height="64" rx="7"/><rect x="322" y="34" width="151" height="64" rx="7"/><rect x="481" y="34" width="151" height="64" rx="7"/>
+<rect x="4" y="110" width="151" height="64" rx="7"/>
+<rect x="163" y="186" width="151" height="64" rx="7"/><rect x="322" y="186" width="151" height="64" rx="7"/>
+<rect x="4" y="262" width="151" height="64" rx="7"/>
+</g>
+<g fill="#e5e7eb" stroke="#6b7280">
+<rect x="163" y="110" width="151" height="64" rx="7"/><rect x="322" y="110" width="151" height="64" rx="7"/><rect x="481" y="110" width="151" height="64" rx="7"/>
+</g>
+<g fill="#ffffff" stroke="#1d4ed8" stroke-dasharray="7 5">
+<rect x="481" y="186" width="151" height="64" rx="7"/><rect x="163" y="262" width="151" height="64" rx="7"/><rect x="481" y="262" width="151" height="64" rx="7"/>
+</g>
+<g fill="#e5e7eb" stroke="#6b7280" stroke-dasharray="7 5">
+<rect x="4" y="186" width="151" height="64" rx="7"/><rect x="322" y="262" width="151" height="64" rx="7"/>
+</g>
+</g>
+<g font-size="17" text-anchor="middle" fill="#1b1f24">
+<text x="79.5" y="72">Identity</text>
+<text x="238.5" y="62">Feeds and</text><text x="238.5" y="83">speeds</text>
+<text x="397.5" y="72">Depth of cut</text>
+<text x="556.5" y="72">Stock to leave</text>
+<text x="79.5" y="148">Coolant</text>
+<text x="238.5" y="148">Toolpath stats</text>
+<text x="397.5" y="148">Insert flips</text>
+<text x="556.5" y="138">Material</text><text x="556.5" y="159">removal</text>
+<text x="79.5" y="214">Working</text><text x="79.5" y="235">numbers</text>
+<text x="238.5" y="224">Toolpath</text>
+<text x="397.5" y="224">Home position</text>
+<text x="556.5" y="214">Reference</text><text x="556.5" y="235">points</text>
+<text x="79.5" y="300">Planes</text>
+<text x="238.5" y="300">Filter</text>
+<text x="397.5" y="300">Where it sits</text>
+<text x="556.5" y="290">Tool</text><text x="556.5" y="311">inspection</text>
+</g>
+<g font-size="16" fill="#4a525c">
+<text x="4" y="20">Left to right on the sheet, row by row:</text>
+<text x="4" y="356">White = you can edit. Grey = read-only (worked out).</text>
+<text x="4" y="380">Dashed = folded away at first (click its + to open it).</text>
+</g>
+</svg>
+<figcaption>The column groups. The ones you change most are first.</figcaption>
+</figure>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>Any time you change a setting. You can type straight into the cells, like any spreadsheet. The ribbon tools
+(<a href="set.html">Set</a>, <a href="scale.html">Scale</a> ...) just make big changes quicker.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li><strong>Find the op's row.</strong> Scroll, or use <a href="find.html">Find op</a> on the ribbon.</li>
+<li><strong>Find the column.</strong> Hover over a column name in row 2 to read what it is. A group that is folded
+away shows only one column: click the small <span class="ui">+</span> above the column letters to open it.
+(With macros: <span class="ui">Go to</span> on the ribbon opens a group for you.)</li>
+<li><strong>Type the new value</strong> and press <kbd>Enter</kbd>. The cell turns yellow. Click a cell with a
+small arrow on its right to pick from a list (for example <code>per rev</code> / <code>per min</code>).</li>
+<li><strong>Watch the row's numbers move</strong>: <code>est_cycle_time</code>, flips and MRR follow your edit.
+See <a href="estimate.html">How the estimate works</a>.</li>
+<li><strong>Save</strong> when you are done (<kbd>Ctrl</kbd>+<kbd>S</kbd>).</li>
+</ol>
+<h3 id="rules">Rules that keep you safe</h3>
+<ul>
+<li><strong>An empty cell means &ldquo;leave it alone&rdquo;</strong> &ndash; never zero.</li>
+<li><strong>Each cell checks what you type.</strong> A value Mastercam would not take is refused straight away, with a
+message saying what the cell takes. Click <span class="ui">Retry</span> or <span class="ui">Cancel</span>.</li>
+<li><strong>Grey cells refuse typing.</strong> They are read-only (a time, a count) or the setting is not part of this
+kind of op.</li>
+<li><strong>A feed is two cells:</strong> the number (<code>feed</code>, always positive) and its unit
+(<code>feed_mode</code>: <a href="words.html#w-per-rev">per rev or per min</a>). A speed is the number
+(<code>speed</code>), CSS or RPM (<code>speed_mode</code>) and CW or CCW (<code>spindle_dir</code>).</li>
+<li><strong>Sorting and filtering are fine.</strong> The load finds each row by its op number, not by where it is.</li>
+<li><strong>X values are a radius</strong> in the travel columns (double them for diameter). A few angles are in
+radians &ndash; the tooltip says so.</li>
+</ul>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Op 17 (Multiple Plunge Groove) plunges at 0.0025 inch per rev. You want 0.003.</p>
+<ol>
+<li>Find op 17's row. Click its <code>feed</code> cell (Feeds and speeds group).</li>
+<li>Type <code>0.003</code>, press <kbd>Enter</kbd>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>op 17</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code></td><td class="num">0.0025</td><td class="num edited">0.003</td></tr>
+<tr><td><code>feed_mode</code></td><td>per rev</td><td>per rev</td></tr>
+<tr><td><code>changes</code></td><td class="num">0</td><td class="num edited">1</td></tr>
+<tr><td><code>est_cycle_time</code></td><td class="num">0:09:00</td><td class="num moved">shorter (blue)</td></tr>
+</tbody>
+</table></div>
+<p>If you had typed <code>-0.003</code> by mistake, the cell would refuse it: a feed is never below 0 here.</p>
+<figure class="shot" data-img="sheet-main.png" data-kind="sheet" data-need="The main sheet with edits: group names, column names, a yellow edited cell, the changes count.">
+<!-- img --><a class="zoom" href="images/sheet-main.png" title="Open the picture full size"><img src="images/sheet-main.png" alt="The main sheet with edits: group names, column names, a yellow edited cell, the changes count." width="1881" height="348" loading="lazy"></a><!-- /img -->
+<figcaption>(1) A group name. (2) A column name &ndash; hover it for help. (3) An edited cell. (4) The row's <code>changes</code> count.</figcaption>
+</figure>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt>Excel: <q>This value doesn't match the data validation restrictions ...</q> (or the cell's own message)</dt>
+<dd>The value is outside what the setting takes. The message says what it takes, e.g. <q>A number, 0 or more.</q></dd>
+<dt>The cell will not take any typing</dt>
+<dd>It is grey: read-only, or not for this kind of op. Its message says which.</dd>
+<dt>Status bar: <q>op 7: CSS with no max_ss.</q> or <q>op 7: feed 0.01 per min is very slow - meant per rev?</q></dt>
+<dd>A gentle warning, not a refusal. CSS with no max RPM can spin very fast near the center. A per-minute feed of 0.01
+is probably a per-rev number in the wrong mode (and a per-rev feed over 0.1 in is probably a per-minute one). Check the row.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="words.html">Word list</a> &ndash; every column in plain words</li>
+<li><a href="find.html">Find an op</a> and <a href="find.html#goto">Go to a column group</a></li>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="estimate.html">How the cycle time estimate works</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

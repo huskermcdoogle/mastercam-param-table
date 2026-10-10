@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>List changes - Parameter Table Tool manual</title>
+<meta name="description" content="A Changes sheet listing every cell that differs from the dump, old and new.">
+<meta name="keywords" content="list changes what did I change edits old new dumped now review before load Changes sheet">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html" aria-current="page">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>List changes</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Undo and review</b> &rsaquo; <b>List changes</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Makes a <span class="ui">Changes</span> sheet: one line for every cell that is different from the dump &ndash; the op,
+its type and comment, the parameter, the dumped value and the value now. Click a parameter to jump to its cell.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>Before you load: one last look at everything that will go into the part.</li>
+<li>When you have lost track of what you changed.</li>
+</ul>
+<p>Without macros, the <code>changes</code> column on the main sheet counts each row's edits, and
+<a href="find.html#show">Changed ops</a> shows only those rows.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Click <span class="ui">List changes</span>. The <span class="ui">Changes</span> sheet opens.</li>
+<li>Read down the list. Each line is one cell: <code>dumped</code> is the old value, <code>now</code> the new.</li>
+<li>Click a blue parameter name to go to that cell on the main sheet.</li>
+<li>Run it again any time &ndash; it makes a fresh list each time.</li>
+</ol>
+<figure class="shot" data-img="sheet-changes.png" data-kind="sheet" data-need="The Changes sheet with three changes.">
+<!-- img --><a class="zoom" href="images/sheet-changes.png" title="Open the picture full size"><img src="images/sheet-changes.png" alt="The Changes sheet with three changes." width="1119" height="174" loading="lazy"></a><!-- /img -->
+<figcaption>The Changes sheet: click a parameter to jump to it.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>After raising the bore feeds (ops 7 and 8), the Changes sheet reads:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>op_idn</th><th>type</th><th>comment</th><th>parameter</th><th class="num">dumped</th><th class="num">now</th></tr></thead>
+<tbody>
+<tr><td>7</td><td>ROUGH</td><td>Rough Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td>8</td><td>FINISH</td><td>Finish Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+</tbody>
+</table></div>
+<p>Worked-out columns (times, flips, MRR) are not listed &ndash; only what you changed.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>No changes from the dump.</q></dt>
+<dd>The sheet is as dumped (or every edit was put back).</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="report.html">Change report</a> &ndash; the printable version, with the savings</li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo.html#back">Back to the dump</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

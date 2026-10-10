@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slowest ops - Parameter Table Tool manual</title>
+<meta name="description" content="Show only the ops that make 80% of the cycle time, longest first.">
+<meta name="keywords" content="slowest ops longest operations where the time goes 80% cycle time faster bottleneck sort by time">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html" aria-current="page">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Slowest ops</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Find</b> &rsaquo; <b>Slowest ops</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>On most parts, a few ops take most of the time. <span class="ui">Slowest ops</span> shows only the ops that make up
+80% of the cycle time and hides the rest. It also makes a <span class="ui">Slowest ops</span> sheet that ranks them,
+longest first. That is where a change saves the most.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>First thing, whenever the goal is &ldquo;make it faster&rdquo;. Saving 10% on an op that is 70% of the part beats
+saving 50% on an op that is 1% of it.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Click <span class="ui">Slowest ops</span>.</li>
+<li>The <span class="ui">Lathe params</span> sheet now shows only the slow ops (in their usual order &ndash; the rows
+are hidden, not moved). The status bar at the bottom says how many, e.g. <q>2 of 18 ops make 80% of the cycle time</q>.</li>
+<li>The <span class="ui">Slowest ops</span> sheet lists them longest first: <span class="ui">Time</span>,
+<span class="ui">Share</span> of the part, <span class="ui">Running share</span> (adding up), <span class="ui">Cut time</span>
+and <span class="ui">Air time</span>. Click an op to go to its row.</li>
+<li>Change them (type, <a href="scale.html">Scale %</a>, or <a href="target-time.html">Hit a target time</a>).</li>
+<li>Click <span class="ui">Show all</span> on the ribbon to see every op again.</li>
+</ol>
+<figure class="shot" data-img="sheet-slowest.png" data-kind="window" data-need="The Slowest ops sheet: the ops making 80% of the time, longest first, with share, running share, cut time and air time.">
+<!-- img --><a class="zoom" href="images/sheet-slowest.png" title="Open the picture full size"><img src="images/sheet-slowest.png" alt="The Slowest ops sheet: the ops making 80% of the time, longest first, with share, running share, cut time and air time." width="2316" height="280" loading="lazy"></a><!-- /img -->
+<figcaption>The Slowest ops sheet. Running share adds up the shares, longest first.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>The Oil Spool Head, after the bore feeds went to 0.012, runs 12:26:50. Slowest ops shows:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">Time</th><th class="num">Share</th><th class="num">Running share</th><th class="num">Air time</th></tr></thead>
+<tbody>
+<tr><td>2 Prime Turn Rough OD (T1)</td><td class="num">9:04:03</td><td class="num">72.8%</td><td class="num">72.8%</td><td class="num">30:19</td></tr>
+<tr><td>7 Rough Bore ID (T12)</td><td class="num">1:26:45</td><td class="num">11.6%</td><td class="num">84.5%</td><td class="num">14:14</td></tr>
+</tbody>
+</table></div>
+<p>Two ops out of 18 are 84.5% of the time. Everything else together is 15.5%. Start with op 2 &ndash; and look at its
+half hour of air cutting.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>2 of 18 ops make 80% of the 12:26:50 cycle time ...</q></dt>
+<dd>How many ops are left showing, and the part's live cycle time.</dd>
+<dt><q>No op has an estimated time - regenerate the ops and dump again.</q></dt>
+<dd>The ops had no toolpath when dumped. Regenerate in Mastercam and dump again.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="summary.html">Summary page</a> &ndash; the ten longest ops</li>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="find.html#show">Show all</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

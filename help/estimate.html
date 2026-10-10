@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The cycle time estimate - Parameter Table Tool manual</title>
+<meta name="description" content="How est_cycle_time follows your edits, what it counts and what it leaves out.">
+<meta name="keywords" content="cycle time estimate est_cycle_time time_change live how accurate feed speed CSS max RPM per rev per min rapids tool change dwell regenerate depth">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html" aria-current="page">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>The cycle time estimate</h1>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Each op row has <code>cycle_time</code> (Mastercam's own time, as dumped) and <code>est_cycle_time</code> (the
+<strong>live</strong> estimate). They start the same. When you change the feed, speed, CSS/RPM, max RPM or per rev /
+per min on a row, the estimate moves at once &ndash; and so do the Summary's totals. This page says how it works and
+where it can be wrong.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>Whenever you judge a change by its time &ndash; and before you trust a big saving.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<p>How the estimate is worked out:</p>
+<ol class="steps">
+<li>At the dump, the tool walks each op's toolpath, move by move: how long each cutting move is, and at what diameter.</li>
+<li>For each move it works out the time: <strong>per minute</strong>: length &divide; feed. <strong>Per rev</strong>:
+length &divide; (feed &times; RPM). With <a href="words.html#w-css">CSS</a>, the RPM at that diameter is
+SFM &times; 3.82 &divide; diameter &ndash; but never more than the op's <a href="words.html#w-max-rpm">max RPM</a>.</li>
+<li>These sums are written into the sheet as formulas tied to the row's own cells. Change a cell and the formula follows.</li>
+<li>Everything else &ndash; rapids, tool changes, dwells &ndash; is kept as it was. It does not change with feed or speed.</li>
+</ol>
+<div class="warn"><p><strong>What it cannot know until you regenerate:</strong> a new depth of cut, stepover, stock to
+leave or number of passes changes the toolpath itself. The estimate does not move for those. Load, regenerate, and dump
+again to see their time.</p></div>
+<p>On real parts, the estimate matches Mastercam's own cycle time to within seconds per op.</p>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Op 7, Rough Bore ID: 1:44:00 in all, of which 1:43:28 is cutting. The feed goes from 0.010 to 0.012 per rev.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code></td><td class="num">0.010</td><td class="num edited">0.012</td></tr>
+<tr><td>Cutting time</td><td class="num">1:43:28</td><td class="num moved">1:26:13 (&times; 0.010 &divide; 0.012)</td></tr>
+<tr><td>Everything else</td><td class="num">0:00:32</td><td class="num">0:00:32</td></tr>
+<tr><td><code>est_cycle_time</code></td><td class="num">1:44:00</td><td class="num moved">1:26:45</td></tr>
+<tr><td><code>time_change</code></td><td class="num">+0:00:00</td><td class="num moved better">-0:17:15</td></tr>
+</tbody>
+</table></div>
+<p><strong>Where max RPM bites.</strong> Facing with CSS at 200 SFM and a max of 3500 RPM: at 1&Prime; diameter the
+spindle turns 764 RPM; near the center, at 0.2&Prime;, it would need 3820 RPM but stops at 3500. Raising the SFM speeds
+up the outside of the face, not the middle. The estimate knows this, move by move.</p>
+<figure class="shot" data-img="sheet-estimate.png" data-kind="sheet" data-need="The main sheet: ops 7 and 8 with feed 0.012, cycle_time unchanged, est_cycle_time and time_change moved (blue).">
+<!-- img --><a class="zoom" href="images/sheet-estimate.png" title="Open the picture full size"><img src="images/sheet-estimate.png" alt="The main sheet: ops 7 and 8 with feed 0.012, cycle_time unchanged, est_cycle_time and time_change moved (blue)." width="1518" height="348" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The new feed. (2) Mastercam's time, as dumped. (3) The live estimate.</figcaption>
+</figure>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><code>est_cycle_time</code> is blank</dt>
+<dd>The op had no toolpath to walk when dumped (it needed regenerating), or it is a kind with no moves (manual entry).</dd>
+<dt><code>needs_regen</code> says <code>yes</code></dt>
+<dd>The toolpath is out of date, so its times are too. Regenerate and dump again.</dd>
+<dt>The estimate did not move when I changed a depth</dt>
+<dd>Right &ndash; see the box above. Depths change the toolpath; regenerate to see the new time.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="words.html#w-estimate">Estimate</a> in the word list</li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tools page - Parameter Table Tool manual</title>
+<meta name="description" content="One row per tool with its picture and insert; the inserts table with edges, cost and parts per edge.">
+<meta name="keywords" content="tools page tool list picture insert edges per insert cost per insert parts per edge edge life fallback usual edge time flips per part cut time inserts table">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html" aria-current="page">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Tools page</h1>
+<p class="where">Workbook: the <b>Tools</b> sheet</p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>One row per tool: its picture, which ops use it, its <a href="words.html#w-insert">insert</a>, how many
+<a href="words.html#w-flip">insert flips</a> a part takes, and how long it cuts. Under the tools is the
+<strong>inserts table</strong>: one row per insert, with its edges and cost. From those, the workbook works out how many
+inserts a part uses and what they cost. In the main sheet, click a tool number to jump here.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>To see which tools eat inserts.</li>
+<li>To get the insert cost per part and per batch (type edges and cost once &ndash; they are kept for next time).</li>
+<li>When the insert name the tool guessed is wrong.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li><strong>Check each tool's insert</strong> (the <span class="ui">Insert</span> column). The tool works it out from
+the tool's shape, e.g. <code>C 80&deg; r0.031</code>. If it is wrong, type over it. Tools with the same insert name
+are added up together below.</li>
+<li><strong>Look at the flips:</strong> <span class="ui">Flips / part</span>, <span class="ui">Cut time / part</span>,
+<span class="ui">Longest between flips</span>, and <span class="ui">Inspection</span> (what its ops stop on).</li>
+<li><strong>Edge life (fallback):</strong> only for ops that stop for inspection with no time of their own. Type the cut
+time one edge lasts, as minutes:seconds (<code>8:00</code>). Greyed out where no op uses it.</li>
+<li><strong>Insert size (IC)</strong> and <strong>Entering angle</strong> (at the right end of each tool row): the insert's
+size across its inscribed circle (a round insert's diameter), and the holder's entering angle &ndash; read from its ISO
+code (PCLNL: an L-style holder, 95&deg;; 90&deg; = square shoulder). The <a href="calculator.html#chip">chip thinning</a>
+calculator uses them. Type over a wrong one; it is kept. Leave the angle blank for round, grooving and PrimeTurning tools.</li>
+<li id="inserts"><strong>In the inserts table, type the edges per insert</strong> (a CNMG: 4; a VNMG: 4; a VCMT: 2; a
+round: about 8). The guess counts one side only &ndash; type over it for a double-sided insert.</li>
+<li><strong>Type the cost per insert.</strong> <span class="ui">Inserts / part</span> and
+<span class="ui">Insert cost / part</span> fill in. The Summary page takes them to a batch.</li>
+<li><strong>Parts per edge</strong> &ndash; only for an insert that lasts more than one part (the toolpath never flips it).
+Type how many parts one edge makes. It is greyed out where the toolpath already flips the edge every part.</li>
+<li id="usual"><strong>Usual edge time</strong> (the last column of the inserts table): how long one edge of this insert
+usually cuts in your shop before it is turned, as minutes:seconds (<code>12:00</code>). The
+<a href="check.html">Program check</a> warns about a tool whose edge runs more than 25% longer. Leave it blank and the
+check compares the tools in this program with each other instead.</li>
+</ol>
+<figure class="shot" data-img="sheet-tools.png" data-kind="sheet" data-need="The Tools page: two tools with pictures, insert, flips per part, edge life.">
+<!-- img --><a class="zoom" href="images/sheet-tools.png" title="Open the picture full size"><img src="images/sheet-tools.png" alt="The Tools page: two tools with pictures, insert, flips per part, edge life." width="3151" height="733" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The insert &ndash; type over it if it is wrong. (2) Flips per part. (3) Edge life, only where it is used.</figcaption>
+</figure>
+<figure class="shot" data-img="sheet-inserts.png" data-kind="sheet" data-need="The inserts table under the tools: edges, cost, parts per edge typed in.">
+<!-- img --><a class="zoom" href="images/sheet-inserts.png" title="Open the picture full size"><img src="images/sheet-inserts.png" alt="The inserts table under the tools: edges, cost, parts per edge typed in." width="2871" height="261" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Edges per insert. (2) Cost per insert. (3) Parts per edge (only for inserts that outlast a part).</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>On the Oil Spool Head, tools T11 and T12 both carry a <code>C 80&deg; r0.031</code> insert. Together they flip
+15 edges per part. The guess says 2 edges, but it is a CNMG &ndash; double-sided, 4 edges. Inserts cost $12.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>C 80&deg; r0.031</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td>Edges per insert</td><td class="num">2</td><td class="num edited">4</td></tr>
+<tr><td>Flips / part</td><td class="num">15</td><td class="num">15</td></tr>
+<tr><td>Inserts / part</td><td class="num">8</td><td class="num moved">4</td></tr>
+<tr><td>Cost per insert</td><td class="num">(blank)</td><td class="num edited">$12.00</td></tr>
+<tr><td>Insert cost / part</td><td class="num">(blank)</td><td class="num moved">$45.00</td></tr>
+</tbody>
+</table></div>
+<p>15 flips &divide; 4 edges = 3.75 inserts, shown as 4 whole inserts. The cost uses 3.75 &times; $12 = $45.00.
+Next dump, the 4 and the $12 are already there (kept in the part's <a href="words.html#w-ptconfig">.ptconfig</a> file).</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>A whole number of edges, 1 or more.</q></dt>
+<dd>Edges per insert takes a whole number.</dd>
+<dt><q>Type a time: minutes:seconds (8:00) or seconds (480).</q></dt>
+<dd>Edge life and usual edge time take a time. <code>8:00</code> and <code>480</code> mean the same.</dd>
+<dt><q>A size more than 0, in the part's units - or blank.</q> / <q>An angle in degrees, more than 0 and less than 180 - or blank.</q></dt>
+<dd>Insert size (IC) and Entering angle take a number, or nothing.</dd>
+<dt><q>A number of parts, more than 0 - and only for an insert whose edge is not already flipped every part ...</q></dt>
+<dd>Parts per edge is only for inserts the toolpath never flips. Leave it blank for the others.</dd>
+<dt><span class="ui">no insert data - grouped by its cutting outline</span> (Shape check column)</dt>
+<dd>The tool in Mastercam has no insert data, so the name was worked out from its outline. Check the name.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="inspection.html">Inspection &amp; inserts</a> &ndash; use every edge evenly</li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+<li><a href="summary.html">Summary page</a> (insert cost per batch)</li>
+<li><a href="words.html#w-edge-life">Edge life</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

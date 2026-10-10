@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copy from op - Parameter Table Tool manual</title>
+<meta name="description" content="Copy the selected columns from one op into other ops, or into every op of a tool.">
+<meta name="keywords" content="copy from op paste match same as to all ops of tool every op tool settings feed speed copy across">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html" aria-current="page">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Copy from op</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Edit cells</b> &rsaquo; <b>Copy from op</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Makes ops match. You pick the columns (by selecting cells in them), pick the op to copy <strong>from</strong>, and
+the values go into the other ops you selected &ndash; or into every op that uses the same tool.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>One op runs well. You want the same feed and speed on a similar op.</li>
+<li>You tuned one op of a tool and want all of that tool's ops the same.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li><strong>Click the op to copy from</strong> &ndash; in a column to copy &ndash; so the cursor is on it.</li>
+<li><strong>Select the cells to copy</strong> (for example <code>feed</code> and <code>speed</code>). Hold <kbd>Ctrl</kbd>
+to add the same cells in the rows to copy <strong>into</strong>.</li>
+<li>Click <span class="ui">Copy from op</span>.</li>
+<li><strong>Copy from:</strong> starts on the op the cursor is on. Pick another in the list if you like (it shows each op's
+number, type and comment).</li>
+<li><strong>Into:</strong> <span class="ui">The selected rows</span>, or <span class="ui">Every other op of tool ...</span>
+(every op with the same tool as the op you copy from).</li>
+<li>Read the preview: how many cells change, and each cell, old &rarr; new.</li>
+<li>Click <span class="ui">OK</span>. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</li>
+</ol>
+<div class="warn"><p><strong>Units are checked.</strong> A feed is not copied into a row whose feed is in other units
+(<code>per rev</code> / <code>per min</code>), and a speed not into a row with the other of CSS / RPM &ndash; those cells
+are refused and listed. Copy the unit column too (<code>feed_mode</code>, <code>speed_mode</code>) and they go across
+together. A feed of 0.012 <em>per minute</em> would be a crawl.</p></div>
+<figure class="shot" data-img="win-copy.png" data-kind="window" data-need="The Copy from op window: feed and speed of ops 7 and 8 selected, copy from op 7 into op 8, the preview of old -> new.">
+<!-- img --><a class="zoom" href="images/win-copy.png" title="Open the picture full size"><img src="images/win-copy.png" alt="The Copy from op window: feed and speed of ops 7 and 8 selected, copy from op 7 into op 8, the preview of old -&gt; new." width="1022" height="715" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Copy from. (2) Into. (3) What OK will do. (4) OK.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Op 7 (Rough Bore ID) now runs well at 0.012 per rev and 220 SFM. Make op 8 (Finish Bore ID, same tool T12) the same.</p>
+<ol>
+<li>Click op 7's <code>feed</code> cell, drag across to its <code>speed</code> cell. Hold <kbd>Ctrl</kbd> and do the same on op 8.</li>
+<li>Click <span class="ui">Copy from op</span>. <span class="ui">Copy from</span> shows op 7, <span class="ui">Into</span>
+shows <span class="ui">The selected rows: op 8</span>. The window says <q>2 cell(s) will change.</q></li>
+<li>Click <span class="ui">OK</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>op 8</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code></td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td><code>speed</code></td><td class="num">200</td><td class="num edited">220</td></tr>
+<tr><td><code>feed_mode</code>, <code>speed_mode</code></td><td>per rev, CSS</td><td>per rev, CSS (same &ndash; no warning)</td></tr>
+</tbody>
+</table></div>
+<p>A finish pass often wants a lighter feed than the rough. Copy what makes sense, not everything.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>Pick the op to copy from.</q></dt>
+<dd>No source op is picked yet.</dd>
+<dt><q>The selected rows - none besides op 7 (select the rows to copy into)</q></dt>
+<dd>Only the source op is selected. Hold <kbd>Ctrl</kbd> and add cells in the rows to copy into, or pick
+<span class="ui">Every other op of tool ...</span>.</dd>
+<dt><q>No other op uses this tool - pick the selected rows, or select some.</q></dt>
+<dd><span class="ui">Every other op of tool</span> found only the op you copy from.</dd>
+<dt><q>... not copied - the units differ (per rev / per min, CSS / RPM); listed below</q></dt>
+<dd>See the box above: copy the unit column too.</dd>
+<dt><q>... refused (read-only, not for that operation, or outside its limits)</q></dt>
+<dd>That column does not exist for the target's kind of op, or the value is past its limits.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="find.html#show">This tool's ops</a></li>
+<li><a href="words.html#w-per-rev">Per rev and per min</a>, <a href="words.html#w-css">CSS and RPM</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

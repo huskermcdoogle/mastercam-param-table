@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started - Parameter Table Tool manual</title>
+<meta name="description" content="The five steps: dump, edit, save, load, regenerate.">
+<meta name="keywords" content="first time getting started begin overview how it works quick start steps">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html" aria-current="page">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Getting started</h1>
+<p class="lead">Five steps: dump, edit, save, load, regenerate.</p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>In Mastercam you change one operation at a time, one dialog at a time. This tool puts every
+<a href="words.html#w-op">op</a> of your part into one Excel <a href="words.html#w-workbook">workbook</a>, one row per op.
+You change feeds, speeds, depths, coolant and comments there &ndash; many at once if you like.
+Excel shows you the new cycle time and insert use as you type. Then the tool puts your changes back into the part.
+It shows you every change first, and nothing goes in until you say so.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>You want the part to run faster, or you were given a cycle time to hit.</li>
+<li>Inserts are wearing out too soon, or cost too much.</li>
+<li>You need the same change on many ops (coolant, a feed, a comment).</li>
+<li>You want to look over a whole program before it goes to the floor.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li><strong>Save the part</strong> in Mastercam. The tool works on the saved part file.</li>
+<li><strong>Dump.</strong> Click <span class="ui">Lathe params - dump to Excel</span>. Pick the ops, the folder and the
+name, then click <span class="ui">Dump</span>. The workbook opens in Excel. See <a href="dump.html">Dump to Excel</a>.</li>
+<li><strong>Edit.</strong> Change cells on the <span class="ui">Lathe params</span> sheet. Every cell you change turns
+yellow. The cycle time and flips on that row move as you type. See <a href="sheet.html">The main sheet</a>.</li>
+<li><strong>Save the workbook</strong> in Excel (<kbd>Ctrl</kbd>+<kbd>S</kbd>). Keep it as it is &ndash; do not
+&ldquo;Save As&rdquo; CSV.</li>
+<li><strong>Load.</strong> Back in Mastercam, click <span class="ui">Lathe params - load</span> and pick the workbook.
+A window lists every change. Untick anything you want to leave out, then click <span class="ui">Apply</span>.
+See <a href="load.html">Load the changes</a>.</li>
+<li><strong>Regenerate</strong> the changed ops in Mastercam, check them (backplot, verify), and save the part.
+If it is not right, run <a href="undo-load.html">Lathe params - undo last load</a>.</li>
+</ol>
+<div class="tip"><p>An empty cell means &ldquo;leave it alone&rdquo; &ndash; never zero. If you clear a cell by
+mistake, the load does not change that setting.</p></div>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>The <em>Oil Spool Head</em> sample part has 18 ops and a cycle time of 12:46:38. The rough bore (op 7) runs at
+0.010 inch per rev. You think the insert can take more.</p>
+<ol>
+<li>Dump all ops. The workbook opens on the Summary page.</li>
+<li>On <span class="ui">Lathe params</span>, find op 7 and type <code>0.012</code> in its <code>feed</code> cell.
+Do the same for op 8, the finish bore.</li>
+<li>Look at the Summary page: the cycle time is now 12:26:50.</li>
+<li>Save, load, Apply, regenerate ops 7 and 8.</li>
+</ol>
+<div class="table-scroll"><table>
+<caption>What changed</caption>
+<thead><tr><th>Op</th><th>What</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td>7 Rough Bore ID</td><td>feed (per rev)</td><td class="num">0.010</td><td class="num edited">0.012</td></tr>
+<tr><td>7 Rough Bore ID</td><td>time</td><td class="num">1:44:00</td><td class="num moved">1:26:45</td></tr>
+<tr><td>8 Finish Bore ID</td><td>feed (per rev)</td><td class="num">0.010</td><td class="num edited">0.012</td></tr>
+<tr><td>8 Finish Bore ID</td><td>time</td><td class="num">0:15:24</td><td class="num moved">0:12:50</td></tr>
+<tr><td>Whole part</td><td>cycle time</td><td class="num">12:46:38</td><td class="num better">12:26:50 (&minus;0:19:49)</td></tr>
+</tbody>
+</table></div>
+<figure class="shot" data-img="sheet-estimate.png" data-kind="sheet" data-need="The main sheet: ops 7 and 8 with feed 0.012 (yellow), est_cycle_time moved (blue).">
+<!-- img --><a class="zoom" href="images/sheet-estimate.png" title="Open the picture full size"><img src="images/sheet-estimate.png" alt="The main sheet: ops 7 and 8 with feed 0.012 (yellow), est_cycle_time moved (blue)." width="1518" height="348" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The feed you typed turns yellow. (2) Mastercam's own time stays as it was.
+(3) The estimate moves &ndash; blue means &ldquo;this moved because of your edit&rdquo;.</figcaption>
+</figure>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="install.html">Install the add-in</a></li>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="estimate.html">How the cycle time estimate works</a></li>
+<li><a href="words.html">Word list</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>
