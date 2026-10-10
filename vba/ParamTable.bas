@@ -130,14 +130,30 @@ Public Function TryWrite(ByVal c As Range, ByVal v As Variant) As Boolean
     End If
 End Function
 
-' What a command did, in the status bar - the window already showed what would happen,
-' so no box to click away.
-Private Sub Report(ByVal what As String, ByVal done As Long, ByVal refused As Long)
-    Dim s As String
+' What a command did, as a short line in the status bar - the window already showed what
+' would happen, so no box to click away. The rows' own warnings (CSS with no max_ss ...)
+' stay on the line after it: a result never hides them.
+Private Sub Report(ByVal what As String, ByVal done As Long, ByVal refused As Long, Optional ByVal cells As Range)
+    Dim s As String, w As String
     s = done & " cell(s) " & what & "."
-    If refused > 0 Then s = s & "  " & refused & " refused - read-only, not for that kind of operation, or outside its limits."
-    Application.StatusBar = TITLE & ":  " & s
+    If refused > 0 Then s = s & "  " & refused & " refused - read-only, not for that kind of operation, outside its limits, or in other units."
+    If done > 0 Then s = s & "  Ctrl+Z to undo."
+    w = RowWarnings(cells)
+    Application.StatusBar = TITLE & ":  " & s & IIf(w <> "", "     " & w, "")
 End Sub
+
+' The warnings (CheckRow) of the rows some cells are on, each row once.
+Private Function RowWarnings(ByVal cells As Range) As String
+    Dim c As Range, seen As String
+    If cells Is Nothing Then Exit Function
+    For Each c In cells.Cells
+        If c.Row >= FIRST_ROW And InStr(seen, "|" & c.Row & "|") = 0 Then
+            seen = seen & "|" & c.Row & "|"
+            RowWarnings = RowWarnings & CheckRow(c.Row)
+            If Len(RowWarnings) > 400 Then Exit Function
+        End If
+    Next
+End Function
 
 ' ============================================================ bulk edits
 
@@ -150,12 +166,12 @@ Public Sub SetSelected()
     If cells Is Nothing Then Exit Sub
     If AllCoolant(cells) Then
         names = AskCoolants(cells, cells.Count & " selected coolant cell(s)")
-        If names <> "" Then ReportPair "set to " & names, SetCoolantCells(cells, names)
+        If names <> "" Then ReportPair "set to " & names, SetCoolantCells(cells, names), cells
         Exit Sub
     End If
     Set f = EditWindow("set", cells)
     f.Show
-    If f.Accepted Then ReportPair "set to " & f.Value(), SetCells(cells, f.Value())
+    If f.Accepted Then ReportPair "set to " & f.Value(), SetCells(cells, f.Value()), cells
     Unload f
 End Sub
 
@@ -168,56 +184,79 @@ Public Function SetCells(ByVal cells As Range, ByVal v As Variant) As String
     SetCells = ok & " " & bad
 End Function
 
-Private Sub ReportPair(ByVal what As String, ByVal pair As String)
+Private Sub ReportPair(ByVal what As String, ByVal pair As String, Optional ByVal cells As Range)
     Dim p() As String
     p = Split(pair, " ")
-    Report what, CLng(p(0)), CLng(p(1))
+    Report what, CLng(p(0)), CLng(p(1)), cells
 End Sub
 
-' Scale every selected number by a percentage (110 = 10% more).
+' Make every selected number bigger or smaller: +10% = 10% more, -10% = 10% less.
 Public Sub ScaleSelected()
-    Dim cells As Range, f As EditBox
+    Dim cells As Range, f As EditBox, pc As Double
     If Not OnMain() Then Exit Sub
     Set cells = DataCells(Selection)
     If cells Is Nothing Then Exit Sub
     Set f = EditWindow("scale", cells)
     f.Show
-    If f.Accepted Then ReportPair "scaled to " & f.Value() & "%", ScaleCells(cells, CDbl(f.Value()))
+    If f.Accepted Then
+        If Planner.PercentChange(f.Value(), pc) = "" Then ReportPair "made " & Planner.PercentWords(pc), ScaleCells(cells, pc), cells
+    End If
     Unload f
 End Sub
 
-Public Function ScaleCells(ByVal cells As Range, ByVal percent As Double) As String
+' Scale numbers by a change in percent (10 = 10% more, -10 = 10% less) - "done refused".
+Public Function ScaleCells(ByVal cells As Range, ByVal change As Double) As String
     Dim c As Range, ok As Long, bad As Long, v As Variant
     For Each c In cells.Cells
         v = c.Value
         If Not c.HasFormula And Not IsEmpty(v) And IsNumeric(v) And VarType(v) <> vbString Then
-            If TryWrite(c, Round(CDbl(v) * percent / 100, 10)) Then ok = ok + 1 Else bad = bad + 1
+            If TryWrite(c, Round(CDbl(v) * (1 + change / 100), 10)) Then ok = ok + 1 Else bad = bad + 1
         End If
     Next
     ScaleCells = ok & " " & bad
 End Function
 
-' Copy one operation's values into the selected rows, for the selected columns.
+' Copy one op's values, for the selected columns, into the other selected rows or into
+' every other op of its tool. The op the cursor is on is the one copied from, to start.
 Public Sub CopyFromOp()
-    Dim cells As Range, f As EditBox
+    Dim cells As Range, f As EditBox, t As Range
     If Not OnMain() Then Exit Sub
     Set cells = DataCells(Selection)
     If cells Is Nothing Then Exit Sub
     Set f = EditWindow("copy", cells)
     f.Show
-    If f.Accepted Then ReportPair "copied from op " & f.Value(), CopyCells(cells, f.Value())
+    If f.Accepted Then
+        Set t = CopyTargets(cells, f.Value(), f.IntoIdx())
+        If Not t Is Nothing Then ReportPair "copied from op " & f.Value(), CopyCells(t, f.Value()), t
+    End If
     Unload f
 End Sub
 
+' The cells a copy writes: the selection (into = 0) or the selected columns on every
+' other op of the source op's tool (1). Nothing when there are none.
+Public Function CopyTargets(ByVal cells As Range, ByVal op As Variant, ByVal into As Long) As Range
+    If into = 1 Then Set CopyTargets = Planner.ToolTargets(cells, op) Else Set CopyTargets = cells
+End Function
+
+' Copy an op's values into cells (their columns, from its row) - "done refused". A value
+' whose units differ between the two rows (per rev / per min, CSS / RPM) and are not copied
+' with it is refused: it would mean something else there.
 Public Function CopyCells(ByVal cells As Range, ByVal op As Variant) As String
-    Dim f As Range, c As Range, ok As Long, bad As Long, src As Range
+    Dim f As Range, c As Range, ok As Long, bad As Long, src As Range, copied As String
     Set f = OpCell(op)
     If f Is Nothing Then CopyCells = "0 0": Exit Function
+    copied = CopiedColumns(cells)
     For Each c In cells.Cells
         If c.Row <> f.Row Then
             Set src = MainSheet.Cells(f.Row, c.Column)
             If Not src.HasFormula Then
-                If TryWrite(c, src.Value) Then ok = ok + 1 Else bad = bad + 1
+                If UnitClash(c, f.Row, copied) <> "" Then
+                    bad = bad + 1
+                ElseIf TryWrite(c, src.Value) Then
+                    ok = ok + 1
+                Else
+                    bad = bad + 1
+                End If
             End If
         End If
     Next
@@ -232,33 +271,92 @@ Public Function OpCell(ByVal op As Variant) As Range
                      What:=op, LookIn:=xlValues, LookAt:=xlWhole)
 End Function
 
-' ---------------------------------------------------------------- the edit window
+' ---------------------------------------------------------------- units go with the value
 
-' "N cell(s) in feed, speed  -  ops 2, 7" - what is selected, in words.
-Private Function Describe(ByVal cells As Range) As String
-    Dim c As Range, cols As String, ops As String, h As String, o As String, nc As Long, no As Long
+' The column saying what units a value is in, or "".
+Private Function UnitColumn(ByVal hdr As String) As String
+    Select Case hdr
+    Case "feed", "plunge", "retract": UnitColumn = hdr & "_mode"
+    Case "speed": UnitColumn = "speed_mode"
+    Case "finish_ss": UnitColumn = "finish_ss_css"
+    Case "pt_rough_speed": UnitColumn = "pt_rough_css"
+    Case "pt_fin_speed": UnitColumn = "pt_fin_css"
+    Case "pt_rough_feed_axial": UnitColumn = "pt_rough_axial_type"
+    Case "pt_rough_feed_radial": UnitColumn = "pt_rough_radial_type"
+    Case "pt_fin_feed_axial": UnitColumn = "pt_fin_axial_type"
+    Case "pt_fin_feed_radial": UnitColumn = "pt_fin_radial_type"
+    End Select
+End Function
+
+' And back: the value a units column belongs to, or "".
+Private Function ValueOfUnit(ByVal hdr As String) As String
+    Dim v As Variant
+    For Each v In Array("feed", "plunge", "retract", "speed", "finish_ss", "pt_rough_speed", "pt_fin_speed", _
+                        "pt_rough_feed_axial", "pt_rough_feed_radial", "pt_fin_feed_axial", "pt_fin_feed_radial")
+        If UnitColumn(CStr(v)) = hdr Then ValueOfUnit = v: Exit Function
+    Next
+End Function
+
+' "|feed|feed_mode|" - the columns some cells are in.
+Private Function CopiedColumns(ByVal cells As Range) As String
+    Dim c As Range, h As String
+    CopiedColumns = "|"
+    If cells Is Nothing Then Exit Function
     For Each c In cells.Cells
         h = CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)
-        If InStr("|" & cols & "|", "|" & h & "|") = 0 Then
-            nc = nc + 1
-            If nc <= 4 Then cols = cols & IIf(cols = "", "", "|") & h
-        End If
+        If InStr(CopiedColumns, "|" & h & "|") = 0 Then CopiedColumns = CopiedColumns & h & "|"
+    Next
+End Function
+
+' Why copying a cell from the source row would change what it means - its units differ
+' between the two rows and the units are not copied with it (or units are copied without
+' their value) - in words; "" when it is fine.
+Private Function UnitClash(ByVal c As Range, ByVal srcRow As Long, ByVal copied As String) As String
+    Dim hdr As String, other As String, uc As Long, a As String, b As String, isUnit As Boolean
+    hdr = CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)
+    other = UnitColumn(hdr)
+    If other = "" Then
+        other = ValueOfUnit(hdr)
+        If other = "" Then Exit Function
+        isUnit = True
+    End If
+    If InStr(copied, "|" & other & "|") > 0 Then Exit Function      ' copied together: fine
+    uc = IIf(isUnit, c.Column, ColOf(other))
+    If uc = 0 Then Exit Function
+    a = Trim$(CStr(MainSheet.Cells(srcRow, uc).Value))
+    b = Trim$(CStr(MainSheet.Cells(c.Row, uc).Value))
+    If a = "" Or b = "" Or LCase$(a) = LCase$(b) Then Exit Function
+    If isUnit Then
+        UnitClash = "op " & MainSheet.Cells(c.Row, 1).Value & "'s " & other & " is a " & b & " value - select the " & other & " too"
+    Else
+        UnitClash = "op " & MainSheet.Cells(srcRow, 1).Value & " is " & a & ", op " & MainSheet.Cells(c.Row, 1).Value & _
+                    " is " & b & " - select the " & a & " / " & b & " column too"
+    End If
+End Function
+
+' ---------------------------------------------------------------- the edit window
+
+' "4 cells on ops 2, 7" - what is selected, in words.
+Private Function Describe(ByVal cells As Range) As String
+    Dim c As Range, ops As String, o As String, no As Long
+    For Each c In cells.Cells
         o = CStr(MainSheet.Cells(c.Row, 1).Value)
         If InStr("|" & ops & "|", "|" & o & "|") = 0 Then
             no = no + 1
             If no <= 8 Then ops = ops & IIf(ops = "", "", "|") & o
         End If
     Next
-    Describe = cells.Count & " cell(s) in " & Replace(cols, "|", ", ") & IIf(nc > 4, " and " & nc - 4 & " more", "") & _
-               "  -  op" & IIf(no = 1, " ", "s ") & Replace(ops, "|", ", ") & IIf(no > 8, ", ...", "")
+    Describe = cells.Count & IIf(cells.Count = 1, " cell", " cells") & " on op" & IIf(no = 1, " ", "s ") & _
+               Replace(ops, "|", ", ") & IIf(no > 8, ", ...", "")
 End Function
 
 ' The window for one of the edits, set up on the cells but not shown. Modes: set, scale,
-' copy (from an op), tool (to every op of a tool), scensave / scenload / scendel.
+' copy (from an op), scensave / scenload / scendel.
 Public Function EditWindow(ByVal mode As String, ByVal cells As Range) As EditBox
     Dim f As EditBox, c As Range, lst As String, sameList As Boolean, items() As String, k() As String
-    Dim r As Long, n As Long, cmt As Long, v As String, seen As String, ks As Variant, its As Variant, nm As Variant
+    Dim r As Long, n As Long, cmt As Long, v As String, seen As String, its As Variant, hint As String
     Set f = New EditBox
+    If Not cells Is Nothing Then hint = "columns: " & ColumnsOf(cells)
     Select Case mode
     Case "set"
         ' Every cell has the same dropdown: offer just that list. Otherwise the values there now.
@@ -269,8 +367,8 @@ Public Function EditWindow(ByVal mode As String, ByVal cells As Range) As EditBo
             If v = "" Or v <> lst Then sameList = False
         Next
         If sameList Then
-            f.Setup "set", cells, TITLE & " - set selected", Describe(cells), "Pick the value for every selected cell:", _
-                    Split(lst, ","), Empty, True, ""
+            f.Setup "set", cells, TITLE & " - set", Describe(cells), hint, "Pick the value for every selected cell:", _
+                    Split(lst, ","), Empty, True, "", "set"
         Else
             ReDim items(0 To 0)
             For Each c In cells.Cells
@@ -281,17 +379,18 @@ Public Function EditWindow(ByVal mode As String, ByVal cells As Range) As EditBo
                 End If
             Next
             If n > 0 Then
-                f.Setup "set", cells, TITLE & " - set selected", Describe(cells), _
-                        "Value for every selected cell (the list has what is there now):", items, Empty, False, CStr(cells.Cells(1, 1).Value)
+                f.Setup "set", cells, TITLE & " - set", Describe(cells), hint, _
+                        "New value for every selected cell (the list has what is there now):", items, Empty, False, _
+                        CStr(cells.Cells(1, 1).Value), "set"
             Else
-                f.Setup "set", cells, TITLE & " - set selected", Describe(cells), _
-                        "Value for every selected cell:", Empty, Empty, False, ""
+                f.Setup "set", cells, TITLE & " - set", Describe(cells), hint, "New value for every selected cell:", _
+                        Empty, Empty, False, "", "set"
             End If
         End If
     Case "scale"
-        f.Setup "scale", cells, TITLE & " - scale", Describe(cells), _
-                "Scale the selected numbers to what percent?  (110 = 10% more, 90 = 10% less)", _
-                Array("50", "80", "90", "95", "105", "110", "120", "150", "200"), Empty, False, "100"
+        f.Setup "scale", cells, TITLE & " - scale", Describe(cells), hint, _
+                "How much bigger or smaller?   +10% = 10% more,   -10% = 10% less", _
+                Array("+5%", "+10%", "+20%", "-5%", "-10%", "-20%"), Empty, False, "", "scale"
     Case "copy"
         cmt = ColOf("comment")
         For r = FIRST_ROW To LastRow
@@ -301,34 +400,91 @@ Public Function EditWindow(ByVal mode As String, ByVal cells As Range) As EditBo
                        IIf(cmt > 0, "    " & MainSheet.Cells(r, IIf(cmt > 0, cmt, 1)).Value, "")
             n = n + 1
         Next
-        f.Setup "copy", cells, TITLE & " - copy from an operation", Describe(cells), _
-                "Copy the selected columns FROM which operation?", items, k, True, ""
-    Case "tool"
-        ' From the first selected row (the one being copied), into the rest of its tool.
-        r = cells.Cells(1, 1).Row
-        its = Planner.ToolOps(r, ks)
-        f.Setup "tool", cells, TITLE & " - apply to every op of the tool", _
-                "Copy " & ColumnsOf(cells) & " to every other op of tool " & Planner.ToolOfRow(r) & " (hidden rows too).", _
-                "Copy FROM which op of the tool?", its, ks, True, CStr(MainSheet.Cells(r, 1).Value)
+        f.Setup "copy", cells, TITLE & " - copy from an op", "Copies " & Describe(cells) & _
+                " - the same columns - from one op into others.", hint, "Copy from:", items, k, True, _
+                CopySource(cells), "copy"
     Case "scensave", "scenload", "scendel"
         its = Planner.ScenarioNames()
         Select Case mode
         Case "scensave"
             f.Setup mode, Nothing, TITLE & " - save scenario", _
-                    "Keeps every edit now on the sheet under a name, to restore or compare later (saved in this workbook).", _
-                    "Name (pick one to replace it):", its, Empty, False, ""
+                    "Keeps every change now on the sheet under a name, to restore or compare later (saved in this workbook).", _
+                    "", "Name (pick one to replace it):", its, Empty, False, "", "scenarios"
         Case "scenload"
             v = ""
             If UBound(its) >= 0 Then v = CStr(its(UBound(its)))      ' the latest
             f.Setup mode, Nothing, TITLE & " - restore scenario", _
                     "Puts the sheet back to the dump, then sets the scenario's values - each through its cell's rule.", _
-                    "Restore which scenario?", its, Empty, True, v
+                    "", "Restore which scenario?", its, Empty, True, v, "scenarios"
         Case Else
             f.Setup mode, Nothing, TITLE & " - delete scenario", "Deletes a saved scenario; the sheet is not changed.", _
-                    "Delete which scenario?", its, Empty, True, ""
+                    "", "Delete which scenario?", its, Empty, True, "", "scenarios"
         End Select
     End Select
     Set EditWindow = f
+End Function
+
+' The op a copy starts from: the one the cursor is on, when it is an op's row - else the
+' first selected one.
+Private Function CopySource(ByVal cells As Range) As String
+    Dim r As Long
+    On Error Resume Next
+    If ActiveSheet.Name = MAIN_SHEET Then r = ActiveCell.Row
+    On Error GoTo 0
+    If r < FIRST_ROW Or r > LastRow Then r = cells.Cells(1, 1).Row
+    CopySource = CStr(MainSheet.Cells(r, 1).Value)
+End Function
+
+' Where a copy from an op can go, in words: [0] the selected rows (less the op copied
+' from), [1] every other op of that op's tool.
+Public Function CopyIntoChoices(ByVal cells As Range, ByVal op As Variant) As Variant
+    Dim src As Range, c As Range, ops As String, o As String, n As Long, t As Range, tool As String, a As String, b As String
+    Set src = OpCell(op)
+    If src Is Nothing Then
+        CopyIntoChoices = Array("The selected rows", "Every other op of its tool")
+        Exit Function
+    End If
+    For Each c In cells.Cells
+        If c.Row <> src.Row Then
+            o = CStr(MainSheet.Cells(c.Row, 1).Value)
+            If InStr("|" & ops & "|", "|" & o & "|") = 0 Then
+                n = n + 1
+                If n <= 8 Then ops = ops & IIf(ops = "", "", "|") & o
+            End If
+        End If
+    Next
+    If n = 0 Then
+        a = "The selected rows - none besides op " & op & " (select the rows to copy into)"
+    Else
+        a = "The selected rows: op" & IIf(n = 1, " ", "s ") & Replace(ops, "|", ", ") & IIf(n > 8, ", ...", "")
+    End If
+    tool = Planner.ToolOfRow(src.Row)
+    Set t = Planner.ToolTargets(cells, op)
+    If tool = "" Then
+        b = "Every other op of its tool - op " & op & " has no tool number"
+    ElseIf t Is Nothing Then
+        b = "Every other op of tool " & tool & " - no other op uses it"
+    Else
+        ops = "": n = 0
+        For Each c In Intersect(t.EntireRow, MainSheet.Columns(1)).Cells
+            n = n + 1
+            If n <= 8 Then ops = ops & IIf(ops = "", "", ", ") & MainSheet.Cells(c.Row, 1).Value
+        Next
+        b = "Every other op of tool " & tool & ": op" & IIf(n = 1, " ", "s ") & ops & IIf(n > 8, ", ...", "")
+    End If
+    CopyIntoChoices = Array(a, b)
+End Function
+
+' Where a copy goes to start with: the other selected rows when there are some, else the
+' rest of the tool.
+Public Function CopyIntoDefault(ByVal cells As Range, ByVal op As Variant) As Long
+    Dim src As Range, c As Range
+    Set src = OpCell(op)
+    If src Is Nothing Then Exit Function
+    For Each c In cells.Cells
+        If c.Row <> src.Row Then Exit Function
+    Next
+    CopyIntoDefault = 1
 End Function
 
 ' "feed, speed" - the selected columns, in words.
@@ -400,14 +556,13 @@ Public Function WouldTake(ByVal c As Range, ByVal v As Variant) As Boolean
     End Select
 End Function
 
-' The cells an edit writes: the selection, or for "tool" the rest of the tool's ops.
-Private Function EditTargets(ByVal mode As String, ByVal cells As Range, ByVal v As String) As Range
-    If mode = "tool" Then Set EditTargets = Planner.ToolTargets(cells, v) Else Set EditTargets = cells
-End Function
-
 ' What an edit does to one cell: 0 = leaves it, 1 = changes it, 2 = already that,
-' 3 = refused by its rule. nv is the new value.
-Private Function CellPlan(ByVal mode As String, ByVal c As Range, ByVal v As String, ByVal src As Range, ByRef nv As Variant) As Long
+' 3 = refused by its rule, 4 = not copied: its units differ (why says how). nv is the new
+' value; copied the columns a copy takes ("|feed|speed|").
+Private Function CellPlan(ByVal mode As String, ByVal c As Range, ByVal v As String, ByVal src As Range, ByVal copied As String, _
+                          ByRef nv As Variant, ByRef why As String) As Long
+    Dim pc As Double
+    why = ""
     Select Case mode
     Case "set"
         If IsNumeric(v) Then nv = CDbl(v) Else nv = v
@@ -421,7 +576,8 @@ Private Function CellPlan(ByVal mode As String, ByVal c As Range, ByVal v As Str
     Case "scale"
         If c.HasFormula Or IsEmpty(c.Value) Or Not IsNumeric(c.Value) Then Exit Function
         If VarType(c.Value) = vbString Then Exit Function
-        nv = Round(CDbl(c.Value) * CDbl(v) / 100, 10)
+        If Planner.PercentChange(v, pc) <> "" Then Exit Function
+        nv = Round(CDbl(c.Value) * (1 + pc / 100), 10)
         If Not WouldTake(c, nv) Then
             CellPlan = 3
         ElseIf nv = c.Value Then
@@ -429,11 +585,14 @@ Private Function CellPlan(ByVal mode As String, ByVal c As Range, ByVal v As Str
         Else
             CellPlan = 1
         End If
-    Case "copy", "tool"
+    Case "copy"
         If c.Row = src.Row Then Exit Function
         If MainSheet.Cells(src.Row, c.Column).HasFormula Then Exit Function
         nv = MainSheet.Cells(src.Row, c.Column).Value
-        If Not WouldTake(c, nv) Then
+        why = UnitClash(c, src.Row, copied)
+        If why <> "" Then
+            CellPlan = 4
+        ElseIf Not WouldTake(c, nv) Then
             CellPlan = 3
         ElseIf SameValue(c.Value, nv) Then
             CellPlan = 2
@@ -444,9 +603,10 @@ Private Function CellPlan(ByVal mode As String, ByVal c As Range, ByVal v As Str
 End Function
 
 ' The edit window's live line: "1|..." when OK would change something, "0|..." when not.
-Public Function EditPreview(ByVal mode As String, ByVal cells As Range, ByVal v As String) As String
-    Dim c As Range, take As Long, bad As Long, same As Long, nv As Variant, eg As String, src As Range, shown As Long
-    Dim targets As Range, ops As String, nops As Long, o As String
+' into: a copy's 0 (the selected rows) or 1 (every other op of the tool).
+Public Function EditPreview(ByVal mode As String, ByVal cells As Range, ByVal v As String, Optional ByVal into As Long = 0) As String
+    Dim c As Range, take As Long, bad As Long, same As Long, units As Long, nv As Variant, eg As String, src As Range, shown As Long
+    Dim targets As Range, ops As String, nops As Long, o As String, why As String, pc As Double, copied As String, lead As String
     Select Case mode
     Case "scensave", "scenload", "scendel"
         EditPreview = Planner.ScenarioPreview(mode, v)
@@ -454,16 +614,18 @@ Public Function EditPreview(ByVal mode As String, ByVal cells As Range, ByVal v 
     Case "set"
         If Trim$(v) = "" Then EditPreview = "0|Type or pick a value.": Exit Function
     Case "scale"
-        If Trim$(v) = "" Or Not IsNumeric(v) Then EditPreview = "0|Type a percent, e.g. 110.": Exit Function
-        If CDbl(v) <= 0 Then EditPreview = "0|The percent has to be more than 0.": Exit Function
-    Case "copy", "tool"
+        why = Planner.PercentChange(v, pc)
+        If why <> "" Then EditPreview = "0|" & why: Exit Function
+        lead = Planner.PercentWords(pc) & ":  "
+    Case "copy"
         Set src = OpCell(v)
-        If src Is Nothing Then EditPreview = "0|Pick the operation to copy from.": Exit Function
+        If src Is Nothing Then EditPreview = "0|Pick the op to copy from.": Exit Function
     End Select
-    Set targets = EditTargets(mode, cells, v)
-    If targets Is Nothing Then EditPreview = "0|No other operation uses this tool.": Exit Function
+    Set targets = EditTargets(mode, cells, v, into)
+    If targets Is Nothing Then EditPreview = "0|No other op uses this tool - pick the selected rows, or select some.": Exit Function
+    copied = CopiedColumns(targets)
     For Each c In targets.Cells
-        Select Case CellPlan(mode, c, v, src, nv)
+        Select Case CellPlan(mode, c, v, src, copied, nv, why)
         Case 1
             take = take + 1
             If mode = "scale" And shown < 3 Then eg = eg & IIf(eg = "", "", ",   ") & c.Value & " -> " & nv: shown = shown + 1
@@ -474,19 +636,25 @@ Public Function EditPreview(ByVal mode As String, ByVal cells As Range, ByVal v 
             End If
         Case 2: same = same + 1
         Case 3: bad = bad + 1
+        Case 4: units = units + 1
         End Select
     Next
     If eg <> "" Then eg = vbCrLf & "e.g.  " & eg
-    If mode = "tool" And take > 0 Then eg = vbCrLf & "Into op" & IIf(nops = 1, " ", "s ") & Replace(ops, "|", ", ") & IIf(nops > 8, ", ..." , "") & "."
-    EditPreview = IIf(take > 0, "1|", "0|") & take & " cell(s) will change" & _
+    If mode = "copy" And take > 0 Then eg = vbCrLf & "Into op" & IIf(nops = 1, " ", "s ") & Replace(ops, "|", ", ") & IIf(nops > 8, ", ...", "") & "."
+    If mode = "copy" And take = 0 And same = 0 And bad = 0 And units = 0 Then
+        EditPreview = "0|Nothing to copy into - select the rows to copy into, or pick every other op of the tool.": Exit Function
+    End If
+    EditPreview = IIf(take > 0, "1|", "0|") & lead & take & " cell(s) will change" & _
                   IIf(same > 0, ",  " & same & " already that", "") & _
                   IIf(bad > 0, ",  " & bad & " refused (read-only, not for that operation, or outside its limits)", "") & _
+                  IIf(units > 0, ",  " & units & " not copied - the units differ (per rev / per min, CSS / RPM); listed below", "") & _
                   "." & eg
 End Function
 
 ' The edit window's list: one line per cell it would change or refuse.
-Public Function EditDetail(ByVal mode As String, ByVal cells As Range, ByVal v As String) As Variant
+Public Function EditDetail(ByVal mode As String, ByVal cells As Range, ByVal v As String, Optional ByVal into As Long = 0) As Variant
     Dim c As Range, nv As Variant, s As String, n As Long, src As Range, targets As Range, st As Long, hdr As String
+    Dim why As String, pc As Double, copied As String
     EditDetail = Array()
     Select Case mode
     Case "scensave", "scenload", "scendel"
@@ -495,22 +663,26 @@ Public Function EditDetail(ByVal mode As String, ByVal cells As Range, ByVal v A
     Case "set"
         If Trim$(v) = "" Then Exit Function
     Case "scale"
-        If Trim$(v) = "" Or Not IsNumeric(v) Then Exit Function
-        If CDbl(v) <= 0 Then Exit Function
-    Case "copy", "tool"
+        If Planner.PercentChange(v, pc) <> "" Then Exit Function
+    Case "copy"
         Set src = OpCell(v)
         If src Is Nothing Then Exit Function
     End Select
-    Set targets = EditTargets(mode, cells, v)
+    Set targets = EditTargets(mode, cells, v, into)
     If targets Is Nothing Then Exit Function
+    copied = CopiedColumns(targets)
     For Each c In targets.Cells
-        st = CellPlan(mode, c, v, src, nv)
-        If st = 1 Or st = 3 Then
+        st = CellPlan(mode, c, v, src, copied, nv, why)
+        If st = 1 Or st = 3 Or st = 4 Then
             n = n + 1
             If n <= 300 Then
                 hdr = CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)
-                s = s & IIf(s = "", "", vbLf) & "op " & MainSheet.Cells(c.Row, 1).Value & "    " & hdr & "    " & _
-                    IIf(st = 1, IIf(CStr(c.Value) = "", "(blank)", CStr(c.Value)) & "  ->  " & CStr(nv), "refused  (" & CStr(nv) & ")")
+                s = s & IIf(s = "", "", vbLf) & "op " & MainSheet.Cells(c.Row, 1).Value & "    " & hdr & "    "
+                Select Case st
+                Case 1: s = s & IIf(CStr(c.Value) = "", "(blank)", CStr(c.Value)) & "  ->  " & CStr(nv)
+                Case 3: s = s & "refused  (" & CStr(nv) & ")"
+                Case 4: s = s & "not copied - " & why
+                End Select
             End If
         End If
     Next
@@ -518,21 +690,10 @@ Public Function EditDetail(ByVal mode As String, ByVal cells As Range, ByVal v A
     If s <> "" Then EditDetail = Split(s, vbLf)
 End Function
 
-' Copy the selected columns of the active op to every other op of its tool.
-Public Sub ApplyToTool()
-    Dim cells As Range, f As EditBox
-    If Not OnMain() Then Exit Sub
-    Set cells = DataCells(Selection)
-    If cells Is Nothing Then Exit Sub
-    If ColOf("tool") = 0 Or Planner.ToolOfRow(cells.Cells(1, 1).Row) = "" Then
-        MsgBox "Click the cells to copy (feed, speed ...) in an operation's row that has a tool number.", vbInformation, TITLE
-        Exit Sub
-    End If
-    Set f = EditWindow("tool", cells)
-    f.Show
-    If f.Accepted Then ReportPair "copied from op " & f.Value() & " to the other ops of its tool", Planner.ToolCopyCells(cells, f.Value())
-    Unload f
-End Sub
+' The cells an edit writes: the selection - for a copy into the tool, the rest of its ops.
+Private Function EditTargets(ByVal mode As String, ByVal cells As Range, ByVal v As String, ByVal into As Long) As Range
+    If mode = "copy" Then Set EditTargets = CopyTargets(cells, v, into) Else Set EditTargets = cells
+End Function
 
 ' Save, restore or delete a scenario through the edit window.
 Public Sub ScenarioWindow(ByVal mode As String)
@@ -551,7 +712,9 @@ Public Sub ScenarioWindow(ByVal mode As String)
         Case "scenload"
             p = Split(Planner.RestoreScenario(f.Value()), " ")
             Application.StatusBar = TITLE & ":  '" & f.Value() & "' restored - " & p(0) & " cell(s) set" & _
-                                    IIf(p(1) <> "0", ", " & p(1) & " refused (the op or column is gone, or the value is outside its limits)", "") & "."
+                                    IIf(p(1) <> "0", ", " & p(1) & " refused (the op or column is gone, or the value is outside its limits)", "") & "." & _
+                                    IIf(Planner.AutoSaved() <> "", "  Your changes before it are kept as '" & Planner.AutoSaved() & "'.", "") & _
+                                    "  Ctrl+Z to undo."
         Case "scendel"
             Planner.DeleteScenario f.Value()
             Application.StatusBar = TITLE & ":  '" & f.Value() & "' deleted."
@@ -561,22 +724,25 @@ Public Sub ScenarioWindow(ByVal mode As String)
 End Sub
 
 ' For tools\check_macros.ps1 (no window): what the window says and whether OK is on,
-' after typing a value ("#3" picks list row 3) - "preview|ok|value".
-Public Function EditWindowSelfTest(ByVal mode As String, ByVal cells As Range, ByVal typed As String) As String
+' after typing a value ("#3" picks list row 3) and, for a copy, where into (0 the selected
+' rows, 1 the tool's other ops) - "preview|ok|value".
+Public Function EditWindowSelfTest(ByVal mode As String, ByVal cells As Range, ByVal typed As String, Optional ByVal into As Long = -1) As String
     Dim f As EditBox
     Set f = EditWindow(mode, cells)
     If Left$(typed, 1) = "#" Then f.Pick CLng(Mid$(typed, 2)) Else f.TypeIn typed
+    If into >= 0 Then f.PickInto into
     EditWindowSelfTest = f.Preview() & "|" & f.CanAccept() & "|" & f.Value()
     Unload f
 End Function
 
 ' The same, reading the window's list instead: "lines#first line".
-Public Function EditListSelfTest(ByVal mode As String, ByVal cells As Range, ByVal typed As String) As String
+Public Function EditListSelfTest(ByVal mode As String, ByVal cells As Range, ByVal typed As String, Optional ByVal into As Long = -1) As String
     Dim f As EditBox
     Set f = EditWindow(mode, cells)
     If typed <> "" Then
         If Left$(typed, 1) = "#" Then f.Pick CLng(Mid$(typed, 2)) Else f.TypeIn typed
     End If
+    If into >= 0 Then f.PickInto into
     EditListSelfTest = f.DetailCount() & "#" & f.DetailLine(0)
     Unload f
 End Function
@@ -603,19 +769,47 @@ Public Sub RevertAll()
     RevertCells AllData(), True
 End Sub
 
+' Where each column of the main sheet is on the Dumped sheet, found by its NAME (row 2 of
+' both): a column inserted on the main sheet cannot make a cell compare with - or go back
+' to - another column's dumped value. Index: the main sheet's column; 0 = not dumped.
+Public Function DumpedColumns() As Long()
+    Dim ws As Worksheet, out() As Long, c As Long, lc As Long, f As Range, hdr As String
+    lc = LastCol
+    ReDim out(1 To Application.Max(1, lc))
+    On Error Resume Next
+    Set ws = ThisWorkbook.Worksheets(DUMPED_SHEET)
+    On Error GoTo 0
+    If ws Is Nothing Then DumpedColumns = out: Exit Function
+    For c = 1 To lc
+        hdr = CStr(MainSheet.Cells(HEADER_ROW, c).Value)
+        If hdr <> "" Then
+            If CStr(ws.Cells(HEADER_ROW, c).Value) = hdr Then
+                out(c) = c                                  ' where it was dumped - the usual case
+            Else
+                Set f = ws.Rows(HEADER_ROW).Find(What:=hdr, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=True)
+                If Not f Is Nothing Then out(c) = f.Column
+            End If
+        End If
+    Next
+    DumpedColumns = out
+End Function
+
 Public Function RevertCells(ByVal cells As Range, ByVal tell As Boolean) As Long
-    Dim ws As Worksheet, c As Range, dr As Long, n As Long
+    Dim ws As Worksheet, c As Range, dr As Long, n As Long, dcol() As Long, dc As Long
     If cells Is Nothing Then Exit Function
     Set ws = ThisWorkbook.Worksheets(DUMPED_SHEET)
+    dcol = DumpedColumns()
     Application.EnableEvents = False
     On Error GoTo Done                      ' events always come back on
     For Each c In cells.Cells
-        If Not Untracked(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) And Not c.HasFormula Then
+        dc = 0
+        If c.Column <= UBound(dcol) Then dc = dcol(c.Column)
+        If dc > 0 And Not Untracked(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) And Not c.HasFormula Then
             dr = DumpedRow(MainSheet.Cells(c.Row, 1).Value)
             If dr > 0 Then
-                If Not SameValue(c.Value, ws.Cells(dr, c.Column).Value) Then
+                If Not SameValue(c.Value, ws.Cells(dr, dc).Value) Then
                     Panel.Journal c
-                    c.Value = ws.Cells(dr, c.Column).Value
+                    c.Value = ws.Cells(dr, dc).Value
                     n = n + 1
                 End If
             End If
@@ -624,7 +818,7 @@ Public Function RevertCells(ByVal cells As Range, ByVal tell As Boolean) As Long
 Done:
     Application.EnableEvents = True
     RevertCells = n
-    If tell Then Application.StatusBar = TITLE & ":  " & n & " cell(s) put back to their dumped value."
+    If tell Then Application.StatusBar = TITLE & ":  " & n & " cell(s) put back to their dumped value." & IIf(n > 0, "  Ctrl+Z to undo.", "")
 End Function
 
 ' ============================================================ review
@@ -632,7 +826,7 @@ End Function
 ' A "Changes" sheet: every cell that differs from the dump, old and new.
 Public Function ListChanges() As Long
     Dim ws As Worksheet, out As Worksheet, r As Long, c As Long, dr As Long, n As Long
-    Dim hdr As String, lc As Long, cmt As Long
+    Dim hdr As String, lc As Long, cmt As Long, dcol() As Long
     Set ws = ThisWorkbook.Worksheets(DUMPED_SHEET)
     Application.DisplayAlerts = False
     On Error Resume Next
@@ -645,19 +839,20 @@ Public Function ListChanges() As Long
     out.Range("A1:F1").Font.Bold = True
     lc = LastCol
     cmt = ColOf("comment")
+    dcol = DumpedColumns()
     For r = FIRST_ROW To LastRow
         dr = DumpedRow(MainSheet.Cells(r, 1).Value)
         If dr > 0 Then
             For c = 1 To lc
                 hdr = CStr(MainSheet.Cells(HEADER_ROW, c).Value)
-                If hdr <> "" And Not Untracked(hdr) Then
-                    If Not SameValue(MainSheet.Cells(r, c).Value, ws.Cells(dr, c).Value) Then
+                If hdr <> "" And Not Untracked(hdr) And dcol(c) > 0 Then
+                    If Not SameValue(MainSheet.Cells(r, c).Value, ws.Cells(dr, dcol(c)).Value) Then
                         n = n + 1
                         out.Cells(n + 1, 1).Value = MainSheet.Cells(r, 1).Value
                         out.Cells(n + 1, 2).Value = MainSheet.Cells(r, 2).Value
                         If cmt > 0 Then out.Cells(n + 1, 3).Value = MainSheet.Cells(r, cmt).Value
                         out.Cells(n + 1, 4).Value = hdr
-                        out.Cells(n + 1, 5).Value = ws.Cells(dr, c).Value
+                        out.Cells(n + 1, 5).Value = ws.Cells(dr, dcol(c)).Value
                         out.Cells(n + 1, 6).Value = MainSheet.Cells(r, c).Value
                         ' The parameter links to the cell, to go and look.
                         out.Hyperlinks.Add Anchor:=out.Cells(n + 1, 4), Address:="", _
