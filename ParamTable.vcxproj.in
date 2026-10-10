@@ -81,6 +81,8 @@
       <AdditionalLibraryDirectories>$(SDKDir)x64\$(Configuration);$(SDKDir)3rdParty\BCGCBPro\libx64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Mastercam.lib;MCCore.lib;MCCoreBase.lib;MCGuiBase.lib;SysTypes.lib;CHookAPI.lib;TlCore.lib;MCTool.lib;UICtrls.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <!-- Only the .pdb file NAME goes into the DLL, not the build folder's full path. -->
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
