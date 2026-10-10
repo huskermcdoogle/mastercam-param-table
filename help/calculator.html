@@ -113,28 +113,41 @@ feed back to the op.</li>
 <h2>Steps</h2>
 <h3 id="speed">Speed &amp; feed tab</h3>
 <ol class="steps">
-<li>Click a cell in the op's row, then click <span class="ui">Speed &amp; feed</span>.</li>
-<li>The boxes fill in from the op: diameter (where it cuts), surface speed, RPM, feed per rev, feed per minute.</li>
+<li>Click a cell in the op's row, then click <span class="ui">Speed &amp; feed</span>. (Or pick the op in the window's op
+list, or use <span class="ui">&lt;</span> / <span class="ui">&gt;</span> for the op above or below.)</li>
+<li>The boxes fill in from the op, in the op's own units (inch or mm): <span class="ui">Diameter</span> (the op's average
+cutting diameter, <code>cut_dia</code>, when it is known), <span class="ui">Surface speed (SFM)</span>,
+<span class="ui">Spindle speed (RPM)</span>, <span class="ui">Feed per rev</span>, <span class="ui">Feed per minute</span>.</li>
 <li>Type a new value in any box. The others work it out:
 RPM = SFM &times; 3.82 &divide; diameter (inch), feed per minute = feed per rev &times; RPM.</li>
-<li>Watch the note: it warns when the RPM is above the op's max RPM (<code>max_ss</code>) &ndash; the spindle would stop
-at the max and the real surface speed is lower.</li>
+<li>Watch the note under the boxes: above the op's max RPM (<code>max_ss</code>) the spindle stops at the max, so the
+real surface speed is lower &ndash; and the feed per minute is worked out at the max RPM.</li>
+<li>To use a new feed, click the button under the boxes &ndash; it says what it will do, e.g.
+<span class="ui">Set this op's feed: 0.01 -&gt; 0.012</span>. The cell turns yellow; <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</li>
 </ol>
 <h3 id="chip">Chip thinning tab</h3>
 <ol class="steps">
-<li>Click the <span class="ui">Chip thinning</span> tab. It fills in from the op and its tool:
-the insert size (round inserts) or the entering angle (lead-angle inserts), and the depth of cut.</li>
-<li>Read the real chip: <strong>real chip = feed &times; sin(entering angle)</strong>. A round insert's entering angle
-comes from its size and the depth: the shallower the cut, the thinner the chip.</li>
-<li>Type the <strong>chip you want</strong>. It shows the <strong>feed to program</strong>.</li>
-<li>Click <span class="ui">Set this op's feed</span> to write it into the op's <code>feed</code> cell (it turns yellow).</li>
+<li>Click the <span class="ui">Chip thinning</span> tab. The line at the top says the tool and its insert.</li>
+<li>Pick the insert kind if it is not right: a <strong>round insert</strong> (type its size and the depth of cut) or a
+<strong>straight edge</strong> (type the holder's <span class="ui">Entering angle</span> &ndash; or the US
+<span class="ui">Lead angle</span>, which is 90&deg; minus it; type either one).</li>
+<li>Read the chip at today's feed: <strong>real chip = feed &times; sin(entering angle)</strong>. A round insert's
+angle comes from its size and the depth: the shallower the cut, the thinner the chip.</li>
+<li>Type the <strong>chip thickness you want</strong>. It shows the <strong>feed per rev to program</strong>.</li>
+<li>Click <span class="ui">Set this op's feed</span> to write it (as a per-minute feed if the op runs per minute).</li>
 </ol>
-<p>The insert size and entering angle come from columns on the <a href="tools-page.html">Tools page</a> &ndash; type them
-there once per tool. The window stays open and follows the op you click.</p>
-<!-- CHECK: tab names, the button "Set this op's feed", and that insert size / entering angle are read from the Tools page. -->
-<figure class="shot todo" data-img="win-calculator.png" data-kind="window" data-need="The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab."><strong>Picture coming: win-calculator.png</strong>The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Speed &amp; feed window.</figcaption>
+<p>The insert size and entering angle come from the <a href="tools-page.html">Tools page</a> columns
+<span class="ui">Insert size (IC)</span> and <span class="ui">Entering angle</span>. The angle is read from the holder's
+ISO code (PCLNL: an L-style holder, 95&deg;). Type over either one there if it is wrong &ndash; it is remembered.
+PrimeTurning, grooving, mill and drill ops get a short explanation instead of a guess.</p>
+<p>The window stays open beside the sheet and follows the op you click.</p>
+<figure class="shot" data-img="win-calculator.png" data-kind="window" data-need="The Speed &amp; feed window on op 7 (Speed &amp; feed tab): diameter about 6.9, 200 SFM, about 111 RPM, 0.01 per rev, about 1.1 per min.">
+<!-- img --><a class="zoom" href="images/win-calculator.png" title="Open the picture full size"><img src="images/win-calculator.png" alt="The Speed &amp; feed window on op 7 (Speed &amp; feed tab): diameter about 6.9, 200 SFM, about 111 RPM, 0.01 per rev, about 1.1 per min." width="782" height="839" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The op it is on &ndash; pick another here. (2) The two tabs.</figcaption>
+</figure>
+<figure class="shot" data-img="win-calculator-chip.png" data-kind="window" data-need="The Chip thinning tab on op 1 with an entering angle of 45 typed: a 0.01 feed makes a 0.00707 chip."><!-- img --><a class="zoom" href="images/win-calculator-chip.png" title="Open the picture full size"><img src="images/win-calculator-chip.png" alt="The Chip thinning tab on op 1 with an entering angle of 45 typed: a 0.01 feed makes a 0.00707 chip." width="782" height="839" loading="lazy"></a><!-- /img -->
+<figcaption>The Chip thinning tab (1), with an entering angle of 45&deg; typed: a 0.01 feed makes a 0.00707 chip.
+(This sample's holder is really a 95&deg; one, which barely thins the chip.)</figcaption>
 </figure>
 </section>
 
@@ -167,13 +180,19 @@ there once per tool. The window stays open and follows the op you click.</p>
 <section id="messages">
 <h2>What the messages mean</h2>
 <dl class="messages">
-<dt><q>Above this row's max_ss of 3500 RPM - at this diameter the spindle stops at ...</q></dt>
-<dd>The RPM you asked for is more than the op allows. The machine will run at the max, so the surface speed will be lower than you typed.</dd>
+<dt><q>Above this op's max spindle speed of 3500 RPM: at this diameter the spindle stops at ...</q></dt>
+<dd>The RPM you asked for is more than the op allows. The machine runs at the max, so the surface speed is lower than you typed.</dd>
+<dt><q>This op's speed is CSS with no max spindle speed.</q></dt>
+<dd>Near the center the spindle could run to the machine's top speed. Set a <a href="words.html#w-max-rpm">max RPM</a>.</dd>
 <dt><q>At half the insert or deeper the chip is as thick as the feed - no thinning.</q></dt>
 <dd>A round insert cutting half its size deep (or more) has no chip thinning. Program the feed you want as the chip.</dd>
-<dt><q>Type the insert diameter and the depth (or stepover) it cuts at.</q></dt>
-<dd>The calculator needs both to work out the chip.</dd>
-<dt><q>Refused - ... is outside this feed's limits</q></dt>
+<dt><q>Type the insert diameter and the depth of cut.</q> / <q>Type the holder's entering angle ... - or its US lead angle.</q></dt>
+<dd>The Tools page has no size or angle for this tool. Type it here (and on the Tools page, to keep it).</dd>
+<dt><q>PrimeTurning ops set their own feeds from a chip thickness (pt_rough_chip) - not worked out here.</q></dt>
+<dd>Change a PrimeTurning op's chip in its own columns (<code>pt_rough_chip</code> ...).</dd>
+<dt><q>op 7 feed 0.01 -&gt; 0.012 per rev - Ctrl+Z to undo</q></dt>
+<dd>The feed was written to the sheet.</dd>
+<dt><q>Refused - op 7 feed: ... is outside this feed's limits, or this op takes no feed.</q></dt>
 <dd>The feed it worked out is past what the op takes. Nothing was written.</dd>
 </dl>
 </section>

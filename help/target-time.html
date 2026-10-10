@@ -106,54 +106,65 @@ kept inside its own limits &ndash; and shows every op before and after: time, <a
 <h2>Steps</h2>
 <ol class="steps">
 <li><strong>Select the ops</strong> (any cell in their rows), or click a cell in one op of a tool.</li>
-<li>Click <span class="ui">Hit a target time</span>.</li>
-<li><strong>Operations:</strong> pick the selected ops, or every op of the tool.</li>
-<li><strong>Target:</strong> type the time you want for them, like <code>12:30</code> (minutes:seconds) or
-<code>1:02:00</code> (hours:minutes:seconds) &ndash; or a percent, like <code>-10%</code> for 10% less time.</li>
-<li><strong>Options:</strong> tick <span class="ui">Speeds too</span> to change speeds by the same factor (the time
-then goes down with feed &times; speed). Tick <span class="ui">Main cutting feed only</span> to leave plunge, retract and
-back feeds alone.</li>
+<li>Click <span class="ui">Hit a target time</span>. The window opens beside the sheet.</li>
+<li><strong>Ops:</strong> <span class="ui">Selected rows</span>, or <span class="ui">Every op of tool ...</span> (the tool
+of the row you are on).</li>
+<li><strong>Target:</strong> type the time you want for those ops, like <code>12:30</code> (minutes:seconds) or
+<code>1:02:00</code> (hours:minutes:seconds) &ndash; or a change: <code>-10%</code> for 10% less time, <code>+10%</code>
+for 10% more. Always type the sign: a bare <code>10%</code> is refused with <q>say which way</q>.</li>
+<li><strong>Options:</strong> <span class="ui">Main cutting feed only</span> is ticked to start (plunge, retract and back
+feeds stay as they are). Tick <span class="ui">Speeds too</span> to change speeds by the same amount.</li>
 <li>Press <kbd>Enter</kbd> or click <span class="ui">Preview</span>. Read each op: time, flips and MRR before and after,
-and any cell that hit its limit.</li>
-<li>Click <span class="ui">Apply</span>. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it all back.</li>
+and the feed change. <kbd>Enter</kbd> only previews &ndash; it never writes.</li>
+<li>Click <span class="ui">Apply</span> to write it. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it all back.</li>
 </ol>
-<!-- CHECK: the target box's percent wording after the rebuild ("-10%" = 10% less time, "+10%" = 10% more?). Older versions took "10%" to mean a 10% cut. -->
 <div class="note"><p>Only the cutting part of the time can change. Rapids, tool changes and dwells stay the same, so a
 very short target may not be reachable. The window says how close it gets.</p></div>
-<figure class="shot todo" data-img="win-target.png" data-kind="window" data-need="The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -> after time, flips, MRR.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -&gt; after time, flips, MRR."><strong>Picture coming: win-target.png</strong>The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -&gt; after time, flips, MRR. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Hit a target time window.</figcaption>
+<div class="warn"><p><strong>Speeds too:</strong> the flips column then gets a <strong>*</strong> and a note. Flips are
+counted from cut time, so a faster speed looks like fewer flips &ndash; but a faster speed wears the edge sooner. Check the
+edge time with <a href="inspection.html">Inspection &amp; inserts</a>.</p></div>
+<figure class="shot" data-img="win-target.png" data-kind="window" data-need="The Hit a target time window: ops 7 and 8, target -10%, previewed: each op's time, flips and MRR before and after.">
+<!-- img --><a class="zoom" href="images/win-target.png" title="Open the picture full size"><img src="images/win-target.png" alt="The Hit a target time window: ops 7 and 8, target -10%, previewed: each op&#x27;s time, flips and MRR before and after." width="1302" height="983" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The target. (2) Main cutting feed only. (3) Each op, before and after. (4) Apply &ndash; Preview
+and Enter never write.</figcaption>
 </figure>
 </section>
 
 <section id="example">
 <h2>Worked example</h2>
-<p>The bore ops 7 and 8 take 1:59:24 together. The cell lead wants them under 1:40:00.</p>
+<p>The bore ops 7 and 8 take 1:59:24 together. The cell lead wants 10% off.</p>
 <ol>
 <li>Select a cell in op 7's row and op 8's row. Click <span class="ui">Hit a target time</span>.</li>
-<li>Type <code>1:40:00</code>, press <kbd>Enter</kbd>. The feeds go up about 20%.</li>
+<li>Type <code>-10%</code>, press <kbd>Enter</kbd>. The main feeds go up 11.2%.</li>
+<li>Read the preview, then click <span class="ui">Apply</span>.</li>
 </ol>
 <div class="table-scroll"><table>
-<thead><tr><th>Op</th><th class="num">feed</th><th class="num">time before</th><th class="num">time after</th><th class="num">flips per part</th></tr></thead>
+<thead><tr><th>Op</th><th class="num">feed</th><th class="num">time before</th><th class="num">time after</th></tr></thead>
 <tbody>
-<tr><td>7 Rough Bore ID</td><td class="num edited">0.010 &rarr; 0.012</td><td class="num">1:44:00</td><td class="num moved">about 1:27:00</td><td class="num">follows the shorter cut time</td></tr>
-<tr><td>8 Finish Bore ID</td><td class="num edited">0.010 &rarr; 0.012</td><td class="num">0:15:24</td><td class="num moved">about 0:13:00</td><td class="num"></td></tr>
-<tr><td><strong>Both</strong></td><td></td><td class="num">1:59:24</td><td class="num better">about 1:40:00</td><td></td></tr>
+<tr><td>7 Rough Bore ID</td><td class="num edited">0.01 &rarr; 0.01112</td><td class="num">1:44:00</td><td class="num moved">1:33:35</td></tr>
+<tr><td>8 Finish Bore ID</td><td class="num edited">0.01 &rarr; 0.01112</td><td class="num">0:15:24</td><td class="num moved">0:13:51</td></tr>
+<tr><td><strong>Both</strong></td><td></td><td class="num">1:59:24</td><td class="num better">1:47:26 (-10.0%)</td></tr>
 </tbody>
 </table></div>
-<p>Then check the insert: is 0.012 per rev inside the maker's range for that insert and that depth? If not, the time is
-a wish, not a plan.</p>
+<p>Flips per part stay at 11 for the tool. Then check the insert: is the new feed inside the maker's range for that
+insert and that depth? If not, the time is a wish, not a plan.</p>
 </section>
 
 <section id="messages">
 <h2>What the messages mean</h2>
 <dl class="messages">
-<dt><q>Press Enter to work out what this changes.</q></dt>
+<dt><q>Press Enter (or Preview) to see what this changes, op by op.</q></dt>
 <dd>Type the target, then press <kbd>Enter</kbd> or click <span class="ui">Preview</span>.</dd>
-<dt>A cell marked as at its limit</dt>
-<dd>That feed could not go as far as the others (its op's limit). The other ops make up the difference where they can.</dd>
-<dt><q>Select operations (cells in their rows) on the 'Lathe params' sheet first.</q></dt>
-<dd>Go to the main sheet and select cells in the ops' rows.</dd>
+<dt><q>'10%' - say which way: +10% for more, -10% for less.</q></dt>
+<dd>Type the sign. <code>-10%</code> means 10% less time.</dd>
+<dt><q>... the target 1:47:28 is out of reach</q></dt>
+<dd>The feeds could not get exactly there (limits, or time that is not cutting). The line says how close it got.</dd>
+<dt><q>2 cell(s) held at a limit: ...</q></dt>
+<dd>Those feeds could not go as far as the others. The other ops make up the difference where they can.</dd>
+<dt><q>Not applied yet - Apply, or Revert to follow the sheet again.</q></dt>
+<dd>A target is typed. The window keeps it while you click around the sheet to check.</dd>
+<dt><q>The sheet changed since this was worked out - here it is again. Check it, then Apply.</q></dt>
+<dd>Something changed the cells. The plan was worked out again.</dd>
 </dl>
 </section>
 

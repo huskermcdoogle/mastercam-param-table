@@ -220,7 +220,9 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dt id="l-p"><span id="w-per-rev">Per rev / per min (IPR, IPM)</span></dt>
 <dd><strong>Per rev</strong>: how far the tool moves for each turn of the spindle (inches per rev, IPR, or mm per rev; G95 / G99). <strong>Per min</strong>: how far it moves in a minute (IPM or mm/min; G94 / G98). Per min = per rev &times; RPM. Lathes mostly use per rev; live tools use per min.</dd>
 <dt id="w-percent">Percent: +10%, -10%</dt>
-<dd><code>+10%</code> means 10% more than now: 0.010 becomes 0.011. <code>-10%</code> means 10% less: 0.010 becomes 0.009. <!-- CHECK: the percent wording in the finished Scale and Hit a target time windows. --></dd>
+<dd><code>+10%</code> means 10% more than now: 0.010 becomes 0.011. <code>-10%</code> means 10% less: 0.010 becomes 0.009.
+Always type the sign &ndash; a bare <code>10%</code> is refused, because it does not say which way. In
+<a href="target-time.html">Hit a target time</a>, <code>-10%</code> means 10% less <em>time</em>.</dd>
 <dt id="w-post">Post</dt>
 <dd>The post processor: it turns Mastercam's toolpaths into G-code for your machine.</dd>
 <dt id="w-primeturning">PrimeTurning</dt>
@@ -258,7 +260,9 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dd>An op that copies other ops' toolpaths (mirror, rotate, translate). The sheet shows transforms read-only; their copies count in the part's time and flips.</dd>
 
 <dt id="l-u"><span id="w-usual-edge-time">Usual edge time</span></dt>
-<dd>What one edge of an insert normally lasts in your shop. You type it on the Tools page; the <a href="check.html">Program check</a> warns about tools that run an edge much longer. <!-- CHECK: name and place of this column once merged. --></dd>
+<dd>What one edge of an insert normally lasts in your shop. You type it in the last column of the Tools page's
+<a href="tools-page.html#usual">inserts table</a>; the <a href="check.html">Program check</a> warns about a tool whose
+edge runs more than 25% longer.</dd>
 
 <dt id="l-w"><span id="w-workbook">Workbook, sheet</span></dt>
 <dd>A workbook is one Excel file. A sheet is one page of it, chosen by the tabs along the bottom (Summary, Lathe params, Tools).</dd>
@@ -271,7 +275,7 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <section id="columns">
 <h2>Columns on the sheet</h2>
 <!-- columns -->
-<p class="note">This part is made from the sheet's own tooltips (the text you see when you hover a column name), so it always matches your sheet. Hover a cell on the sheet to see the same words.</p>
+<p class="note">This part is made from the sheet's own tooltips (the text you see when you hover a column name), so it always matches your sheet. A column not listed here (most of the Tool inspection and Filter settings, the planes, home and reference points) has its own tooltip on the sheet: hover its name.</p>
 <h3 id="c-identity-and-context">Identity and context</h3>
 <dl class="words">
 <dt id="col-changes"><span class="col">changes</span></dt>
@@ -582,6 +586,9 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dt id="t-inserts"><span class="col">Inserts / part</span></dt><dd>Flips per part &divide; edges per insert, in whole inserts (a fraction for an insert that outlasts a part).</dd>
 <dt id="t-cost"><span class="col">Cost per insert</span>, <span class="col">Insert cost / part</span></dt><dd>Type what one insert costs; the cost per part follows.</dd>
 <dt id="t-parts-per-edge"><span class="col">Parts per edge</span></dt><dd>For an insert that lasts more than one part: how many parts one edge makes.</dd>
+<dt id="t-usual"><span class="col">Usual edge time</span></dt><dd>How long one edge of this insert usually cuts before it is turned (inserts table). See <a href="#w-usual-edge-time">usual edge time</a>.</dd>
+<dt id="t-ic"><span class="col">Insert size (IC)</span></dt><dd>The insert's size across its inscribed circle &ndash; a round insert's diameter &ndash; in the part's units. Chip thinning uses it.</dd>
+<dt id="t-angle"><span class="col">Entering angle</span></dt><dd>Degrees from the cutting edge to the feed, from the holder's ISO code (PCLNR: 95). 90 = square shoulder, no chip thinning. US lead angle = 90 minus this. See <a href="#w-entering-angle">entering angle</a>.</dd>
 </dl>
 </section>
 

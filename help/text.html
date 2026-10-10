@@ -93,11 +93,11 @@
 <ul>
 <li><strong>Op comment</strong> &ndash; the name the Operation Manager shows (<code>comment</code>, up to 119 characters).</li>
 <li><strong>Inspection comment</strong> &ndash; the message at a <a href="words.html#w-insp-time">tool inspection stop</a>
-(<code>insp_comment</code>), e.g. <code>ROTATE INSERT</code>.</li>
-<li><strong>Manual text</strong> &ndash; the text of a manual entry op (<code>manual_text</code>, up to 3111 characters).
-Only for manual entry ops.</li>
+(<code>insp_comment</code>), e.g. <code>ROTATE INSERT</code>. Its limit is the cell's own (often 49 characters).</li>
+<li><strong>Manual text</strong> &ndash; the text of a manual entry op (<code>manual_text</code>, up to 3,111 characters).
+Only for manual entry ops, one op at a time.</li>
 </ul>
-<p>It counts the characters as you type, against each one's limit. With several ops selected, it sets the same comment on all of them.</p>
+<p>It counts the characters as you type, against each one's limit. With several ops selected, what you type goes on all of them.</p>
 </section>
 
 <section id="when">
@@ -112,27 +112,31 @@ Only for manual entry ops.</li>
 <section id="steps">
 <h2>Steps</h2>
 <ol class="steps">
-<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or just double-click a <code>comment</code>,
-<code>insp_comment</code> or <code>manual_text</code> cell.)</li>
-<li>Click <span class="ui">Comments &amp; text</span>. The sheet jumps to the comment columns so you can see what is there now.</li>
+<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or double-click a <code>comment</code>,
+<code>insp_comment</code> or <code>manual_text</code> cell: the window opens on that tab.)</li>
+<li>Click <span class="ui">Comments &amp; text</span>. The line at the top says which ops it is on.</li>
 <li><strong>Pick the tab</strong>: <span class="ui">Op comment</span>, <span class="ui">Inspection comment</span> or
-<span class="ui">Manual text</span>.</li>
-<li><strong>Type the text.</strong> The count under the box shows how many characters you have left. If the ops have
-different text, the box says so (<q>Mixed</q>).</li>
-<li>For an inspection comment, you can click a <strong>quick pick</strong>: <span class="ui">ROTATE INSERT</span>,
-<span class="ui">CHANGE INSERT</span>, <span class="ui">INDEX INSERT</span>, <span class="ui">CHECK INSERT</span>.</li>
+<span class="ui">Manual text</span>. A tab the ops do not have is greyed out.</li>
+<li><strong>Type the text.</strong> The count under the box shows the characters against the limit. If the ops have
+different text now, it says <q>Mixed - these 2 ops have different comments now</q>; what you type goes on all of them.</li>
+<li>On the <span class="ui">Inspection comment</span> tab you can click a common comment instead:
+<span class="ui">ROTATE INSERT</span>, <span class="ui">CHANGE INSERT</span>, <span class="ui">INDEX INSERT</span>,
+<span class="ui">CHECK INSERT</span>. If a stop's comment is switched off, tick
+<span class="ui">Also switch the comment on at the stop</span>.</li>
+<li><strong>Manual text:</strong> pick the op in the <span class="ui">Op</span> list (one op at a time). <kbd>Ctrl</kbd>+<kbd>Enter</kbd> applies.</li>
 <li>Click <span class="ui">Apply</span>. The cells turn yellow. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes the whole Apply back.</li>
 </ol>
-<p>The window stays open beside the sheet. Click other ops and it follows them (unless you have typed something you have
-not applied yet). The <span class="ui">?</span> button opens this page.</p>
-<!-- CHECK: tab names, the quick-pick buttons, the inspection comment's character limit and the "Mixed" wording in the finished window. -->
+<p>The window stays open beside the sheet. Click other ops and it follows them &ndash; unless you have typed something
+you have not applied yet (then it waits: <span class="ui">Apply</span>, or <span class="ui">Revert</span> to follow the
+sheet again). <span class="ui">Close</span> or <kbd>Esc</kbd> throws away typing you have not applied.
+<span class="ui">&lt; Prev</span> and <span class="ui">Next &gt;</span> move to the op above or below. The
+<span class="ui">?</span> button opens this page.</p>
 <div class="warn"><p><strong>The words in an inspection comment matter.</strong> A stop whose comment says
 <code>ROTATE</code>, <code>FLIP</code>, <code>CHANGE</code> or <code>INDEX</code> is counted as an
 <a href="flips.html">insert flip</a> &ndash; a new edge. <code>CHECK INSERT</code> is only a look, not a flip.
 Change <code>CHECK INSERT</code> to <code>ROTATE INSERT</code> and the flips per part go up.</p></div>
-<figure class="shot todo" data-img="win-text.png" data-kind="window" data-need="The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count."><strong>Picture coming: win-text.png</strong>The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Comments &amp; text window.</figcaption>
+<figure class="shot" data-img="win-text.png" data-kind="window" data-need="The Comments &amp; text window on the Inspection comment tab, ops 7 and 8 selected, ROTATE INSERT picked, the character count."><!-- img --><a class="zoom" href="images/win-text.png" title="Open the picture full size"><img src="images/win-text.png" alt="The Comments &amp; text window on the Inspection comment tab, ops 7 and 8 selected, ROTATE INSERT picked, the character count." width="1062" height="871" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The ops it is on. (2) The three tabs. (3) Apply &ndash; nothing is written before it.</figcaption>
 </figure>
 </section>
 
@@ -153,19 +157,25 @@ flips will be counted.</p>
 <tr><td>8 Finish Bore ID</td><td>CHECK INSERT</td><td class="edited">ROTATE INSERT</td><td>no &rarr; <strong>yes</strong></td></tr>
 </tbody>
 </table></div>
-<p>After you load and regenerate, the NC code carries the message at each stop. If the comment switch
-(<code>insp_comment_on</code>) is off, turn it on too.</p>
+<p>After you load and regenerate, the NC code carries the message at each stop. If the stop's comment was switched off,
+tick <span class="ui">Also switch the comment on at the stop</span> before Apply.</p>
 </section>
 
 <section id="messages">
 <h2>What the messages mean</h2>
 <dl class="messages">
-<dt><q>... over the limit by 12</q></dt>
-<dd>Too long. Shorten it &ndash; the load refuses text that would be cut off.</dd>
-<dt>The Manual text tab is greyed out</dt>
-<dd>None of the selected ops is a manual entry op.</dd>
-<dt><q>Mixed</q></dt>
+<dt><q>... over the limit by 12</q> / <q>The op comment is longer than 119 characters.</q></dt>
+<dd>Too long. Shorten it &ndash; Apply waits, and the load would refuse text that is cut off.</dd>
+<dt><q>Mixed - these 2 ops have different comments now. What you type goes on all of them.</q></dt>
 <dd>The selected ops have different text. Whatever you type replaces all of them.</dd>
+<dt><q>None of these ops is a manual entry - no manual text.</q> / <q>None of these ops has a tool inspection comment.</q></dt>
+<dd>That tab does not apply to the ops you picked.</dd>
+<dt><q>Not applied yet - Apply writes it to the sheet (Ctrl+Z takes it back).</q></dt>
+<dd>You typed something. Click <span class="ui">Apply</span> to keep it, or <span class="ui">Revert</span> to drop it.</dd>
+<dt><q>Apply or Revert first - then move to another op.</q></dt>
+<dd>You pressed Prev / Next with typing not applied.</dd>
+<dt><q>op 8 inspection comment: longer than its 49 characters</q></dt>
+<dd>After Apply: that cell was refused. The other ops were written.</dd>
 </dl>
 </section>
 

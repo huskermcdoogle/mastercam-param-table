@@ -108,46 +108,62 @@ the tool.</p>
 <h2>Steps</h2>
 <ol class="steps">
 <li><strong>Select the ops</strong> of the tools to look at (any cell in their rows), then click
-<span class="ui">Inspection &amp; inserts</span>.</li>
-<li><strong>Read one row per tool:</strong> flips per part; the edge time now; how much of the last edge is used; and the
-suggested edge time.</li>
-<li><strong>Pick the tools</strong> to change and check the suggested edge time is one your insert can really do.
-A longer edge time means each edge cuts longer.</li>
-<li>Click <span class="ui">Apply</span>. The edge time goes into <code>insp_time</code> on every op of that tool (yellow).
-The flips per part on the sheet and the Summary follow.</li>
+<span class="ui">Inspection &amp; inserts</span>. (<span class="ui">Tools:</span> can also show every tool on the sheet.)</li>
+<li><strong>Pick the goal:</strong> <span class="ui">Same flips - use every edge evenly</span> (the start),
+<span class="ui">One flip fewer per part</span>, or <span class="ui">One flip more per part</span>.</li>
+<li><strong>Read one line per tool:</strong> <span class="ui">Insert</span>, <span class="ui">Flips / part</span>,
+<span class="ui">Edge time</span> (how long each edge cuts now), <span class="ui">Last edge</span> (how much of that the
+last edge in a part gets to cut), <span class="ui">New edge time</span>, <span class="ui">New flips</span> and a
+<span class="ui">Note</span>. Click a tool to read its whole note.</li>
+<li><strong>Tick the tools</strong> to change. Check the note: <q>Edge runs 0:05 longer than now - check the insert can
+take it</q> means each edge would cut longer.</li>
+<li>Click <span class="ui">Apply</span>. The new edge time goes into <code>insp_time</code> on every op of each ticked tool
+that times its stops (yellow). The flips on the sheet and the Summary follow. The goal goes back to <span class="ui">Same flips</span>.</li>
 </ol>
-<div class="note"><p><strong>&ldquo;Change it in Mastercam.&rdquo;</strong> Some tools stop for another reason &ndash; after a
-number of cuts, at each depth, by distance, or at stops in the toolpath itself. A new edge time does not move those stops.
-The window says so; change the op's <span class="ui">Tool inspection</span> settings in Mastercam instead.</p></div>
-<!-- CHECK: the columns of the finished window (flips per part, edge time now, last edge used, suggested edge time), and when it says "change it in Mastercam". -->
-<figure class="shot todo" data-img="win-inspection.png" data-kind="window" data-need="The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked."><strong>Picture coming: win-inspection.png</strong>The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Inspection &amp; inserts window.</figcaption>
+<div class="note"><p><strong>&ldquo;Change them in Mastercam.&rdquo;</strong> Some tools stop for another reason &ndash; after a
+number of cuts, by distance, or at the end of the op. A new edge time does not move those stops, so the tool cannot be
+ticked. Its note says why, e.g. <q>Flips come from stops in the toolpath (every 5 in of cut) - change them in
+Mastercam.</q> Change the op's <span class="ui">Tool inspection</span> settings in Mastercam instead.</p></div>
+<figure class="shot" data-img="win-inspection.png" data-kind="window" data-need="The Inspection &amp; inserts window on ops 1, 2, 3, 7: goal One flip fewer per part, T4 ticked.">
+<!-- img --><a class="zoom" href="images/win-inspection.png" title="Open the picture full size"><img src="images/win-inspection.png" alt="The Inspection &amp; inserts window on ops 1, 2, 3, 7: goal One flip fewer per part, T4 ticked." width="1622" height="823" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The goal. (2) One line per tool &ndash; tick the ones to change. (3) Apply.</figcaption>
 </figure>
 </section>
 
 <section id="example">
 <h2>Worked example</h2>
-<p>A tool cuts 25:00 per part. Its edge time is 8:00, so it stops at 8:00, 16:00 and 24:00 &ndash; 3 flips &ndash; and
-the fourth edge cuts only 1:00 before the part is done.</p>
+<p>On the Oil Spool Head, tool T4 (the PrimeTurning rest rough, op 3) turns its insert every 1:10 of cutting &ndash;
+12 flips per part &ndash; and the last edge of a part cuts only 63% of that. Goal: <span class="ui">One flip fewer per part</span>.</p>
 <div class="table-scroll"><table>
-<thead><tr><th></th><th class="num">Before</th><th class="num">After Apply</th></tr></thead>
+<thead><tr><th>T4</th><th class="num">Now</th><th class="num">After Apply</th></tr></thead>
 <tbody>
-<tr><td>Edge time (<code>insp_time</code>)</td><td class="num">8:00</td><td class="num edited">8:20</td></tr>
-<tr><td>Flips per part</td><td class="num">3</td><td class="num moved better">2</td></tr>
-<tr><td>Edges used per part</td><td class="num">4 (the last only 13%)</td><td class="num moved">3 (each 100%)</td></tr>
-<tr><td>Inserts per 100 parts (4-edge insert)</td><td class="num">100</td><td class="num moved better">75</td></tr>
+<tr><td>Edge time (<code>insp_time</code> on op 3)</td><td class="num">1:10</td><td class="num edited">1:15</td></tr>
+<tr><td>Flips per part</td><td class="num">12</td><td class="num moved better">11</td></tr>
+<tr><td>Whole part, flips per part</td><td class="num">89</td><td class="num moved better">88</td></tr>
+<tr><td>Note</td><td colspan="2">Edge runs 0:05 longer than now &ndash; check the insert can take it.</td></tr>
 </tbody>
 </table></div>
-<p>8:20 is only 4% longer per edge than 8:00 &ndash; usually fine. If the suggested time is much longer than what the
-insert lasts, do not use it; look at <a href="target-time.html">feeds</a> or a tougher grade instead.</p>
+<p>Each edge cuts 5 seconds longer, and every part saves one edge. Tools T11, T1 and T12 cannot be ticked: their flips
+come from stops in the toolpath (every so many cuts, every 5 or 10 in of cut).</p>
+<p>If the new edge time is much longer than what the insert really lasts, do not use it &ndash; look at the feeds, or a
+tougher grade, instead.</p>
 </section>
 
 <section id="messages">
 <h2>What the messages mean</h2>
 <dl class="messages">
-<dt><q>change it in Mastercam</q></dt>
+<dt><q>Flips come from stops in the toolpath (every 5 in of cut, at the end of the op) - change them in Mastercam.</q></dt>
 <dd>The tool's flips do not come from an edge time. See the note above.</dd>
+<dt><q>Already even - every edge cuts about the same.</q></dt>
+<dd>Nothing to gain with <span class="ui">Same flips</span>. Try <span class="ui">One flip fewer per part</span>.</dd>
+<dt><q>Edge runs 0:05 longer than now - check the insert can take it.</q></dt>
+<dd>The new edge time is longer than today's. Fine if the insert lasts; risky if it already wears out.</dd>
+<dt><q>Same flips - each edge cuts 1:45 less.</q></dt>
+<dd>The edges are used more evenly for the same flips: easier on the inserts.</dd>
+<dt><q>Nothing to change - every tool here is even already, or its flips come from the toolpath.</q></dt>
+<dd>No tool can be improved with an edge time.</dd>
+<dt><q>Done: edge time set on op 3 ...</q></dt>
+<dd>Applied. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</dd>
 <dt>A tool shows 0 flips</dt>
 <dd>Its ops do not stop for inspection, or the stops are not insert flips (their comment does not say ROTATE, FLIP,
 CHANGE or INDEX). See <a href="flips.html">How insert flips are counted</a>.</dd>

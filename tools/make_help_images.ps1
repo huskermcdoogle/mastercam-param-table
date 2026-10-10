@@ -84,10 +84,10 @@ $Shots = @(
        Show = @("op_idn", "comment", "feed", "speed", "cycle_time", "est_cycle_time", "time_change")
        Callouts = @(@(1, "op7:feed", "l"), @(2, "op7:cycle_time", "r"), @(3, "op7:est_cycle_time", "r")) },
     @{ Name = "sheet-tools"; Sheet = "Tools"; Range = "A1:A3"
-       Show = @("Tool", "Name", "Used by", "Insert", "Flips / part", "Cut time / part", "Inspection", "Edge life (fallback)", "Picture")
+       Show = @("Tool", "Name", "Used by", "Insert", "Flips / part", "Cut time / part", "Inspection", "Edge life (fallback)", "Insert size (IC)", "Entering angle", "Picture")
        Callouts = @(@(1, "row2:Insert", "rb"), @(2, "row2:Flips / part", "lb"), @(3, "row2:Edge life (fallback)", "rb")) },
     @{ Name = "sheet-inserts"; Sheet = "Tools"; Range = "inserts"
-       Callouts = @(@(1, "inserts:D", "l"), @(2, "inserts:G", "l"), @(3, "inserts:I", "l")) },
+       Callouts = @(@(1, "inserts:D", "l"), @(2, "inserts:G", "l"), @(3, "inserts:I", "l"), @(4, "inserts:J", "l")) },
     @{ Name = "sheet-scenarios"; Sheet = "Scenarios"; Range = "A1:H{Parameters changed}+4"; Macro = "scenarios" },
     @{ Name = "sheet-changes"; Sheet = "Changes"; Range = "A1:F4"; Edits = $true; Macro = "ParamTable.ListChanges"; Widen = 3 },
 
@@ -96,19 +96,37 @@ $Shots = @(
        Callouts = @(@(1, "cbo", "r"), @(2, "lblPreview", "r"), @(3, "lstDetail", "l"), @(4, "btnOK", "l")) },
     @{ Name = "win-scenario-save"; Window = 'vba:Set f = Application.Run("ParamTable.EditWindow", "scensave", Nothing): f.TypeIn "Faster bore"'; Edits = $true
        Callouts = @(@(1, "cbo", "r"), @(2, "btnOK", "l")) },
-    @{ Name = "win-scale"; Window = "ribbon:ptScale"; Pending = $true; Select = @{ Ops = @(1, 7, 8); Cols = @("feed") } },
-    @{ Name = "win-copy"; Window = "ribbon:ptCopy"; Pending = $true; Select = @{ Ops = @(8); Cols = @("feed", "speed") } },
-    @{ Name = "win-text"; Window = "ribbon:ptText"; Pending = $true; Select = @{ Ops = @(7); Cols = @("comment") } },
-    @{ Name = "win-coolant"; Window = "ribbon:ptCoolant"; Pending = $true; Select = @{ Ops = @(1, 7, 8); Cols = @("coolant") } },
-    @{ Name = "win-calculator"; Window = "ribbon:ptSpeed"; Pending = $true; Select = @{ Ops = @(7); Cols = @("feed") } },
-    @{ Name = "win-inspection"; Window = "ribbon:ptInspect"; Pending = $true; Select = @{ Ops = @(2); Cols = @("feed") } },
-    @{ Name = "win-target"; Window = "ribbon:ptTarget"; Pending = $true; Select = @{ Ops = @(7, 8); Cols = @("feed") } },
+    @{ Name = "win-scale"; Window = 'vba:Set f = Application.Run("ParamTable.EditWindow", "scale", Application.Run("ParamTable.DataCells", Selection)): f.TypeIn "+10%"'
+       Select = @{ Ops = @(1, 7, 8); Cols = @("feed") }
+       Callouts = @(@(1, "cbo", "r"), @(2, "lblPreview", "r"), @(3, "btnOK", "l")) },
+    # The op windows that stay open beside the sheet: opened by their ribbon button, then filled in.
+    @{ Name = "win-text"; Window = 'vba:Application.Run "Panel.RbText", Nothing: Set f = PtForm("TextEditor"): f.Act "tab=insp": f.Act "!btnQ1"'
+       Select = @{ Ops = @(7, 8); Cols = @("comment") }
+       Callouts = @(@(1, "lblOps", "r"), @(2, "mpg", "l"), @(3, "btnApply", "l")) },
+    @{ Name = "win-coolant"; Window = 'vba:Application.Run "Panel.RbCoolant", Nothing: Set f = PtForm("CoolantPicker"): f.Act "v9=Flood"'
+       Select = @{ Ops = @(1, 2, 7); Cols = @("coolant") }
+       Callouts = @(@(1, "lblOps", "r"), @(2, "btnApply", "l")) },
+    @{ Name = "win-calculator"; Window = 'vba:Application.Run "Panel.RbSpeed", Nothing: Set f = PtForm("Calculator")'
+       Select = @{ Ops = @(7); Cols = @("feed") }
+       Callouts = @(@(1, "cboOp", "r"), @(2, "mpg", "l")) },
+    @{ Name = "win-calculator-chip"; Window = 'vba:Application.Run "Panel.RbSpeed", Nothing: Set f = PtForm("Calculator"): f.Controls("mpg").Value = 1: f.TypeIn "txtKr", "45"'
+       Select = @{ Ops = @(1); Cols = @("feed") }
+       Callouts = @(, @(1, "mpg", "l")) },
+    @{ Name = "win-inspection"; Window = 'vba:Application.Run "Panel.RbInspect", Nothing: Set f = PtForm("InspectBox"): f.SetInputs 0, 1, ""'
+       Select = @{ Ops = @(1, 2, 3, 7); Cols = @("feed") }
+       Callouts = @(@(1, "cboGoal", "r"), @(2, "lst", "l"), @(3, "btnApply", "l")) },
+    @{ Name = "win-target"; Window = 'vba:Application.Run "Panel.RbTarget", Nothing: Set f = PtForm("PlanBox"): f.TypeTarget "-10%": f.Press "preview"'
+       Select = @{ Ops = @(7, 8); Cols = @("feed") }
+       Callouts = @(@(1, "cboTarget", "r"), @(2, "chkMain", "l"), @(3, "lst", "l"), @(4, "btnApply", "l")) },
+    # Copy from op: op 7 tuned first (feed 0.012, 220 SFM), then copied into op 8. Last: it changes op 7.
+    @{ Name = "win-copy"; Window = 'vba:Dim ws As Object, r7 As Long: Set ws = Application.Run("ParamTable.MainSheet"): r7 = Application.Run("Panel.RowOfOp", 7): ws.Cells(r7, Application.Run("ParamTable.ColOf", "feed")).Value = 0.012: ws.Cells(r7, Application.Run("ParamTable.ColOf", "speed")).Value = 220: Set f = Application.Run("ParamTable.EditWindow", "copy", Application.Run("ParamTable.DataCells", Selection))'
+       Select = @{ Ops = @(7, 8); Cols = @("feed", "speed") }
+       Callouts = @(@(1, "cbo", "r"), @(2, "cboInto", "r"), @(3, "lblPreview", "r"), @(4, "btnOK", "l")) },
 
     # Sheets the new commands make (Macro "ribbon:<id>" runs the button's macro first, watched).
-    @{ Name = "sheet-check"; Sheet = "Program check"; Range = "used:14"; Macro = "ribbon:ptCheck"; Pending = $true },
-    @{ Name = "sheet-report"; Sheet = "Change report"; Range = "used:40"; Edits = $true; Macro = "ribbon:ptReport"; Pending = $true },
-    @{ Name = "sheet-slowest"; Sheet = "Lathe params"; Range = "A1:A14"; Macro = "ribbon:ptSlowest"; Pending = $true
-       Show = @("op_idn", "type", "tool", "comment", "cycle_time", "est_cycle_time") }
+    @{ Name = "sheet-check"; Sheet = "Program check"; Range = "used:14"; Macro = "ribbon:ptCheck" },
+    @{ Name = "sheet-report"; Sheet = "Change report"; Range = "used:30"; Edits = $true; Macro = "ribbon:ptReport" },
+    @{ Name = "sheet-slowest"; Sheet = "Slowest ops"; Range = "used:10"; Macro = "ribbon:ptSlowest" }
 )
 
 # The edits the pictures show, typed as a person would (through the sheet's own events):
@@ -344,6 +362,18 @@ function Start-Excel {
     # which skips HIDDEN cells - with "Working numbers" folded, as a dump starts, the
     # scenarios' totals read 0:00. Opening the groups keeps the pictures right.)
     try { [void] (Main-Sheet).Outline.ShowLevels(0, 2) } catch { }
+    # The manual's folder, as a dump records it, for the "? How this works" links the macros
+    # write (this checkout's help\ - the copy only).
+    try { $script:wb.Names.Item("PT_Help").Delete() } catch { }
+    [void] $script:wb.Names.Add("PT_Help", '="' + (Join-Path $Root "help") + '"', $false)
+    # A very hidden sheet of our own, where the window pictures leave their notes.
+    $ev = $script:xl.EnableEvents
+    $script:xl.EnableEvents = $false
+    $data = $script:wb.Worksheets.Add([Type]::Missing, $script:wb.Worksheets.Item($script:wb.Worksheets.Count))
+    $data.Name = "PtShotData"
+    $data.Visible = 2                                            # xlSheetVeryHidden
+    (Main-Sheet).Activate()
+    $script:xl.EnableEvents = $ev
 }
 
 # Our Excel still there? (The watchdog may have stopped it.) If not, a fresh one.
@@ -397,7 +427,18 @@ function Clean-Paths {
     $script:xl.EnableEvents = $ev
 }
 
-function Main-Sheet { $script:wb.Worksheets.Item("Lathe params") }
+# The main sheet. Excel can be busy for a moment after a window closes (a COM call then
+# comes back empty): asked again, a few times.
+function Main-Sheet {
+    for ($i = 0; $i -lt 20; $i++) {
+        $sheets = $null
+        try { $sheets = $script:wb.Worksheets } catch { }
+        if ($sheets) { return $sheets.Item("Lathe params") }
+        Start-Sleep -Milliseconds 300
+    }
+    $n = try { $script:xl.Workbooks.Count } catch { "?" }
+    throw "Excel does not answer (workbook object $(if ($null -eq $script:wb) { 'gone' } else { 'there' }), $n workbook(s) open)"
+}
 
 # A column by its heading (row 2 on the main sheet, row 1 elsewhere), exact case. 0 = none.
 function Col-Of([string] $name, $ws = $null) {
@@ -504,7 +545,9 @@ function Shoot-Range($shot) {
             if (-not $insertsRow) { throw "no inserts table" }
             $end = $insertsRow
             while ([string] $ws.Cells($end + 1, 2).Value2 -ne "") { $end++ }
-            $rangeText = "A$($insertsRow):I$end"
+            # Out to the table's last heading (Parts per edge, Usual edge time ...).
+            $lastHead = $ws.Cells($insertsRow, $ws.Columns.Count).End(-4159).Column
+            $rangeText = $ws.Range($ws.Cells($insertsRow, 1), $ws.Cells($end, [math]::Max(9, $lastHead))).Address($false, $false)
         } elseif ($shot.Range -match '^used:(\d+)$') {
             # The first rows of what the sheet holds.
             $u = $ws.UsedRange
@@ -634,15 +677,35 @@ Bad:
     ThisWorkbook.Names.Add Name:="PtShotErr", RefersTo:="=""" & Replace(Err.Description, """", "'") & """", Visible:=False
 End Sub
 
+' Every window closed the way its own code would (Unload), not by a message to the window:
+' a hidden Excel can take a closed resizable window for the last one and shut itself.
+Public Sub PtShut()
+    Dim i As Long
+    On Error Resume Next
+    For i = VBA.UserForms.Count - 1 To 0 Step -1
+        Unload VBA.UserForms(i)
+    Next
+End Sub
+
+' A window that is open now, by its form's name ("TextEditor"), or Nothing.
+Private Function PtForm(ByVal n As String) As Object
+    Dim u As Object
+    For Each u In VBA.UserForms
+        If TypeName(u) = n Then Set PtForm = u
+    Next
+End Function
+
 ' Every control's place in the window, in points ("@inside width;name:left,top,width,height;...").
 Private Sub PtPlaces(ByVal f As Object)
     Dim c As Object, s As String
     On Error Resume Next
     s = "@" & f.InsideWidth & ";"
     For Each c In f.Controls
-        If c.Visible Then s = s & c.Name & ":" & c.Left & "," & c.Top & "," & c.Width & "," & c.Height & ";"
+        ' Only controls placed on the window itself (one on a tab page is placed on the page).
+        If c.Visible And c.Parent Is f Then s = s & c.Name & ":" & c.Left & "," & c.Top & "," & c.Width & "," & c.Height & ";"
     Next
-    ThisWorkbook.Names.Add Name:="PtShotPlaces", RefersTo:="=""" & s & """", Visible:=False
+    ' On a hidden sheet of our own, not in a name: a name's text stops at 255 characters.
+    ThisWorkbook.Worksheets("PtShotData").Range("A1").Value = s
 End Sub
 '@
 
@@ -732,7 +795,7 @@ function Shoot-Window($shot) {
     }
     try { Put-Module ($moduleTemplate.Replace("%CODE%", $code)) }
     catch { "  skip  {0}: cannot add a module (is 'Trust access to the VBA project object model' on?) - {1}" -f $shot.Name, $_.Exception.Message; $script:failed++; return }
-    try { $script:wb.Names.Item("PtShotPlaces").Delete() } catch { }
+    try { Set-Value $script:wb.Worksheets.Item("PtShotData").Range("A1") "" } catch { }
 
     # Run it from Excel's own loop, a moment later - a window that waits (modal) never blocks us.
     $script:xl.OnTime([DateTime]::Now.AddSeconds(1), "'" + $script:wb.Name + "'!PtShot.PtGo")
@@ -750,7 +813,10 @@ function Shoot-Window($shot) {
         $bmp = [PtWin]::Capture($form)
         $places = ""
         if ($shot.Callouts -and $how -like "vba:*") {
-            for ($i = 0; $i -lt 30 -and -not $places; $i++) { Start-Sleep -Milliseconds 100; $places = Name-Value "PtShotPlaces" }
+            for ($i = 0; $i -lt 30 -and -not $places; $i++) {
+                Start-Sleep -Milliseconds 100
+                try { $places = [string] $script:wb.Worksheets.Item("PtShotData").Range("A1").Value2 } catch { }
+            }
         }
         if ($places -match '^@([\d.,]+);') {
             $inside = [double] ($Matches[1] -replace ',', '.')
@@ -769,7 +835,11 @@ function Shoot-Window($shot) {
         }
         Save-Bitmap $bmp (Join-Path $Out ($shot.Name + ".png"))
         "  ok    {0}.png  ('{1}'){2}" -f $shot.Name, [PtWin]::TextOf($form), $(if ($shot.Pending) { "  - a window being rebuilt: check the picture" } else { "" })
-        [PtWin]::Close($form)
+        # Closed by its own code (Unload, from Excel's loop) - a modal window by a click on its
+        # close box instead, as it is still waiting.
+        try { $script:xl.OnTime([DateTime]::Now, "'" + $script:wb.Name + "'!PtShot.PtShut") } catch { }
+        for ($i = 0; $i -lt 30 -and [PtWin]::IsWindow($form); $i++) { Start-Sleep -Milliseconds 100 }
+        if ([PtWin]::IsWindow($form)) { [PtWin]::Close($form) }
         for ($i = 0; $i -lt 40 -and [PtWin]::IsWindow($form); $i++) { Start-Sleep -Milliseconds 100 }
         if ([PtWin]::IsWindow($form)) { "        the window did not close - restarting our Excel"; Stop-Excel -Kill; Start-Excel }
     } elseif ($box -ne [IntPtr]::Zero) {
@@ -816,7 +886,7 @@ try {
     }
     foreach ($shot in @($Shots | Where-Object { $_.Window })) {
         Ensure-Excel
-        try { Shoot-Window $shot } catch { "  skip  {0}: {1}" -f $shot.Name, $_.Exception.Message; $script:failed++ }
+        try { Shoot-Window $shot } catch { "  skip  {0}: {1} ({2})" -f $shot.Name, $_.Exception.Message, ($_.ScriptStackTrace -split "`n")[0]; $script:failed++ }
     }
 } finally {
     Stop-Excel

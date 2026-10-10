@@ -174,7 +174,8 @@ def column_help():
 
 def columns_html():
     out = ['\n<p class="note">This part is made from the sheet\'s own tooltips (the text you see when you hover a '
-           'column name), so it always matches your sheet. Hover a cell on the sheet to see the same words.</p>']
+           'column name), so it always matches your sheet. A column not listed here (most of the Tool inspection and '
+           'Filter settings, the planes, home and reference points) has its own tooltip on the sheet: hover its name.</p>']
     for sect, cols in column_help():
         if not cols:
             continue
@@ -525,7 +526,7 @@ def check(texts, files_written):
     # The pages the macros' "?" buttons and the ribbon ask for.
     asked = set()
     for f in list((ROOT / "vba").glob("*.bas")) + list((ROOT / "vba").glob("*.vb")) + list((ROOT / "vba").glob("*.cls")):
-        for m in re.finditer(r'ShowHelp\s*\(?\s*"([\w-]*)"', f.read_text(encoding="latin-1")):
+        for m in re.finditer(r'(?:ShowHelp\s*\(?\s*|HelpLink\s+[^,\n]+,\s*)"([\w-]*)"', f.read_text(encoding="latin-1")):
             if m.group(1):
                 asked.add((m.group(1), f.name))
     for topic, where in sorted(asked):

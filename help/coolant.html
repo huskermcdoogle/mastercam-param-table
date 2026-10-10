@@ -111,18 +111,25 @@ Columns <code>coolant_before</code>, <code>coolant_with</code>, <code>coolant_af
 <section id="steps">
 <h2>Steps</h2>
 <ol class="steps">
-<li><strong>Select the ops</strong> &ndash; any cell in their rows.</li>
+<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or select coolant cells and click
+<a href="set.html">Set</a>: it opens this window too.)</li>
 <li>Click <span class="ui">Coolant</span>. The sheet jumps to the coolant columns, so you see what is set now.</li>
-<li><strong>Read the current setting.</strong> If the ops differ, it says how, e.g. <q>Mixed: Flood x3, Off x1</q>.</li>
-<li><strong>Pick the coolant.</strong> One setting: pick Off, Flood, Mist or Thru-tool. Before / with / after: tick the
-coolants for each.</li>
-<li>Click <span class="ui">Apply</span>. Every op gets it. Ops that could not be set are listed, with the reason.</li>
+<li><strong>Read what is set now.</strong> If the ops differ, it says how, e.g. <q>Mixed: Flood x2, Off x1</q>.</li>
+<li><strong>Pick the coolant.</strong>
+<ul>
+<li>One setting (V9): pick <span class="ui">Off</span>, <span class="ui">Flood</span>, <span class="ui">Mist</span> or
+<span class="ui">Thru-tool</span> for all of these ops.</li>
+<li>Before / with / after the move (X-style): a grid of your machine's coolants. Tick the ones to turn on. A <strong>grey</strong>
+box means some of the ops have it and some do not &ndash; leave it grey and each op keeps its own.</li>
+</ul>
+If you selected ops of both kinds, the window shows both parts.</li>
+<li>Click <span class="ui">Apply</span>. Only what you changed is written. Ops it could not set are listed, with the reason.</li>
 </ol>
-<p>The window stays open and follows the ops you click. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes back the whole Apply.</p>
-<!-- CHECK: the finished Coolant window's wording (Mixed line, Apply button, the not-set list). -->
-<figure class="shot todo" data-img="win-coolant.png" data-kind="window" data-need="The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply."><strong>Picture coming: win-coolant.png</strong>The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Coolant window: what is set now, and what to set.</figcaption>
+<p>The window stays open beside the sheet and follows the ops you click (unless you have changed something you have not
+applied). <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes back the whole Apply.</p>
+<figure class="shot" data-img="win-coolant.png" data-kind="window" data-need="The Coolant window on ops 1, 2 and 7: Mixed: Flood x2, Off x1, Flood picked, Apply.">
+<!-- img --><a class="zoom" href="images/win-coolant.png" title="Open the picture full size"><img src="images/win-coolant.png" alt="The Coolant window on ops 1, 2 and 7: Mixed: Flood x2, Off x1, Flood picked, Apply." width="902" height="429" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The ops it is on, and what they have now. (2) Apply.</figcaption>
 </figure>
 </section>
 
@@ -132,7 +139,7 @@ coolants for each.</li>
 <code>Flood</code>. You want flood on the two roughs, ops 2 and 3.</p>
 <ol>
 <li>Select a cell in op 2's row and op 3's row.</li>
-<li>Click <span class="ui">Coolant</span>. It says <q>Off</q> (both the same).</li>
+<li>Click <span class="ui">Coolant</span>. It shows <q>Now: Off</q> (both the same).</li>
 <li>Pick <span class="ui">Flood</span>, click <span class="ui">Apply</span>.</li>
 </ol>
 <div class="table-scroll"><table>
@@ -148,14 +155,18 @@ coolants for each.</li>
 <section id="messages">
 <h2>What the messages mean</h2>
 <dl class="messages">
-<dt><q>Mixed: Flood x3, Off x1</q></dt>
-<dd>Three of the selected ops have Flood and one has Off. Applying sets them all the same.</dd>
-<dt>An op listed as not set: <q>this machine has no ...</q></dt>
-<dd>That op's machine does not have that coolant. Each machine has its own list.</dd>
-<dt>An op listed as not set: no coolant</dt>
+<dt><q>Mixed: Flood x2, Off x1</q></dt>
+<dd>Two of the selected ops have Flood and one has Off. Pick one to set them all the same &ndash; or, in the grid, leave
+the box grey to keep each op's own.</dd>
+<dt><q>op 7 (with the move): this machine has no Thru-tool</q></dt>
+<dd>That op's machine does not have that coolant, so the op was left as it was. Each machine has its own list.</dd>
+<dt><q>Nothing to set - these ops have no coolant.</q></dt>
 <dd>Some ops have no coolant setting at all (a transform, a manual entry).</dd>
+<dt><q>More coolants than shown here ...</q></dt>
+<dd>The machine has more coolants than the window has room for. Set the rest in the cells.</dd>
+<dt><q>Not applied yet - Apply writes it to the sheet (Ctrl+Z takes it back).</q></dt>
+<dd>You picked something. Apply it, or <span class="ui">Revert</span> to drop it.</dd>
 </dl>
-<!-- CHECK: the exact reasons the Coolant window gives for ops it could not set. -->
 </section>
 
 <section id="related">

@@ -90,7 +90,8 @@
 <section id="what">
 <h2>What this is for</h2>
 <p>On most parts, a few ops take most of the time. <span class="ui">Slowest ops</span> shows only the ops that make up
-80% of the cycle time, longest first, and hides the rest. That is where a change saves the most.</p>
+80% of the cycle time and hides the rest. It also makes a <span class="ui">Slowest ops</span> sheet that ranks them,
+longest first. That is where a change saves the most.</p>
 </section>
 
 <section id="when">
@@ -103,28 +104,42 @@ saving 50% on an op that is 1% of it.</p>
 <h2>Steps</h2>
 <ol class="steps">
 <li>Click <span class="ui">Slowest ops</span>.</li>
-<li>The sheet shows only the slow ops, longest first. Look at their feeds, speeds and depths.</li>
+<li>The <span class="ui">Lathe params</span> sheet now shows only the slow ops (in their usual order &ndash; the rows
+are hidden, not moved). The status bar at the bottom says how many, e.g. <q>2 of 18 ops make 80% of the cycle time</q>.</li>
+<li>The <span class="ui">Slowest ops</span> sheet lists them longest first: <span class="ui">Time</span>,
+<span class="ui">Share</span> of the part, <span class="ui">Running share</span> (adding up), <span class="ui">Cut time</span>
+and <span class="ui">Air time</span>. Click an op to go to its row.</li>
 <li>Change them (type, <a href="scale.html">Scale %</a>, or <a href="target-time.html">Hit a target time</a>).</li>
-<li>Click <span class="ui">Show all</span> to see every op again, in the normal order.</li>
+<li>Click <span class="ui">Show all</span> on the ribbon to see every op again.</li>
 </ol>
-<!-- CHECK: whether Slowest ops sorts the sheet (and Show all puts the order back) or only filters. -->
-<figure class="shot todo" data-img="sheet-slowest.png" data-kind="window" data-need="The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times."><strong>Picture coming: sheet-slowest.png</strong>The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>Only the slow ops are left on the sheet.</figcaption>
+<figure class="shot" data-img="sheet-slowest.png" data-kind="window" data-need="The Slowest ops sheet: the ops making 80% of the time, longest first, with share, running share, cut time and air time.">
+<!-- img --><a class="zoom" href="images/sheet-slowest.png" title="Open the picture full size"><img src="images/sheet-slowest.png" alt="The Slowest ops sheet: the ops making 80% of the time, longest first, with share, running share, cut time and air time." width="2316" height="280" loading="lazy"></a><!-- /img -->
+<figcaption>The Slowest ops sheet. Running share adds up the shares, longest first.</figcaption>
 </figure>
 </section>
 
 <section id="example">
 <h2>Worked example</h2>
-<p>The Oil Spool Head runs 12:46:38. Slowest ops shows:</p>
+<p>The Oil Spool Head, after the bore feeds went to 0.012, runs 12:26:50. Slowest ops shows:</p>
 <div class="table-scroll"><table>
-<thead><tr><th>Op</th><th class="num">Time</th><th class="num">Share of the part</th><th class="num">Adds up to</th></tr></thead>
+<thead><tr><th>Op</th><th class="num">Time</th><th class="num">Share</th><th class="num">Running share</th><th class="num">Air time</th></tr></thead>
 <tbody>
-<tr><td>2 Prime Turn Rough OD</td><td class="num">9:04:03</td><td class="num">71.0%</td><td class="num">71.0%</td></tr>
-<tr><td>7 Rough Bore ID</td><td class="num">1:44:00</td><td class="num">13.6%</td><td class="num">84.5%</td></tr>
+<tr><td>2 Prime Turn Rough OD (T1)</td><td class="num">9:04:03</td><td class="num">72.8%</td><td class="num">72.8%</td><td class="num">30:19</td></tr>
+<tr><td>7 Rough Bore ID (T12)</td><td class="num">1:26:45</td><td class="num">11.6%</td><td class="num">84.5%</td><td class="num">14:14</td></tr>
 </tbody>
 </table></div>
-<p>Two ops out of 18 are 84.5% of the time. Everything else together is 15.5%. Start with op 2.</p>
+<p>Two ops out of 18 are 84.5% of the time. Everything else together is 15.5%. Start with op 2 &ndash; and look at its
+half hour of air cutting.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>2 of 18 ops make 80% of the 12:26:50 cycle time ...</q></dt>
+<dd>How many ops are left showing, and the part's live cycle time.</dd>
+<dt><q>No op has an estimated time - regenerate the ops and dump again.</q></dt>
+<dd>The ops had no toolpath when dumped. Regenerate in Mastercam and dump again.</dd>
+</dl>
 </section>
 
 <section id="related">

@@ -107,22 +107,25 @@ reason. Print it or save it as a PDF for the job folder, your lead, or the next 
 <ol class="steps">
 <li>Type the batch quantity on the <a href="summary.html">Summary</a> and the insert costs on the
 <a href="tools-page.html#inserts">Tools page</a> first &ndash; the report uses them.</li>
-<li>Click <span class="ui">Change report</span>. The <span class="ui">Change report</span> sheet opens.</li>
-<li>Read the totals at the top: before, after, and the difference.</li>
-<li>Type a short reason in the <span class="ui">Why</span> column for each change (&ldquo;insert maker says 0.012 OK&rdquo;).</li>
-<li>Print it: <span class="ui">File</span> &rsaquo; <span class="ui">Print</span> (or <kbd>Ctrl</kbd>+<kbd>P</kbd>). Pick
-<span class="ui">Microsoft Print to PDF</span> to make a PDF.</li>
+<li>Click <span class="ui">Change report</span>. The <span class="ui">Change report</span> sheet opens, with the part's
+name and the date it was dumped at the top.</li>
+<li>Read <span class="ui">Before -&gt; after</span>: cycle time and cutting time per part (and per batch), insert flips,
+inserts used and insert cost per part, and insert cost per batch &ndash; as dumped, now, and the change.</li>
+<li>Read <span class="ui">Every change, by op</span>: each op with its time change, then each parameter, as dumped and now.</li>
+<li>Type a short reason in the <span class="ui">Why (type the reason)</span> column (&ldquo;insert box says 0.008-0.016&rdquo;).
+Your reasons are kept when you make the report again.</li>
+<li>Print it: <span class="ui">File</span> &rsaquo; <span class="ui">Print</span> (or <kbd>Ctrl</kbd>+<kbd>P</kbd>). It is set
+up landscape, one page wide. Pick <span class="ui">Microsoft Print to PDF</span> to make a PDF.</li>
 </ol>
-<!-- CHECK: the Change report sheet's layout and headings once it is finished. -->
-<figure class="shot todo" data-img="sheet-report.png" data-kind="window" data-need="The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one."><strong>Picture coming: sheet-report.png</strong>The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Change report, ready to print.</figcaption>
+<figure class="shot" data-img="sheet-report.png" data-kind="window" data-need="The Change report sheet on the Oil Spool Head: before -> after per part and per batch, every change by op with its time change and the Why column.">
+<!-- img --><a class="zoom" href="images/sheet-report.png" title="Open the picture full size"><img src="images/sheet-report.png" alt="The Change report sheet on the Oil Spool Head: before -&gt; after per part and per batch, every change by op with its time change and the Why column." width="2641" height="828" loading="lazy"></a><!-- /img -->
+<figcaption>The Change report: totals first, then every change by op, with room for the reason.</figcaption>
 </figure>
 </section>
 
 <section id="example">
 <h2>Worked example</h2>
-<p>Oil Spool Head, bore feeds raised to 0.012, batch of 20 parts:</p>
+<p>Oil Spool Head, bore feeds raised to 0.012, batch of 20 parts (typed on the Summary):</p>
 <div class="table-scroll"><table>
 <thead><tr><th></th><th class="num">Before</th><th class="num">After</th><th class="num">Saved</th></tr></thead>
 <tbody>
@@ -132,12 +135,24 @@ reason. Print it or save it as a PDF for the job folder, your lead, or the next 
 </tbody>
 </table></div>
 <div class="table-scroll"><table>
-<thead><tr><th>Op</th><th>Parameter</th><th class="num">Before</th><th class="num">After</th><th>Why</th></tr></thead>
+<thead><tr><th>Op</th><th>Parameter</th><th class="num">As dumped</th><th class="num">Now</th><th>Op time change</th><th>Why (type the reason)</th></tr></thead>
 <tbody>
-<tr><td>7 Rough Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Insert box says 0.008-0.016</td></tr>
-<tr><td>8 Finish Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Same tool; finish checked on first part</td></tr>
+<tr><td>op 7 &ndash; T12 ROUGH &ndash; Rough Bore ID</td><td>Feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="better">1:44:00 &rarr; 1:26:45 (-17:15)</td><td class="edited">Insert box says 0.008-0.016</td></tr>
+<tr><td>op 8 &ndash; T12 FINISH &ndash; Finish Bore ID</td><td>Feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="better">15:24 &rarr; 12:50 (-2:34)</td><td class="edited">Same tool; finish checked on first part</td></tr>
 </tbody>
 </table></div>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>No changes from the dump yet - edit 'Lathe params' first.</q></dt>
+<dd>Nothing to report: the sheet is as dumped.</dd>
+<dt><q>Type the cost per insert on the Tools page for the insert cost per part and per batch.</q></dt>
+<dd>The cost lines are blank until you type the insert costs.</dd>
+<dt><q>The change report stopped: ...</q></dt>
+<dd>Something went wrong making it. Save your work and tell whoever looks after the tool what it said.</dd>
+</dl>
 </section>
 
 <section id="related">

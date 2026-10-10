@@ -108,30 +108,28 @@ saved in the program. Each cell keeps its own value: 0.010 and 0.020 at +10% bec
 <li><strong>Select the number cells</strong> to change (e.g. the <code>feed</code> of several ops). Text cells and
 worked-out cells are skipped.</li>
 <li>Click <span class="ui">Scale %</span>.</li>
-<li><strong>Type the percent</strong>: <code>+10%</code> means 10% more, <code>-10%</code> means 10% less.</li>
-<li>Read the preview: how many cells change, a few examples (old &rarr; new), and any that are refused for going past
-their limits.</li>
-<li>Click <span class="ui">OK</span>.</li>
+<li><strong>Type the change, with its sign</strong>: <code>+10%</code> means 10% more, <code>-10%</code> means 10% less.
+(Or pick one from the list.) A bare <code>10%</code> is refused &ndash; the window asks which way.</li>
+<li>Read the preview: how many cells change, and each cell, old &rarr; new. Cells that would go past their limits are
+refused and listed.</li>
+<li>Click <span class="ui">OK</span>. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</li>
 </ol>
-<!-- CHECK: the Scale window's percent wording after the rebuild. Older versions ask for the new size as a percent
-of the old (110 = 10% more, 90 = 10% less); the agreed new wording is +10% / -10%. -->
-<div class="note"><p>Some versions ask for the new size as a percent of the old one: <code>110</code> means 10% more,
-<code>90</code> means 10% less. The window says which it wants.</p></div>
-<figure class="shot todo" data-img="win-scale.png" data-kind="window" data-need="The Scale window: +10% typed for the feed of three ops, the preview with old -> new examples.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Scale window: +10% typed for the feed of three ops, the preview with old -&gt; new examples."><strong>Picture coming: win-scale.png</strong>The Scale window: +10% typed for the feed of three ops, the preview with old -&gt; new examples. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Scale window with +10% on three feeds.</figcaption>
+<figure class="shot" data-img="win-scale.png" data-kind="window" data-need="The Scale window: +10% typed for the feed of ops 1, 7 and 8, the preview with old -> new.">
+<!-- img --><a class="zoom" href="images/win-scale.png" title="Open the picture full size"><img src="images/win-scale.png" alt="The Scale window: +10% typed for the feed of ops 1, 7 and 8, the preview with old -&gt; new." width="1022" height="659" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The change, with its sign. (2) What OK will do. (3) OK.</figcaption>
 </figure>
 </section>
 
 <section id="example">
 <h2>Worked example</h2>
-<p>Raise the feeds of the three facing and bore ops by 10%.</p>
+<p>Raise the feeds of the facing op and the two bore ops by 10%. Select the <code>feed</code> cells of ops 1, 7 and 8
+(hold <kbd>Ctrl</kbd>), click <span class="ui">Scale %</span>, type <code>+10%</code>, click <span class="ui">OK</span>.</p>
 <div class="table-scroll"><table>
 <thead><tr><th>Op</th><th class="num">feed before</th><th class="num">+10%</th></tr></thead>
 <tbody>
 <tr><td>1 Face Stock</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
 <tr><td>7 Rough Bore ID</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
-<tr><td>17 Multiple Plunge Groove</td><td class="num">0.0025</td><td class="num edited">0.00275</td></tr>
+<tr><td>8 Finish Bore ID</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
 </tbody>
 </table></div>
 <p>The estimate on each row drops by about 9% of its cutting time (time goes down as feed goes up: 1 &divide; 1.10 = 0.91).</p>
@@ -140,12 +138,16 @@ of the old (110 = 10% more, 90 = 10% less); the agreed new wording is +10% / -10
 <section id="messages">
 <h2>What the messages mean</h2>
 <dl class="messages">
-<dt><q>3 cell(s) will change ... e.g. 0.01 -> 0.011</q></dt>
-<dd>What OK will do, with examples.</dd>
+<dt><q>10% more: 3 cell(s) will change.</q></dt>
+<dd>What OK will do. The list below shows each cell, old &rarr; new.</dd>
+<dt><q>'10%' - say which way: +10% for more, -10% for less.</q></dt>
+<dd>Type the sign.</dd>
+<dt><q>Type +10% for 10% more, or -10% for 10% less.</q> / <q>... is not a percent - type +10% or -10%.</q></dt>
+<dd>The box is empty, or not a percent.</dd>
+<dt><q>-100% would leave nothing - type a smaller cut, such as -10%.</q></dt>
+<dd>A cut of 100% or more would make the values zero.</dd>
 <dt><q>... refused (read-only, not for that operation, or outside its limits)</q></dt>
 <dd>The new value would be past what the setting takes. Those cells are left as they are.</dd>
-<dt><q>Type a percent ...</q> / <q>The percent has to be more than 0.</q></dt>
-<dd>The box is empty or not a number.</dd>
 </dl>
 </section>
 

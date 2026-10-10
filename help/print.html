@@ -699,6 +699,7 @@ ribbon (at the top) to see the tools below.</li>
 <tr><td>Changes</td><td>Made by <a href="#page-changes">List changes</a>.</td><td>No</td></tr>
 <tr><td>Scenarios</td><td>Made by <a href="#page-scenarios">Compare scenarios</a>.</td><td>No</td></tr>
 <tr><td>Program check</td><td>Made by <a href="#page-check">Program check</a>.</td><td>The Ignore column</td></tr>
+<tr><td>Slowest ops</td><td>Made by <a href="#page-slowest">Slowest ops</a>.</td><td>No</td></tr>
 <tr><td>Change report</td><td>Made by <a href="#page-report">Change report</a>.</td><td>The Why column</td></tr>
 </tbody>
 </table></div>
@@ -960,9 +961,9 @@ radians &ndash; the tooltip says so.</li>
 <dd>The value is outside what the setting takes. The message says what it takes, e.g. <q>A number, 0 or more.</q></dd>
 <dt>The cell will not take any typing</dt>
 <dd>It is grey: read-only, or not for this kind of op. Its message says which.</dd>
-<dt>Status bar: <q>CSS with no max_ss ...</q> or <q>... looks like a per-rev feed</q></dt>
+<dt>Status bar: <q>op 7: CSS with no max_ss.</q> or <q>op 7: feed 0.01 per min is very slow - meant per rev?</q></dt>
 <dd>A gentle warning, not a refusal. CSS with no max RPM can spin very fast near the center. A per-minute feed of 0.01
-is probably a per-rev number in the wrong mode. Check the row.</dd>
+is probably a per-rev number in the wrong mode (and a per-rev feed over 0.1 in is probably a per-minute one). Check the row.</dd>
 </dl>
 </section>
 
@@ -1007,19 +1008,21 @@ are added up together below.</li>
 <span class="ui">Longest between flips</span>, and <span class="ui">Inspection</span> (what its ops stop on).</li>
 <li><strong>Edge life (fallback):</strong> only for ops that stop for inspection with no time of their own. Type the cut
 time one edge lasts, as minutes:seconds (<code>8:00</code>). Greyed out where no op uses it.</li>
+<li><strong>Insert size (IC)</strong> and <strong>Entering angle</strong> (at the right end of each tool row): the insert's
+size across its inscribed circle (a round insert's diameter), and the holder's entering angle &ndash; read from its ISO
+code (PCLNL: an L-style holder, 95&deg;; 90&deg; = square shoulder). The <a href="#calculator--chip">chip thinning</a>
+calculator uses them. Type over a wrong one; it is kept. Leave the angle blank for round, grooving and PrimeTurning tools.</li>
 <li id="tools-page--inserts"><strong>In the inserts table, type the edges per insert</strong> (a CNMG: 4; a VNMG: 4; a VCMT: 2; a
 round: about 8). The guess counts one side only &ndash; type over it for a double-sided insert.</li>
 <li><strong>Type the cost per insert.</strong> <span class="ui">Inserts / part</span> and
 <span class="ui">Insert cost / part</span> fill in. The Summary page takes them to a batch.</li>
 <li><strong>Parts per edge</strong> &ndash; only for an insert that lasts more than one part (the toolpath never flips it).
 Type how many parts one edge makes. It is greyed out where the toolpath already flips the edge every part.</li>
+<li id="tools-page--usual"><strong>Usual edge time</strong> (the last column of the inserts table): how long one edge of this insert
+usually cuts in your shop before it is turned, as minutes:seconds (<code>12:00</code>). The
+<a href="#page-check">Program check</a> warns about a tool whose edge runs more than 25% longer. Leave it blank and the
+check compares the tools in this program with each other instead.</li>
 </ol>
-<!-- CHECK: new Tools page columns from the Inspection & inserts / Speed & feed work - "Usual edge time" (per insert),
-"Insert size" and "Entering angle" (per tool): their exact headings and where they sit. -->
-<p>Newer versions add a few typed columns: <span class="ui">Usual edge time</span> for each insert (what one edge
-normally lasts &ndash; the <a href="#page-check">Program check</a> compares with it), and
-<span class="ui">Insert size</span> and <span class="ui">Entering angle</span> for each tool (the
-<a href="#calculator--chip">chip thinning</a> calculator uses them).</p>
 <figure class="shot" data-img="sheet-tools.png" data-kind="sheet" data-need="The Tools page: two tools with pictures, insert, flips per part, edge life.">
 <!-- img --><a class="zoom" href="images/sheet-tools.png" title="Open the picture full size"><img src="images/sheet-tools.png" alt="The Tools page: two tools with pictures, insert, flips per part, edge life." width="3151" height="733" loading="lazy"></a><!-- /img -->
 <figcaption>(1) The insert &ndash; type over it if it is wrong. (2) Flips per part. (3) Edge life, only where it is used.</figcaption>
@@ -1054,7 +1057,9 @@ Next dump, the 4 and the $12 are already there (kept in the part's <a href="#wor
 <dt><q>A whole number of edges, 1 or more.</q></dt>
 <dd>Edges per insert takes a whole number.</dd>
 <dt><q>Type a time: minutes:seconds (8:00) or seconds (480).</q></dt>
-<dd>Edge life takes a time. <code>8:00</code> and <code>480</code> mean the same.</dd>
+<dd>Edge life and usual edge time take a time. <code>8:00</code> and <code>480</code> mean the same.</dd>
+<dt><q>A size more than 0, in the part's units - or blank.</q> / <q>An angle in degrees, more than 0 and less than 180 - or blank.</q></dt>
+<dd>Insert size (IC) and Entering angle take a number, or nothing.</dd>
 <dt><q>A number of parts, more than 0 - and only for an insert whose edge is not already flipped every part ...</q></dt>
 <dd>Parts per edge is only for inserts the toolpath never flips. Leave it blank for the others.</dd>
 <dt><span class="ui">no insert data - grouped by its cutting outline</span> (Shape check column)</dt>
@@ -1176,7 +1181,8 @@ one tool's ops, select a whole column, and change just those.</p>
 <section id="slowest--what">
 <h3>What this is for</h3>
 <p>On most parts, a few ops take most of the time. <span class="ui">Slowest ops</span> shows only the ops that make up
-80% of the cycle time, longest first, and hides the rest. That is where a change saves the most.</p>
+80% of the cycle time and hides the rest. It also makes a <span class="ui">Slowest ops</span> sheet that ranks them,
+longest first. That is where a change saves the most.</p>
 </section>
 
 <section id="slowest--when">
@@ -1189,28 +1195,42 @@ saving 50% on an op that is 1% of it.</p>
 <h3>Steps</h3>
 <ol class="steps">
 <li>Click <span class="ui">Slowest ops</span>.</li>
-<li>The sheet shows only the slow ops, longest first. Look at their feeds, speeds and depths.</li>
+<li>The <span class="ui">Lathe params</span> sheet now shows only the slow ops (in their usual order &ndash; the rows
+are hidden, not moved). The status bar at the bottom says how many, e.g. <q>2 of 18 ops make 80% of the cycle time</q>.</li>
+<li>The <span class="ui">Slowest ops</span> sheet lists them longest first: <span class="ui">Time</span>,
+<span class="ui">Share</span> of the part, <span class="ui">Running share</span> (adding up), <span class="ui">Cut time</span>
+and <span class="ui">Air time</span>. Click an op to go to its row.</li>
 <li>Change them (type, <a href="#page-scale">Scale %</a>, or <a href="#page-target-time">Hit a target time</a>).</li>
-<li>Click <span class="ui">Show all</span> to see every op again, in the normal order.</li>
+<li>Click <span class="ui">Show all</span> on the ribbon to see every op again.</li>
 </ol>
-<!-- CHECK: whether Slowest ops sorts the sheet (and Show all puts the order back) or only filters. -->
-<figure class="shot todo" data-img="sheet-slowest.png" data-kind="window" data-need="The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times."><strong>Picture coming: sheet-slowest.png</strong>The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>Only the slow ops are left on the sheet.</figcaption>
+<figure class="shot" data-img="sheet-slowest.png" data-kind="window" data-need="The Slowest ops sheet: the ops making 80% of the time, longest first, with share, running share, cut time and air time.">
+<!-- img --><a class="zoom" href="images/sheet-slowest.png" title="Open the picture full size"><img src="images/sheet-slowest.png" alt="The Slowest ops sheet: the ops making 80% of the time, longest first, with share, running share, cut time and air time." width="2316" height="280" loading="lazy"></a><!-- /img -->
+<figcaption>The Slowest ops sheet. Running share adds up the shares, longest first.</figcaption>
 </figure>
 </section>
 
 <section id="slowest--example">
 <h3>Worked example</h3>
-<p>The Oil Spool Head runs 12:46:38. Slowest ops shows:</p>
+<p>The Oil Spool Head, after the bore feeds went to 0.012, runs 12:26:50. Slowest ops shows:</p>
 <div class="table-scroll"><table>
-<thead><tr><th>Op</th><th class="num">Time</th><th class="num">Share of the part</th><th class="num">Adds up to</th></tr></thead>
+<thead><tr><th>Op</th><th class="num">Time</th><th class="num">Share</th><th class="num">Running share</th><th class="num">Air time</th></tr></thead>
 <tbody>
-<tr><td>2 Prime Turn Rough OD</td><td class="num">9:04:03</td><td class="num">71.0%</td><td class="num">71.0%</td></tr>
-<tr><td>7 Rough Bore ID</td><td class="num">1:44:00</td><td class="num">13.6%</td><td class="num">84.5%</td></tr>
+<tr><td>2 Prime Turn Rough OD (T1)</td><td class="num">9:04:03</td><td class="num">72.8%</td><td class="num">72.8%</td><td class="num">30:19</td></tr>
+<tr><td>7 Rough Bore ID (T12)</td><td class="num">1:26:45</td><td class="num">11.6%</td><td class="num">84.5%</td><td class="num">14:14</td></tr>
 </tbody>
 </table></div>
-<p>Two ops out of 18 are 84.5% of the time. Everything else together is 15.5%. Start with op 2.</p>
+<p>Two ops out of 18 are 84.5% of the time. Everything else together is 15.5%. Start with op 2 &ndash; and look at its
+half hour of air cutting.</p>
+</section>
+
+<section id="slowest--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>2 of 18 ops make 80% of the 12:26:50 cycle time ...</q></dt>
+<dd>How many ops are left showing, and the part's live cycle time.</dd>
+<dt><q>No op has an estimated time - regenerate the ops and dump again.</q></dt>
+<dd>The ops had no toolpath when dumped. Regenerate in Mastercam and dump again.</dd>
+</dl>
 </section>
 
 <section id="slowest--related">
@@ -1238,7 +1258,8 @@ change and which ones are <strong>refused</strong> (read-only, not for that kind
 <li>The same feed, depth or stock to leave on many ops.</li>
 <li>The same choice on many ops: <code>per rev</code>, <code>CSS</code>, a yes/no switch.</li>
 </ul>
-<p>For coolant, use <a href="#page-coolant">Coolant</a>. For a percent up or down, use <a href="#page-scale">Scale %</a>.</p>
+<p>For coolant, use <a href="#page-coolant">Coolant</a> (Set on coolant cells opens it for you). For a percent up or down,
+use <a href="#page-scale">Scale %</a>.</p>
 </section>
 
 <section id="set--steps">
@@ -1255,7 +1276,7 @@ refused. The list below shows each cell, old &rarr; new.</li>
 <li>Click <span class="ui">OK</span>. The cells turn yellow. The status bar (bottom of Excel) says what was done.</li>
 </ol>
 <figure class="shot" data-img="win-set.png" data-kind="window" data-need="The Set window: 0.012 typed for the feed of ops 1, 7 and 8; 3 cells will change; the list of old -> new.">
-<!-- img --><a class="zoom" href="images/win-set.png" title="Open the picture full size"><img src="images/win-set.png" alt="The Set window: 0.012 typed for the feed of ops 1, 7 and 8; 3 cells will change; the list of old -&gt; new." width="982" height="635" loading="lazy"></a><!-- /img -->
+<!-- img --><a class="zoom" href="images/win-set.png" title="Open the picture full size"><img src="images/win-set.png" alt="The Set window: 0.012 typed for the feed of ops 1, 7 and 8; 3 cells will change; the list of old -&gt; new." width="1022" height="659" loading="lazy"></a><!-- /img -->
 <figcaption>(1) Type or pick the value. (2) What OK will do. (3) Each cell, old &rarr; new. (4) OK.</figcaption>
 </figure>
 <p class="tip">Hidden rows are skipped. Use <a href="#find--show">This tool's ops</a> or <span class="ui">Changed ops</span>
@@ -1329,30 +1350,28 @@ saved in the program. Each cell keeps its own value: 0.010 and 0.020 at +10% bec
 <li><strong>Select the number cells</strong> to change (e.g. the <code>feed</code> of several ops). Text cells and
 worked-out cells are skipped.</li>
 <li>Click <span class="ui">Scale %</span>.</li>
-<li><strong>Type the percent</strong>: <code>+10%</code> means 10% more, <code>-10%</code> means 10% less.</li>
-<li>Read the preview: how many cells change, a few examples (old &rarr; new), and any that are refused for going past
-their limits.</li>
-<li>Click <span class="ui">OK</span>.</li>
+<li><strong>Type the change, with its sign</strong>: <code>+10%</code> means 10% more, <code>-10%</code> means 10% less.
+(Or pick one from the list.) A bare <code>10%</code> is refused &ndash; the window asks which way.</li>
+<li>Read the preview: how many cells change, and each cell, old &rarr; new. Cells that would go past their limits are
+refused and listed.</li>
+<li>Click <span class="ui">OK</span>. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</li>
 </ol>
-<!-- CHECK: the Scale window's percent wording after the rebuild. Older versions ask for the new size as a percent
-of the old (110 = 10% more, 90 = 10% less); the agreed new wording is +10% / -10%. -->
-<div class="note"><p>Some versions ask for the new size as a percent of the old one: <code>110</code> means 10% more,
-<code>90</code> means 10% less. The window says which it wants.</p></div>
-<figure class="shot todo" data-img="win-scale.png" data-kind="window" data-need="The Scale window: +10% typed for the feed of three ops, the preview with old -> new examples.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Scale window: +10% typed for the feed of three ops, the preview with old -&gt; new examples."><strong>Picture coming: win-scale.png</strong>The Scale window: +10% typed for the feed of three ops, the preview with old -&gt; new examples. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Scale window with +10% on three feeds.</figcaption>
+<figure class="shot" data-img="win-scale.png" data-kind="window" data-need="The Scale window: +10% typed for the feed of ops 1, 7 and 8, the preview with old -> new.">
+<!-- img --><a class="zoom" href="images/win-scale.png" title="Open the picture full size"><img src="images/win-scale.png" alt="The Scale window: +10% typed for the feed of ops 1, 7 and 8, the preview with old -&gt; new." width="1022" height="659" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The change, with its sign. (2) What OK will do. (3) OK.</figcaption>
 </figure>
 </section>
 
 <section id="scale--example">
 <h3>Worked example</h3>
-<p>Raise the feeds of the three facing and bore ops by 10%.</p>
+<p>Raise the feeds of the facing op and the two bore ops by 10%. Select the <code>feed</code> cells of ops 1, 7 and 8
+(hold <kbd>Ctrl</kbd>), click <span class="ui">Scale %</span>, type <code>+10%</code>, click <span class="ui">OK</span>.</p>
 <div class="table-scroll"><table>
 <thead><tr><th>Op</th><th class="num">feed before</th><th class="num">+10%</th></tr></thead>
 <tbody>
 <tr><td>1 Face Stock</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
 <tr><td>7 Rough Bore ID</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
-<tr><td>17 Multiple Plunge Groove</td><td class="num">0.0025</td><td class="num edited">0.00275</td></tr>
+<tr><td>8 Finish Bore ID</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
 </tbody>
 </table></div>
 <p>The estimate on each row drops by about 9% of its cutting time (time goes down as feed goes up: 1 &divide; 1.10 = 0.91).</p>
@@ -1361,12 +1380,16 @@ of the old (110 = 10% more, 90 = 10% less); the agreed new wording is +10% / -10
 <section id="scale--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>3 cell(s) will change ... e.g. 0.01 -> 0.011</q></dt>
-<dd>What OK will do, with examples.</dd>
+<dt><q>10% more: 3 cell(s) will change.</q></dt>
+<dd>What OK will do. The list below shows each cell, old &rarr; new.</dd>
+<dt><q>'10%' - say which way: +10% for more, -10% for less.</q></dt>
+<dd>Type the sign.</dd>
+<dt><q>Type +10% for 10% more, or -10% for 10% less.</q> / <q>... is not a percent - type +10% or -10%.</q></dt>
+<dd>The box is empty, or not a percent.</dd>
+<dt><q>-100% would leave nothing - type a smaller cut, such as -10%.</q></dt>
+<dd>A cut of 100% or more would make the values zero.</dd>
 <dt><q>... refused (read-only, not for that operation, or outside its limits)</q></dt>
 <dd>The new value would be past what the setting takes. Those cells are left as they are.</dd>
-<dt><q>Type a percent ...</q> / <q>The percent has to be more than 0.</q></dt>
-<dd>The box is empty or not a number.</dd>
 </dl>
 </section>
 
@@ -1401,21 +1424,24 @@ the values go into the other ops you selected &ndash; or into every op that uses
 <section id="copy--steps">
 <h3>Steps</h3>
 <ol class="steps">
-<li><strong>Select cells in the columns to copy</strong> (for example <code>feed</code> and <code>speed</code>), in the
-rows of the ops to copy <strong>into</strong>.</li>
+<li><strong>Click the op to copy from</strong> &ndash; in a column to copy &ndash; so the cursor is on it.</li>
+<li><strong>Select the cells to copy</strong> (for example <code>feed</code> and <code>speed</code>). Hold <kbd>Ctrl</kbd>
+to add the same cells in the rows to copy <strong>into</strong>.</li>
 <li>Click <span class="ui">Copy from op</span>.</li>
-<li><strong>Pick the op to copy from</strong> in the list (it shows each op's number, type and comment).</li>
-<li><strong>Pick where it goes:</strong> the ops you selected, or every op of the tool.
-<!-- CHECK: how the merged window offers "the selected ops" vs "every op of tool T12" (an option, a list entry or a second button). --></li>
-<li>Read the preview: each cell, old &rarr; new, and any warning.</li>
-<li>Click <span class="ui">OK</span>.</li>
+<li><strong>Copy from:</strong> starts on the op the cursor is on. Pick another in the list if you like (it shows each op's
+number, type and comment).</li>
+<li><strong>Into:</strong> <span class="ui">The selected rows</span>, or <span class="ui">Every other op of tool ...</span>
+(every op with the same tool as the op you copy from).</li>
+<li>Read the preview: how many cells change, and each cell, old &rarr; new.</li>
+<li>Click <span class="ui">OK</span>. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</li>
 </ol>
-<div class="warn"><p><strong>Watch the units.</strong> If the op you copy from runs <code>per rev</code> and the other runs
-<code>per min</code> (or one is CSS and the other RPM), the window warns you. Copy the <code>feed_mode</code> /
-<code>speed_mode</code> column too, or the number will mean something else. A feed of 0.012 per minute is a crawl.</p></div>
-<figure class="shot todo" data-img="win-copy.png" data-kind="window" data-need="The Copy from op window: feed and speed selected on op 8, op 7 picked as the source, the preview of old -> new.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Copy from op window: feed and speed selected on op 8, op 7 picked as the source, the preview of old -&gt; new."><strong>Picture coming: win-copy.png</strong>The Copy from op window: feed and speed selected on op 8, op 7 picked as the source, the preview of old -&gt; new. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Copy from op window.</figcaption>
+<div class="warn"><p><strong>Units are checked.</strong> A feed is not copied into a row whose feed is in other units
+(<code>per rev</code> / <code>per min</code>), and a speed not into a row with the other of CSS / RPM &ndash; those cells
+are refused and listed. Copy the unit column too (<code>feed_mode</code>, <code>speed_mode</code>) and they go across
+together. A feed of 0.012 <em>per minute</em> would be a crawl.</p></div>
+<figure class="shot" data-img="win-copy.png" data-kind="window" data-need="The Copy from op window: feed and speed of ops 7 and 8 selected, copy from op 7 into op 8, the preview of old -> new.">
+<!-- img --><a class="zoom" href="images/win-copy.png" title="Open the picture full size"><img src="images/win-copy.png" alt="The Copy from op window: feed and speed of ops 7 and 8 selected, copy from op 7 into op 8, the preview of old -&gt; new." width="1022" height="715" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Copy from. (2) Into. (3) What OK will do. (4) OK.</figcaption>
 </figure>
 </section>
 
@@ -1423,8 +1449,10 @@ rows of the ops to copy <strong>into</strong>.</li>
 <h3>Worked example</h3>
 <p>Op 7 (Rough Bore ID) now runs well at 0.012 per rev and 220 SFM. Make op 8 (Finish Bore ID, same tool T12) the same.</p>
 <ol>
-<li>Select op 8's <code>feed</code> and <code>speed</code> cells.</li>
-<li>Click <span class="ui">Copy from op</span>, pick <span class="ui">op 7</span>, click <span class="ui">OK</span>.</li>
+<li>Click op 7's <code>feed</code> cell, drag across to its <code>speed</code> cell. Hold <kbd>Ctrl</kbd> and do the same on op 8.</li>
+<li>Click <span class="ui">Copy from op</span>. <span class="ui">Copy from</span> shows op 7, <span class="ui">Into</span>
+shows <span class="ui">The selected rows: op 8</span>. The window says <q>2 cell(s) will change.</q></li>
+<li>Click <span class="ui">OK</span>.</li>
 </ol>
 <div class="table-scroll"><table>
 <thead><tr><th>op 8</th><th class="num">Before</th><th class="num">After</th></tr></thead>
@@ -1440,12 +1468,15 @@ rows of the ops to copy <strong>into</strong>.</li>
 <section id="copy--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>Pick the operation to copy from.</q></dt>
+<dt><q>Pick the op to copy from.</q></dt>
 <dd>No source op is picked yet.</dd>
-<dt><q>No other operation uses this tool.</q></dt>
-<dd>&ldquo;Every op of the tool&rdquo; found only the op you copy from.</dd>
-<dt>A warning that per rev / per min (or CSS / RPM) differ</dt>
-<dd>The source and the target count the feed (or speed) in different units. See the box above.</dd>
+<dt><q>The selected rows - none besides op 7 (select the rows to copy into)</q></dt>
+<dd>Only the source op is selected. Hold <kbd>Ctrl</kbd> and add cells in the rows to copy into, or pick
+<span class="ui">Every other op of tool ...</span>.</dd>
+<dt><q>No other op uses this tool - pick the selected rows, or select some.</q></dt>
+<dd><span class="ui">Every other op of tool</span> found only the op you copy from.</dd>
+<dt><q>... not copied - the units differ (per rev / per min, CSS / RPM); listed below</q></dt>
+<dd>See the box above: copy the unit column too.</dd>
 <dt><q>... refused (read-only, not for that operation, or outside its limits)</q></dt>
 <dd>That column does not exist for the target's kind of op, or the value is past its limits.</dd>
 </dl>
@@ -1470,11 +1501,11 @@ rows of the ops to copy <strong>into</strong>.</li>
 <ul>
 <li><strong>Op comment</strong> &ndash; the name the Operation Manager shows (<code>comment</code>, up to 119 characters).</li>
 <li><strong>Inspection comment</strong> &ndash; the message at a <a href="#words--w-insp-time">tool inspection stop</a>
-(<code>insp_comment</code>), e.g. <code>ROTATE INSERT</code>.</li>
-<li><strong>Manual text</strong> &ndash; the text of a manual entry op (<code>manual_text</code>, up to 3111 characters).
-Only for manual entry ops.</li>
+(<code>insp_comment</code>), e.g. <code>ROTATE INSERT</code>. Its limit is the cell's own (often 49 characters).</li>
+<li><strong>Manual text</strong> &ndash; the text of a manual entry op (<code>manual_text</code>, up to 3,111 characters).
+Only for manual entry ops, one op at a time.</li>
 </ul>
-<p>It counts the characters as you type, against each one's limit. With several ops selected, it sets the same comment on all of them.</p>
+<p>It counts the characters as you type, against each one's limit. With several ops selected, what you type goes on all of them.</p>
 </section>
 
 <section id="text--when">
@@ -1489,27 +1520,31 @@ Only for manual entry ops.</li>
 <section id="text--steps">
 <h3>Steps</h3>
 <ol class="steps">
-<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or just double-click a <code>comment</code>,
-<code>insp_comment</code> or <code>manual_text</code> cell.)</li>
-<li>Click <span class="ui">Comments &amp; text</span>. The sheet jumps to the comment columns so you can see what is there now.</li>
+<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or double-click a <code>comment</code>,
+<code>insp_comment</code> or <code>manual_text</code> cell: the window opens on that tab.)</li>
+<li>Click <span class="ui">Comments &amp; text</span>. The line at the top says which ops it is on.</li>
 <li><strong>Pick the tab</strong>: <span class="ui">Op comment</span>, <span class="ui">Inspection comment</span> or
-<span class="ui">Manual text</span>.</li>
-<li><strong>Type the text.</strong> The count under the box shows how many characters you have left. If the ops have
-different text, the box says so (<q>Mixed</q>).</li>
-<li>For an inspection comment, you can click a <strong>quick pick</strong>: <span class="ui">ROTATE INSERT</span>,
-<span class="ui">CHANGE INSERT</span>, <span class="ui">INDEX INSERT</span>, <span class="ui">CHECK INSERT</span>.</li>
+<span class="ui">Manual text</span>. A tab the ops do not have is greyed out.</li>
+<li><strong>Type the text.</strong> The count under the box shows the characters against the limit. If the ops have
+different text now, it says <q>Mixed - these 2 ops have different comments now</q>; what you type goes on all of them.</li>
+<li>On the <span class="ui">Inspection comment</span> tab you can click a common comment instead:
+<span class="ui">ROTATE INSERT</span>, <span class="ui">CHANGE INSERT</span>, <span class="ui">INDEX INSERT</span>,
+<span class="ui">CHECK INSERT</span>. If a stop's comment is switched off, tick
+<span class="ui">Also switch the comment on at the stop</span>.</li>
+<li><strong>Manual text:</strong> pick the op in the <span class="ui">Op</span> list (one op at a time). <kbd>Ctrl</kbd>+<kbd>Enter</kbd> applies.</li>
 <li>Click <span class="ui">Apply</span>. The cells turn yellow. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes the whole Apply back.</li>
 </ol>
-<p>The window stays open beside the sheet. Click other ops and it follows them (unless you have typed something you have
-not applied yet). The <span class="ui">?</span> button opens this page.</p>
-<!-- CHECK: tab names, the quick-pick buttons, the inspection comment's character limit and the "Mixed" wording in the finished window. -->
+<p>The window stays open beside the sheet. Click other ops and it follows them &ndash; unless you have typed something
+you have not applied yet (then it waits: <span class="ui">Apply</span>, or <span class="ui">Revert</span> to follow the
+sheet again). <span class="ui">Close</span> or <kbd>Esc</kbd> throws away typing you have not applied.
+<span class="ui">&lt; Prev</span> and <span class="ui">Next &gt;</span> move to the op above or below. The
+<span class="ui">?</span> button opens this page.</p>
 <div class="warn"><p><strong>The words in an inspection comment matter.</strong> A stop whose comment says
 <code>ROTATE</code>, <code>FLIP</code>, <code>CHANGE</code> or <code>INDEX</code> is counted as an
 <a href="#page-flips">insert flip</a> &ndash; a new edge. <code>CHECK INSERT</code> is only a look, not a flip.
 Change <code>CHECK INSERT</code> to <code>ROTATE INSERT</code> and the flips per part go up.</p></div>
-<figure class="shot todo" data-img="win-text.png" data-kind="window" data-need="The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count."><strong>Picture coming: win-text.png</strong>The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Comments &amp; text window.</figcaption>
+<figure class="shot" data-img="win-text.png" data-kind="window" data-need="The Comments &amp; text window on the Inspection comment tab, ops 7 and 8 selected, ROTATE INSERT picked, the character count."><!-- img --><a class="zoom" href="images/win-text.png" title="Open the picture full size"><img src="images/win-text.png" alt="The Comments &amp; text window on the Inspection comment tab, ops 7 and 8 selected, ROTATE INSERT picked, the character count." width="1062" height="871" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The ops it is on. (2) The three tabs. (3) Apply &ndash; nothing is written before it.</figcaption>
 </figure>
 </section>
 
@@ -1530,19 +1565,25 @@ flips will be counted.</p>
 <tr><td>8 Finish Bore ID</td><td>CHECK INSERT</td><td class="edited">ROTATE INSERT</td><td>no &rarr; <strong>yes</strong></td></tr>
 </tbody>
 </table></div>
-<p>After you load and regenerate, the NC code carries the message at each stop. If the comment switch
-(<code>insp_comment_on</code>) is off, turn it on too.</p>
+<p>After you load and regenerate, the NC code carries the message at each stop. If the stop's comment was switched off,
+tick <span class="ui">Also switch the comment on at the stop</span> before Apply.</p>
 </section>
 
 <section id="text--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>... over the limit by 12</q></dt>
-<dd>Too long. Shorten it &ndash; the load refuses text that would be cut off.</dd>
-<dt>The Manual text tab is greyed out</dt>
-<dd>None of the selected ops is a manual entry op.</dd>
-<dt><q>Mixed</q></dt>
+<dt><q>... over the limit by 12</q> / <q>The op comment is longer than 119 characters.</q></dt>
+<dd>Too long. Shorten it &ndash; Apply waits, and the load would refuse text that is cut off.</dd>
+<dt><q>Mixed - these 2 ops have different comments now. What you type goes on all of them.</q></dt>
 <dd>The selected ops have different text. Whatever you type replaces all of them.</dd>
+<dt><q>None of these ops is a manual entry - no manual text.</q> / <q>None of these ops has a tool inspection comment.</q></dt>
+<dd>That tab does not apply to the ops you picked.</dd>
+<dt><q>Not applied yet - Apply writes it to the sheet (Ctrl+Z takes it back).</q></dt>
+<dd>You typed something. Click <span class="ui">Apply</span> to keep it, or <span class="ui">Revert</span> to drop it.</dd>
+<dt><q>Apply or Revert first - then move to another op.</q></dt>
+<dd>You pressed Prev / Next with typing not applied.</dd>
+<dt><q>op 8 inspection comment: longer than its 49 characters</q></dt>
+<dd>After Apply: that cell was refused. The other ops were written.</dd>
 </dl>
 </section>
 
@@ -1583,18 +1624,25 @@ Columns <code>coolant_before</code>, <code>coolant_with</code>, <code>coolant_af
 <section id="coolant--steps">
 <h3>Steps</h3>
 <ol class="steps">
-<li><strong>Select the ops</strong> &ndash; any cell in their rows.</li>
+<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or select coolant cells and click
+<a href="#page-set">Set</a>: it opens this window too.)</li>
 <li>Click <span class="ui">Coolant</span>. The sheet jumps to the coolant columns, so you see what is set now.</li>
-<li><strong>Read the current setting.</strong> If the ops differ, it says how, e.g. <q>Mixed: Flood x3, Off x1</q>.</li>
-<li><strong>Pick the coolant.</strong> One setting: pick Off, Flood, Mist or Thru-tool. Before / with / after: tick the
-coolants for each.</li>
-<li>Click <span class="ui">Apply</span>. Every op gets it. Ops that could not be set are listed, with the reason.</li>
+<li><strong>Read what is set now.</strong> If the ops differ, it says how, e.g. <q>Mixed: Flood x2, Off x1</q>.</li>
+<li><strong>Pick the coolant.</strong>
+<ul>
+<li>One setting (V9): pick <span class="ui">Off</span>, <span class="ui">Flood</span>, <span class="ui">Mist</span> or
+<span class="ui">Thru-tool</span> for all of these ops.</li>
+<li>Before / with / after the move (X-style): a grid of your machine's coolants. Tick the ones to turn on. A <strong>grey</strong>
+box means some of the ops have it and some do not &ndash; leave it grey and each op keeps its own.</li>
+</ul>
+If you selected ops of both kinds, the window shows both parts.</li>
+<li>Click <span class="ui">Apply</span>. Only what you changed is written. Ops it could not set are listed, with the reason.</li>
 </ol>
-<p>The window stays open and follows the ops you click. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes back the whole Apply.</p>
-<!-- CHECK: the finished Coolant window's wording (Mixed line, Apply button, the not-set list). -->
-<figure class="shot todo" data-img="win-coolant.png" data-kind="window" data-need="The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply."><strong>Picture coming: win-coolant.png</strong>The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Coolant window: what is set now, and what to set.</figcaption>
+<p>The window stays open beside the sheet and follows the ops you click (unless you have changed something you have not
+applied). <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes back the whole Apply.</p>
+<figure class="shot" data-img="win-coolant.png" data-kind="window" data-need="The Coolant window on ops 1, 2 and 7: Mixed: Flood x2, Off x1, Flood picked, Apply.">
+<!-- img --><a class="zoom" href="images/win-coolant.png" title="Open the picture full size"><img src="images/win-coolant.png" alt="The Coolant window on ops 1, 2 and 7: Mixed: Flood x2, Off x1, Flood picked, Apply." width="902" height="429" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The ops it is on, and what they have now. (2) Apply.</figcaption>
 </figure>
 </section>
 
@@ -1604,7 +1652,7 @@ coolants for each.</li>
 <code>Flood</code>. You want flood on the two roughs, ops 2 and 3.</p>
 <ol>
 <li>Select a cell in op 2's row and op 3's row.</li>
-<li>Click <span class="ui">Coolant</span>. It says <q>Off</q> (both the same).</li>
+<li>Click <span class="ui">Coolant</span>. It shows <q>Now: Off</q> (both the same).</li>
 <li>Pick <span class="ui">Flood</span>, click <span class="ui">Apply</span>.</li>
 </ol>
 <div class="table-scroll"><table>
@@ -1620,14 +1668,18 @@ coolants for each.</li>
 <section id="coolant--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>Mixed: Flood x3, Off x1</q></dt>
-<dd>Three of the selected ops have Flood and one has Off. Applying sets them all the same.</dd>
-<dt>An op listed as not set: <q>this machine has no ...</q></dt>
-<dd>That op's machine does not have that coolant. Each machine has its own list.</dd>
-<dt>An op listed as not set: no coolant</dt>
+<dt><q>Mixed: Flood x2, Off x1</q></dt>
+<dd>Two of the selected ops have Flood and one has Off. Pick one to set them all the same &ndash; or, in the grid, leave
+the box grey to keep each op's own.</dd>
+<dt><q>op 7 (with the move): this machine has no Thru-tool</q></dt>
+<dd>That op's machine does not have that coolant, so the op was left as it was. Each machine has its own list.</dd>
+<dt><q>Nothing to set - these ops have no coolant.</q></dt>
 <dd>Some ops have no coolant setting at all (a transform, a manual entry).</dd>
+<dt><q>More coolants than shown here ...</q></dt>
+<dd>The machine has more coolants than the window has room for. Set the rest in the cells.</dd>
+<dt><q>Not applied yet - Apply writes it to the sheet (Ctrl+Z takes it back).</q></dt>
+<dd>You picked something. Apply it, or <span class="ui">Revert</span> to drop it.</dd>
 </dl>
-<!-- CHECK: the exact reasons the Coolant window gives for ops it could not set. -->
 </section>
 
 <section id="coolant--related">
@@ -1669,28 +1721,41 @@ feed back to the op.</li>
 <h3>Steps</h3>
 <h4 id="calculator--speed">Speed &amp; feed tab</h4>
 <ol class="steps">
-<li>Click a cell in the op's row, then click <span class="ui">Speed &amp; feed</span>.</li>
-<li>The boxes fill in from the op: diameter (where it cuts), surface speed, RPM, feed per rev, feed per minute.</li>
+<li>Click a cell in the op's row, then click <span class="ui">Speed &amp; feed</span>. (Or pick the op in the window's op
+list, or use <span class="ui">&lt;</span> / <span class="ui">&gt;</span> for the op above or below.)</li>
+<li>The boxes fill in from the op, in the op's own units (inch or mm): <span class="ui">Diameter</span> (the op's average
+cutting diameter, <code>cut_dia</code>, when it is known), <span class="ui">Surface speed (SFM)</span>,
+<span class="ui">Spindle speed (RPM)</span>, <span class="ui">Feed per rev</span>, <span class="ui">Feed per minute</span>.</li>
 <li>Type a new value in any box. The others work it out:
 RPM = SFM &times; 3.82 &divide; diameter (inch), feed per minute = feed per rev &times; RPM.</li>
-<li>Watch the note: it warns when the RPM is above the op's max RPM (<code>max_ss</code>) &ndash; the spindle would stop
-at the max and the real surface speed is lower.</li>
+<li>Watch the note under the boxes: above the op's max RPM (<code>max_ss</code>) the spindle stops at the max, so the
+real surface speed is lower &ndash; and the feed per minute is worked out at the max RPM.</li>
+<li>To use a new feed, click the button under the boxes &ndash; it says what it will do, e.g.
+<span class="ui">Set this op's feed: 0.01 -&gt; 0.012</span>. The cell turns yellow; <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</li>
 </ol>
 <h4 id="calculator--chip">Chip thinning tab</h4>
 <ol class="steps">
-<li>Click the <span class="ui">Chip thinning</span> tab. It fills in from the op and its tool:
-the insert size (round inserts) or the entering angle (lead-angle inserts), and the depth of cut.</li>
-<li>Read the real chip: <strong>real chip = feed &times; sin(entering angle)</strong>. A round insert's entering angle
-comes from its size and the depth: the shallower the cut, the thinner the chip.</li>
-<li>Type the <strong>chip you want</strong>. It shows the <strong>feed to program</strong>.</li>
-<li>Click <span class="ui">Set this op's feed</span> to write it into the op's <code>feed</code> cell (it turns yellow).</li>
+<li>Click the <span class="ui">Chip thinning</span> tab. The line at the top says the tool and its insert.</li>
+<li>Pick the insert kind if it is not right: a <strong>round insert</strong> (type its size and the depth of cut) or a
+<strong>straight edge</strong> (type the holder's <span class="ui">Entering angle</span> &ndash; or the US
+<span class="ui">Lead angle</span>, which is 90&deg; minus it; type either one).</li>
+<li>Read the chip at today's feed: <strong>real chip = feed &times; sin(entering angle)</strong>. A round insert's
+angle comes from its size and the depth: the shallower the cut, the thinner the chip.</li>
+<li>Type the <strong>chip thickness you want</strong>. It shows the <strong>feed per rev to program</strong>.</li>
+<li>Click <span class="ui">Set this op's feed</span> to write it (as a per-minute feed if the op runs per minute).</li>
 </ol>
-<p>The insert size and entering angle come from columns on the <a href="#page-tools-page">Tools page</a> &ndash; type them
-there once per tool. The window stays open and follows the op you click.</p>
-<!-- CHECK: tab names, the button "Set this op's feed", and that insert size / entering angle are read from the Tools page. -->
-<figure class="shot todo" data-img="win-calculator.png" data-kind="window" data-need="The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab."><strong>Picture coming: win-calculator.png</strong>The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Speed &amp; feed window.</figcaption>
+<p>The insert size and entering angle come from the <a href="#page-tools-page">Tools page</a> columns
+<span class="ui">Insert size (IC)</span> and <span class="ui">Entering angle</span>. The angle is read from the holder's
+ISO code (PCLNL: an L-style holder, 95&deg;). Type over either one there if it is wrong &ndash; it is remembered.
+PrimeTurning, grooving, mill and drill ops get a short explanation instead of a guess.</p>
+<p>The window stays open beside the sheet and follows the op you click.</p>
+<figure class="shot" data-img="win-calculator.png" data-kind="window" data-need="The Speed &amp; feed window on op 7 (Speed &amp; feed tab): diameter about 6.9, 200 SFM, about 111 RPM, 0.01 per rev, about 1.1 per min.">
+<!-- img --><a class="zoom" href="images/win-calculator.png" title="Open the picture full size"><img src="images/win-calculator.png" alt="The Speed &amp; feed window on op 7 (Speed &amp; feed tab): diameter about 6.9, 200 SFM, about 111 RPM, 0.01 per rev, about 1.1 per min." width="782" height="839" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The op it is on &ndash; pick another here. (2) The two tabs.</figcaption>
+</figure>
+<figure class="shot" data-img="win-calculator-chip.png" data-kind="window" data-need="The Chip thinning tab on op 1 with an entering angle of 45 typed: a 0.01 feed makes a 0.00707 chip."><!-- img --><a class="zoom" href="images/win-calculator-chip.png" title="Open the picture full size"><img src="images/win-calculator-chip.png" alt="The Chip thinning tab on op 1 with an entering angle of 45 typed: a 0.01 feed makes a 0.00707 chip." width="782" height="839" loading="lazy"></a><!-- /img -->
+<figcaption>The Chip thinning tab (1), with an entering angle of 45&deg; typed: a 0.01 feed makes a 0.00707 chip.
+(This sample's holder is really a 95&deg; one, which barely thins the chip.)</figcaption>
 </figure>
 </section>
 
@@ -1723,13 +1788,19 @@ there once per tool. The window stays open and follows the op you click.</p>
 <section id="calculator--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>Above this row's max_ss of 3500 RPM - at this diameter the spindle stops at ...</q></dt>
-<dd>The RPM you asked for is more than the op allows. The machine will run at the max, so the surface speed will be lower than you typed.</dd>
+<dt><q>Above this op's max spindle speed of 3500 RPM: at this diameter the spindle stops at ...</q></dt>
+<dd>The RPM you asked for is more than the op allows. The machine runs at the max, so the surface speed is lower than you typed.</dd>
+<dt><q>This op's speed is CSS with no max spindle speed.</q></dt>
+<dd>Near the center the spindle could run to the machine's top speed. Set a <a href="#words--w-max-rpm">max RPM</a>.</dd>
 <dt><q>At half the insert or deeper the chip is as thick as the feed - no thinning.</q></dt>
 <dd>A round insert cutting half its size deep (or more) has no chip thinning. Program the feed you want as the chip.</dd>
-<dt><q>Type the insert diameter and the depth (or stepover) it cuts at.</q></dt>
-<dd>The calculator needs both to work out the chip.</dd>
-<dt><q>Refused - ... is outside this feed's limits</q></dt>
+<dt><q>Type the insert diameter and the depth of cut.</q> / <q>Type the holder's entering angle ... - or its US lead angle.</q></dt>
+<dd>The Tools page has no size or angle for this tool. Type it here (and on the Tools page, to keep it).</dd>
+<dt><q>PrimeTurning ops set their own feeds from a chip thickness (pt_rough_chip) - not worked out here.</q></dt>
+<dd>Change a PrimeTurning op's chip in its own columns (<code>pt_rough_chip</code> ...).</dd>
+<dt><q>op 7 feed 0.01 -&gt; 0.012 per rev - Ctrl+Z to undo</q></dt>
+<dd>The feed was written to the sheet.</dd>
+<dt><q>Refused - op 7 feed: ... is outside this feed's limits, or this op takes no feed.</q></dt>
 <dd>The feed it worked out is past what the op takes. Nothing was written.</dd>
 </dl>
 </section>
@@ -1768,46 +1839,62 @@ the tool.</p>
 <h3>Steps</h3>
 <ol class="steps">
 <li><strong>Select the ops</strong> of the tools to look at (any cell in their rows), then click
-<span class="ui">Inspection &amp; inserts</span>.</li>
-<li><strong>Read one row per tool:</strong> flips per part; the edge time now; how much of the last edge is used; and the
-suggested edge time.</li>
-<li><strong>Pick the tools</strong> to change and check the suggested edge time is one your insert can really do.
-A longer edge time means each edge cuts longer.</li>
-<li>Click <span class="ui">Apply</span>. The edge time goes into <code>insp_time</code> on every op of that tool (yellow).
-The flips per part on the sheet and the Summary follow.</li>
+<span class="ui">Inspection &amp; inserts</span>. (<span class="ui">Tools:</span> can also show every tool on the sheet.)</li>
+<li><strong>Pick the goal:</strong> <span class="ui">Same flips - use every edge evenly</span> (the start),
+<span class="ui">One flip fewer per part</span>, or <span class="ui">One flip more per part</span>.</li>
+<li><strong>Read one line per tool:</strong> <span class="ui">Insert</span>, <span class="ui">Flips / part</span>,
+<span class="ui">Edge time</span> (how long each edge cuts now), <span class="ui">Last edge</span> (how much of that the
+last edge in a part gets to cut), <span class="ui">New edge time</span>, <span class="ui">New flips</span> and a
+<span class="ui">Note</span>. Click a tool to read its whole note.</li>
+<li><strong>Tick the tools</strong> to change. Check the note: <q>Edge runs 0:05 longer than now - check the insert can
+take it</q> means each edge would cut longer.</li>
+<li>Click <span class="ui">Apply</span>. The new edge time goes into <code>insp_time</code> on every op of each ticked tool
+that times its stops (yellow). The flips on the sheet and the Summary follow. The goal goes back to <span class="ui">Same flips</span>.</li>
 </ol>
-<div class="note"><p><strong>&ldquo;Change it in Mastercam.&rdquo;</strong> Some tools stop for another reason &ndash; after a
-number of cuts, at each depth, by distance, or at stops in the toolpath itself. A new edge time does not move those stops.
-The window says so; change the op's <span class="ui">Tool inspection</span> settings in Mastercam instead.</p></div>
-<!-- CHECK: the columns of the finished window (flips per part, edge time now, last edge used, suggested edge time), and when it says "change it in Mastercam". -->
-<figure class="shot todo" data-img="win-inspection.png" data-kind="window" data-need="The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked."><strong>Picture coming: win-inspection.png</strong>The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Inspection &amp; inserts window.</figcaption>
+<div class="note"><p><strong>&ldquo;Change them in Mastercam.&rdquo;</strong> Some tools stop for another reason &ndash; after a
+number of cuts, by distance, or at the end of the op. A new edge time does not move those stops, so the tool cannot be
+ticked. Its note says why, e.g. <q>Flips come from stops in the toolpath (every 5 in of cut) - change them in
+Mastercam.</q> Change the op's <span class="ui">Tool inspection</span> settings in Mastercam instead.</p></div>
+<figure class="shot" data-img="win-inspection.png" data-kind="window" data-need="The Inspection &amp; inserts window on ops 1, 2, 3, 7: goal One flip fewer per part, T4 ticked.">
+<!-- img --><a class="zoom" href="images/win-inspection.png" title="Open the picture full size"><img src="images/win-inspection.png" alt="The Inspection &amp; inserts window on ops 1, 2, 3, 7: goal One flip fewer per part, T4 ticked." width="1622" height="823" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The goal. (2) One line per tool &ndash; tick the ones to change. (3) Apply.</figcaption>
 </figure>
 </section>
 
 <section id="inspection--example">
 <h3>Worked example</h3>
-<p>A tool cuts 25:00 per part. Its edge time is 8:00, so it stops at 8:00, 16:00 and 24:00 &ndash; 3 flips &ndash; and
-the fourth edge cuts only 1:00 before the part is done.</p>
+<p>On the Oil Spool Head, tool T4 (the PrimeTurning rest rough, op 3) turns its insert every 1:10 of cutting &ndash;
+12 flips per part &ndash; and the last edge of a part cuts only 63% of that. Goal: <span class="ui">One flip fewer per part</span>.</p>
 <div class="table-scroll"><table>
-<thead><tr><th></th><th class="num">Before</th><th class="num">After Apply</th></tr></thead>
+<thead><tr><th>T4</th><th class="num">Now</th><th class="num">After Apply</th></tr></thead>
 <tbody>
-<tr><td>Edge time (<code>insp_time</code>)</td><td class="num">8:00</td><td class="num edited">8:20</td></tr>
-<tr><td>Flips per part</td><td class="num">3</td><td class="num moved better">2</td></tr>
-<tr><td>Edges used per part</td><td class="num">4 (the last only 13%)</td><td class="num moved">3 (each 100%)</td></tr>
-<tr><td>Inserts per 100 parts (4-edge insert)</td><td class="num">100</td><td class="num moved better">75</td></tr>
+<tr><td>Edge time (<code>insp_time</code> on op 3)</td><td class="num">1:10</td><td class="num edited">1:15</td></tr>
+<tr><td>Flips per part</td><td class="num">12</td><td class="num moved better">11</td></tr>
+<tr><td>Whole part, flips per part</td><td class="num">89</td><td class="num moved better">88</td></tr>
+<tr><td>Note</td><td colspan="2">Edge runs 0:05 longer than now &ndash; check the insert can take it.</td></tr>
 </tbody>
 </table></div>
-<p>8:20 is only 4% longer per edge than 8:00 &ndash; usually fine. If the suggested time is much longer than what the
-insert lasts, do not use it; look at <a href="#page-target-time">feeds</a> or a tougher grade instead.</p>
+<p>Each edge cuts 5 seconds longer, and every part saves one edge. Tools T11, T1 and T12 cannot be ticked: their flips
+come from stops in the toolpath (every so many cuts, every 5 or 10 in of cut).</p>
+<p>If the new edge time is much longer than what the insert really lasts, do not use it &ndash; look at the feeds, or a
+tougher grade, instead.</p>
 </section>
 
 <section id="inspection--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>change it in Mastercam</q></dt>
+<dt><q>Flips come from stops in the toolpath (every 5 in of cut, at the end of the op) - change them in Mastercam.</q></dt>
 <dd>The tool's flips do not come from an edge time. See the note above.</dd>
+<dt><q>Already even - every edge cuts about the same.</q></dt>
+<dd>Nothing to gain with <span class="ui">Same flips</span>. Try <span class="ui">One flip fewer per part</span>.</dd>
+<dt><q>Edge runs 0:05 longer than now - check the insert can take it.</q></dt>
+<dd>The new edge time is longer than today's. Fine if the insert lasts; risky if it already wears out.</dd>
+<dt><q>Same flips - each edge cuts 1:45 less.</q></dt>
+<dd>The edges are used more evenly for the same flips: easier on the inserts.</dd>
+<dt><q>Nothing to change - every tool here is even already, or its flips come from the toolpath.</q></dt>
+<dd>No tool can be improved with an edge time.</dd>
+<dt><q>Done: edge time set on op 3 ...</q></dt>
+<dd>Applied. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it back.</dd>
 <dt>A tool shows 0 flips</dt>
 <dd>Its ops do not stop for inspection, or the stops are not insert flips (their comment does not say ROTATE, FLIP,
 CHANGE or INDEX). See <a href="#page-flips">How insert flips are counted</a>.</dd>
@@ -1847,54 +1934,65 @@ kept inside its own limits &ndash; and shows every op before and after: time, <a
 <h3>Steps</h3>
 <ol class="steps">
 <li><strong>Select the ops</strong> (any cell in their rows), or click a cell in one op of a tool.</li>
-<li>Click <span class="ui">Hit a target time</span>.</li>
-<li><strong>Operations:</strong> pick the selected ops, or every op of the tool.</li>
-<li><strong>Target:</strong> type the time you want for them, like <code>12:30</code> (minutes:seconds) or
-<code>1:02:00</code> (hours:minutes:seconds) &ndash; or a percent, like <code>-10%</code> for 10% less time.</li>
-<li><strong>Options:</strong> tick <span class="ui">Speeds too</span> to change speeds by the same factor (the time
-then goes down with feed &times; speed). Tick <span class="ui">Main cutting feed only</span> to leave plunge, retract and
-back feeds alone.</li>
+<li>Click <span class="ui">Hit a target time</span>. The window opens beside the sheet.</li>
+<li><strong>Ops:</strong> <span class="ui">Selected rows</span>, or <span class="ui">Every op of tool ...</span> (the tool
+of the row you are on).</li>
+<li><strong>Target:</strong> type the time you want for those ops, like <code>12:30</code> (minutes:seconds) or
+<code>1:02:00</code> (hours:minutes:seconds) &ndash; or a change: <code>-10%</code> for 10% less time, <code>+10%</code>
+for 10% more. Always type the sign: a bare <code>10%</code> is refused with <q>say which way</q>.</li>
+<li><strong>Options:</strong> <span class="ui">Main cutting feed only</span> is ticked to start (plunge, retract and back
+feeds stay as they are). Tick <span class="ui">Speeds too</span> to change speeds by the same amount.</li>
 <li>Press <kbd>Enter</kbd> or click <span class="ui">Preview</span>. Read each op: time, flips and MRR before and after,
-and any cell that hit its limit.</li>
-<li>Click <span class="ui">Apply</span>. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it all back.</li>
+and the feed change. <kbd>Enter</kbd> only previews &ndash; it never writes.</li>
+<li>Click <span class="ui">Apply</span> to write it. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it all back.</li>
 </ol>
-<!-- CHECK: the target box's percent wording after the rebuild ("-10%" = 10% less time, "+10%" = 10% more?). Older versions took "10%" to mean a 10% cut. -->
 <div class="note"><p>Only the cutting part of the time can change. Rapids, tool changes and dwells stay the same, so a
 very short target may not be reachable. The window says how close it gets.</p></div>
-<figure class="shot todo" data-img="win-target.png" data-kind="window" data-need="The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -> after time, flips, MRR.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -&gt; after time, flips, MRR."><strong>Picture coming: win-target.png</strong>The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -&gt; after time, flips, MRR. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Hit a target time window.</figcaption>
+<div class="warn"><p><strong>Speeds too:</strong> the flips column then gets a <strong>*</strong> and a note. Flips are
+counted from cut time, so a faster speed looks like fewer flips &ndash; but a faster speed wears the edge sooner. Check the
+edge time with <a href="#page-inspection">Inspection &amp; inserts</a>.</p></div>
+<figure class="shot" data-img="win-target.png" data-kind="window" data-need="The Hit a target time window: ops 7 and 8, target -10%, previewed: each op's time, flips and MRR before and after.">
+<!-- img --><a class="zoom" href="images/win-target.png" title="Open the picture full size"><img src="images/win-target.png" alt="The Hit a target time window: ops 7 and 8, target -10%, previewed: each op&#x27;s time, flips and MRR before and after." width="1302" height="983" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The target. (2) Main cutting feed only. (3) Each op, before and after. (4) Apply &ndash; Preview
+and Enter never write.</figcaption>
 </figure>
 </section>
 
 <section id="target-time--example">
 <h3>Worked example</h3>
-<p>The bore ops 7 and 8 take 1:59:24 together. The cell lead wants them under 1:40:00.</p>
+<p>The bore ops 7 and 8 take 1:59:24 together. The cell lead wants 10% off.</p>
 <ol>
 <li>Select a cell in op 7's row and op 8's row. Click <span class="ui">Hit a target time</span>.</li>
-<li>Type <code>1:40:00</code>, press <kbd>Enter</kbd>. The feeds go up about 20%.</li>
+<li>Type <code>-10%</code>, press <kbd>Enter</kbd>. The main feeds go up 11.2%.</li>
+<li>Read the preview, then click <span class="ui">Apply</span>.</li>
 </ol>
 <div class="table-scroll"><table>
-<thead><tr><th>Op</th><th class="num">feed</th><th class="num">time before</th><th class="num">time after</th><th class="num">flips per part</th></tr></thead>
+<thead><tr><th>Op</th><th class="num">feed</th><th class="num">time before</th><th class="num">time after</th></tr></thead>
 <tbody>
-<tr><td>7 Rough Bore ID</td><td class="num edited">0.010 &rarr; 0.012</td><td class="num">1:44:00</td><td class="num moved">about 1:27:00</td><td class="num">follows the shorter cut time</td></tr>
-<tr><td>8 Finish Bore ID</td><td class="num edited">0.010 &rarr; 0.012</td><td class="num">0:15:24</td><td class="num moved">about 0:13:00</td><td class="num"></td></tr>
-<tr><td><strong>Both</strong></td><td></td><td class="num">1:59:24</td><td class="num better">about 1:40:00</td><td></td></tr>
+<tr><td>7 Rough Bore ID</td><td class="num edited">0.01 &rarr; 0.01112</td><td class="num">1:44:00</td><td class="num moved">1:33:35</td></tr>
+<tr><td>8 Finish Bore ID</td><td class="num edited">0.01 &rarr; 0.01112</td><td class="num">0:15:24</td><td class="num moved">0:13:51</td></tr>
+<tr><td><strong>Both</strong></td><td></td><td class="num">1:59:24</td><td class="num better">1:47:26 (-10.0%)</td></tr>
 </tbody>
 </table></div>
-<p>Then check the insert: is 0.012 per rev inside the maker's range for that insert and that depth? If not, the time is
-a wish, not a plan.</p>
+<p>Flips per part stay at 11 for the tool. Then check the insert: is the new feed inside the maker's range for that
+insert and that depth? If not, the time is a wish, not a plan.</p>
 </section>
 
 <section id="target-time--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>Press Enter to work out what this changes.</q></dt>
+<dt><q>Press Enter (or Preview) to see what this changes, op by op.</q></dt>
 <dd>Type the target, then press <kbd>Enter</kbd> or click <span class="ui">Preview</span>.</dd>
-<dt>A cell marked as at its limit</dt>
-<dd>That feed could not go as far as the others (its op's limit). The other ops make up the difference where they can.</dd>
-<dt><q>Select operations (cells in their rows) on the 'Lathe params' sheet first.</q></dt>
-<dd>Go to the main sheet and select cells in the ops' rows.</dd>
+<dt><q>'10%' - say which way: +10% for more, -10% for less.</q></dt>
+<dd>Type the sign. <code>-10%</code> means 10% less time.</dd>
+<dt><q>... the target 1:47:28 is out of reach</q></dt>
+<dd>The feeds could not get exactly there (limits, or time that is not cutting). The line says how close it got.</dd>
+<dt><q>2 cell(s) held at a limit: ...</q></dt>
+<dd>Those feeds could not go as far as the others. The other ops make up the difference where they can.</dd>
+<dt><q>Not applied yet - Apply, or Revert to follow the sheet again.</q></dt>
+<dd>A target is typed. The window keeps it while you click around the sheet to check.</dd>
+<dt><q>The sheet changed since this was worked out - here it is again. Check it, then Apply.</q></dt>
+<dd>Something changed the cells. The plan was worked out again.</dd>
 </dl>
 </section>
 
@@ -1932,64 +2030,76 @@ just good to know. It changes nothing.</p>
 <section id="check--steps">
 <h3>Steps</h3>
 <ol class="steps">
-<li>Click <span class="ui">Program check</span>. The <span class="ui">Program check</span> sheet opens.</li>
-<li>Read the <span class="ui">Look at</span> findings first. Read <em>why it matters</em> and <em>how to fix</em>.</li>
+<li>Click <span class="ui">Program check</span>. The <span class="ui">Program check</span> sheet opens. The top lines say
+how many findings there are: so many to look at, so many FYI.</li>
+<li>Read the <span class="ui">Look at</span> findings first (they are at the top, most useful first). Each line has the
+<span class="ui">Op</span>, the <span class="ui">Tool</span>, <span class="ui">What was found</span>,
+<span class="ui">Why it matters</span> and <span class="ui">How to fix</span>.</li>
 <li>Click the op link to go to that op's row. Fix it there (or in Mastercam).</li>
-<li>If a finding is fine as it is (you meant it), type <code>x</code> in its <span class="ui">Ignore</span> column. It stays
-ignored next time you check &ndash; even after a new dump.</li>
-<li>Run the check again after your fixes.</li>
+<li>If a finding is fine as it is (you meant it), set its <span class="ui">Ignore</span> cell to <code>yes</code>. It
+stays ignored on the next check &ndash; and after the next dump too (it is kept in the part's
+<a href="#words--w-ptconfig">.ptconfig</a> file). Ignored findings show greyed at the bottom.</li>
+<li>Run the check again after your fixes. It makes the sheet new each time and changes nothing on your other sheets.</li>
 </ol>
-<!-- CHECK: the Program check sheet's column names (Look at / FYI, Why it matters, How to fix, Ignore) and what to type in Ignore. -->
 <h4 id="check--what-it-checks">What it looks for</h4>
 <div class="table-scroll"><table>
-<thead><tr><th>Finding</th><th>Why it matters</th></tr></thead>
+<thead><tr><th>Finding</th><th>Kind</th><th>When</th></tr></thead>
 <tbody>
-<tr><td><strong>An insert's edge runs much longer than usual</strong> (the main check)</td><td>The edge may wear out, chip or break
-before the stop. &ldquo;Usual&rdquo; is the <span class="ui">Usual edge time</span> you type for the insert on the
-<a href="#page-tools-page">Tools page</a> &ndash; or, if blank, the same insert on your other tools.</td></tr>
-<tr><td>The same tool at different speeds or feeds</td><td>Often a copy-paste slip. Sometimes on purpose (rough vs finish).</td></tr>
-<tr><td>CSS with no max RPM</td><td>Near the center, CSS asks for a huge RPM. Set a <a href="#words--w-max-rpm">max RPM</a>.</td></tr>
-<tr><td>Coolant off on a cutting op</td><td>Usually forgotten. Dry on purpose? Ignore it.</td></tr>
-<tr><td>Lots of <a href="#words--w-air-cutting">air cutting</a></td><td>Time spent cutting nothing. Tighten the stock or the start point.</td></tr>
-<tr><td>Extra tool changes</td><td>The same tool called again right after another &ndash; ops that could be next to each other.</td></tr>
-<tr><td>Ops needing <a href="#words--w-regenerate">regeneration</a></td><td>The toolpath is out of date. The times on the sheet are too.</td></tr>
-<tr><td>Ops with no comment</td><td>The setup sheet and the operator see a blank name.</td></tr>
-<tr><td>A feed that looks like the wrong unit</td><td>0.012 <em>per minute</em> crawls; 12 <em>per rev</em> crashes. One of them is wrong.</td></tr>
+<tr><td><strong>An edge runs much longer than usual</strong> (the main check)</td><td>Look at</td><td>A tool's edge time (its cut time
+per part &divide; flips per part) is more than 1.25 &times; the insert's <span class="ui">Usual edge time</span> that you
+type in the <a href="#tools-page--inserts">inserts table</a>. With none typed: more than 1.5 &times; the other tools
+carrying the same insert in this program (their middle value) <em>and</em> at least 2 minutes longer.</td></tr>
+<tr><td>Ops needing <a href="#words--w-regenerate">regeneration</a></td><td>Look at</td><td><code>needs_regen</code> is yes: the toolpath, and its times, are out of date.</td></tr>
+<tr><td>A feed that looks like the wrong unit</td><td>Look at</td><td>Per minute but under 1 in (25 mm), or per rev but over 0.1 in (2.5 mm).</td></tr>
+<tr><td>CSS with no max RPM</td><td>Look at</td><td>Near the center, CSS asks for a huge RPM. Set a <a href="#words--w-max-rpm">max RPM</a>.</td></tr>
+<tr><td>Lots of <a href="#words--w-air-cutting">air cutting</a></td><td>Look at</td><td>Over 30% of an op's cut time in air, and over 1 minute.</td></tr>
+<tr><td>The same tool at different speeds or feeds</td><td>FYI</td><td>Same tool and kind of op, speeds or feeds more than 10% apart.</td></tr>
+<tr><td>Extra tool changes</td><td>FYI</td><td>One tool put in more than once in a toolpath group.</td></tr>
+<tr><td>Coolant off on a cutting op</td><td>FYI</td><td>Usually forgotten. Dry on purpose? Ignore it.</td></tr>
+<tr><td>Ops with no comment</td><td>FYI</td><td>The setup sheet and the operator see a blank name.</td></tr>
 </tbody>
 </table></div>
 <div class="note"><p>Two things it does <strong>not</strong> do: it never flags tool inspection being off by itself
-(plenty of ops need no stops), and the words in an inspection comment do not decide what it counts as a flip.</p></div>
-<figure class="shot todo" data-img="sheet-check.png" data-kind="window" data-need="The Program check sheet: a few findings, Look at and FYI, why / how to fix, op links, the Ignore column with one x.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Program check sheet: a few findings, Look at and FYI, why / how to fix, op links, the Ignore column with one x."><strong>Picture coming: sheet-check.png</strong>The Program check sheet: a few findings, Look at and FYI, why / how to fix, op links, the Ignore column with one x. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Program check sheet.</figcaption>
+(plenty of ops need no stops), and the words in an inspection comment do not decide what it counts as a flip.
+For a tool that never flips, its edge time is its cut time per part &times; the parts per edge you typed.</p></div>
+<figure class="shot" data-img="sheet-check.png" data-kind="window" data-need="The Program check sheet on the Oil Spool Head: Look at and FYI findings, with why, how to fix, op links and the Ignore column.">
+<!-- img --><a class="zoom" href="images/sheet-check.png" title="Open the picture full size"><img src="images/sheet-check.png" alt="The Program check sheet on the Oil Spool Head: Look at and FYI findings, with why, how to fix, op links and the Ignore column." width="3268" height="1585" loading="lazy"></a><!-- /img -->
+<figcaption>The Program check sheet: Look at first, then FYI. Click an op to go to it.</figcaption>
 </figure>
 </section>
 
 <section id="check--example">
 <h3>Worked example</h3>
-<p>You typed a usual edge time of 8:00 for the <code>C 80&deg; r0.031</code> insert. Tool T12 (the bore bar) runs it for
-11:31 between flips.</p>
+<p>On the Oil Spool Head the check finds 19 things: 3 to look at, 16 FYI. Two of them:</p>
 <div class="table-scroll"><table>
-<thead><tr><th>Kind</th><th>Finding</th><th>How to fix</th><th>Ignore</th></tr></thead>
+<thead><tr><th>Severity</th><th>Op</th><th>What was found</th><th>How to fix</th><th>Ignore</th></tr></thead>
 <tbody>
-<tr><td>Look at</td><td>T12: the edge cuts 11:31 between flips; usual for this insert is 8:00</td><td>Shorter edge time
-(<code>insp_time</code>) on ops 7 and 8, or a lower speed</td><td></td></tr>
-<tr><td>FYI</td><td>Op 13 has no comment</td><td>Type a comment</td><td class="edited">x</td></tr>
+<tr><td>Look at</td><td>ops 7, 8 (T12)</td><td>T12 cuts about 9:00 on each edge &ndash; T11, the other C 80&deg; r0.031 tool
+in this program, runs 5:15.</td><td>Turn the insert sooner on T12: <code>insp_time</code> about 5:15 (Inspection &amp;
+inserts on the ribbon) &ndash; or, if its edge really lasts, type the usual edge time for that insert on Tools.</td><td></td></tr>
+<tr><td>FYI</td><td>op 2 (T1)</td><td>op 2 cuts with no coolant on (coolant: Off).</td><td>Turn the coolant on for op 2 &ndash;
+or Ignore this if it runs dry on purpose.</td><td class="edited">yes</td></tr>
 </tbody>
 </table></div>
-<p>After you set <code>insp_time</code> to 8:00 on ops 7 and 8 (with <a href="#page-inspection">Inspection &amp; inserts</a>)
-and check again, the first finding is gone. The second stays ignored.</p>
+<p>The PrimeTurning rough runs dry on purpose, so its coolant finding is set to <code>yes</code> in Ignore. On the next
+check it moves to the bottom, greyed. The T12 finding stays until you fix it &ndash; or type a
+<span class="ui">Usual edge time</span> of 9:00 or more for the insert, if 9:00 is normal in your shop.</p>
 </section>
 
 <section id="check--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt><q>No findings.</q></dt>
-<dd>Nothing to look at. (Ignored findings are not shown.)</dd>
+<dt><q>Nothing found - the program looks clean.</q></dt>
+<dd>Nothing to look at (ignored findings are not counted).</dd>
+<dt><q>19 findings ... 3 to look at, 16 FYI</q></dt>
+<dd>The count, at the top of the sheet.</dd>
 <dt>A finding came back after a new dump</dt>
-<dd>It is a different finding now (a different op or value), or it was never ignored. Type <code>x</code> again.</dd>
+<dd>It is a different finding now (another op or another tool), so it is not the one you ignored. Set Ignore to yes again.</dd>
+<dt><q>?  (the user manual is not installed)</q> in the top corner</dt>
+<dd>The link to this page could not find the manual. See <a href="#page-install">Install</a>.</dd>
+<dt><q>The program check stopped: ...</q></dt>
+<dd>Something went wrong while checking. Save your work and tell whoever looks after the tool what it said.</dd>
 </dl>
-<!-- CHECK: the messages the finished Program check gives. -->
 </section>
 
 <section id="check--related">
@@ -2032,11 +2142,12 @@ the second set of edits. Save it under another name.</li>
 <li><span class="ui">Scenarios</span> &rsaquo; <span class="ui">Compare scenarios</span>. A <span class="ui">Scenarios</span>
 sheet opens with the totals and every changed parameter, side by side.</li>
 <li>To go on with one: <span class="ui">Scenarios</span> &rsaquo; <span class="ui">Restore a scenario</span>. The sheet goes
-back to the dump, then that scenario's values go in.</li>
+back to the dump, then that scenario's values go in. Edits on the sheet that were not saved are kept first, as a
+scenario named with the date and time, e.g. <span class="ui">(before restore 2026-10-09 22:40)</span> &ndash; nothing is lost.</li>
 <li><span class="ui">Delete a scenario</span> removes one you no longer want (the sheet is not changed).</li>
 </ol>
 <figure class="shot" data-img="win-scenario-save.png" data-kind="window" data-need="The save scenario window with a name typed and the list of edits it keeps.">
-<!-- img --><a class="zoom" href="images/win-scenario-save.png" title="Open the picture full size"><img src="images/win-scenario-save.png" alt="The save scenario window with a name typed and the list of edits it keeps." width="982" height="635" loading="lazy"></a><!-- /img -->
+<!-- img --><a class="zoom" href="images/win-scenario-save.png" title="Open the picture full size"><img src="images/win-scenario-save.png" alt="The save scenario window with a name typed and the list of edits it keeps." width="1022" height="627" loading="lazy"></a><!-- /img -->
 <figcaption>(1) The name. (2) OK. The list shows every edit it keeps.</figcaption>
 </figure>
 <figure class="shot" data-img="sheet-scenarios.png" data-kind="sheet" data-need="The Scenarios sheet comparing two saved scenarios with the dump and the sheet now.">
@@ -2064,6 +2175,9 @@ back to the dump, then that scenario's values go in.</li>
 <dl class="messages">
 <dt><q>No scenarios saved yet - edit the sheet, then Save scenario.</q></dt>
 <dd>There is nothing to restore, compare or delete yet.</dd>
+<dt>A scenario called <q>(before restore 2026-10-09 22:40)</q></dt>
+<dd>Made for you when you restored another scenario: the edits that were on the sheet then. Restore it to get them
+back, or delete it.</dd>
 <dt><q>... REPLACES the one saved ...</q></dt>
 <dd>A scenario by that name exists. OK writes over it. Type a new name to keep both.</dd>
 <dt><q>'Bore feed 0.012' restored - 2 cell(s) set, 1 refused ...</q></dt>
@@ -2142,8 +2256,7 @@ by hand. Now you click <span class="ui">Undo</span> on the ribbon:</p>
 <p>Ops 1 and 7 go back. Op 8 keeps your 0.011, because you typed it after the Set. To clear op 8 too, use
 <span class="ui">Back to the dump</span> &rsaquo; <span class="ui">Selected cells</span> on it.</p>
 <p>The ribbon's <span class="ui">Undo</span> button always takes back the last <em>command</em>. <kbd>Ctrl</kbd>+<kbd>Z</kbd>
-right after you typed in a cell takes back that typing first (Excel's own undo).</p>
-<!-- CHECK: how Excel's own Ctrl+Z (typing) and the command undo take turns after a ribbon command. -->
+does the same right after a command; right after you typed in a cell, it takes back that typing first (Excel's own undo).</p>
 </section>
 
 <section id="undo--messages">
@@ -2259,22 +2372,25 @@ reason. Print it or save it as a PDF for the job folder, your lead, or the next 
 <ol class="steps">
 <li>Type the batch quantity on the <a href="#page-summary">Summary</a> and the insert costs on the
 <a href="#tools-page--inserts">Tools page</a> first &ndash; the report uses them.</li>
-<li>Click <span class="ui">Change report</span>. The <span class="ui">Change report</span> sheet opens.</li>
-<li>Read the totals at the top: before, after, and the difference.</li>
-<li>Type a short reason in the <span class="ui">Why</span> column for each change (&ldquo;insert maker says 0.012 OK&rdquo;).</li>
-<li>Print it: <span class="ui">File</span> &rsaquo; <span class="ui">Print</span> (or <kbd>Ctrl</kbd>+<kbd>P</kbd>). Pick
-<span class="ui">Microsoft Print to PDF</span> to make a PDF.</li>
+<li>Click <span class="ui">Change report</span>. The <span class="ui">Change report</span> sheet opens, with the part's
+name and the date it was dumped at the top.</li>
+<li>Read <span class="ui">Before -&gt; after</span>: cycle time and cutting time per part (and per batch), insert flips,
+inserts used and insert cost per part, and insert cost per batch &ndash; as dumped, now, and the change.</li>
+<li>Read <span class="ui">Every change, by op</span>: each op with its time change, then each parameter, as dumped and now.</li>
+<li>Type a short reason in the <span class="ui">Why (type the reason)</span> column (&ldquo;insert box says 0.008-0.016&rdquo;).
+Your reasons are kept when you make the report again.</li>
+<li>Print it: <span class="ui">File</span> &rsaquo; <span class="ui">Print</span> (or <kbd>Ctrl</kbd>+<kbd>P</kbd>). It is set
+up landscape, one page wide. Pick <span class="ui">Microsoft Print to PDF</span> to make a PDF.</li>
 </ol>
-<!-- CHECK: the Change report sheet's layout and headings once it is finished. -->
-<figure class="shot todo" data-img="sheet-report.png" data-kind="window" data-need="The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one.">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one."><strong>Picture coming: sheet-report.png</strong>The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
-<figcaption>The Change report, ready to print.</figcaption>
+<figure class="shot" data-img="sheet-report.png" data-kind="window" data-need="The Change report sheet on the Oil Spool Head: before -> after per part and per batch, every change by op with its time change and the Why column.">
+<!-- img --><a class="zoom" href="images/sheet-report.png" title="Open the picture full size"><img src="images/sheet-report.png" alt="The Change report sheet on the Oil Spool Head: before -&gt; after per part and per batch, every change by op with its time change and the Why column." width="2641" height="828" loading="lazy"></a><!-- /img -->
+<figcaption>The Change report: totals first, then every change by op, with room for the reason.</figcaption>
 </figure>
 </section>
 
 <section id="report--example">
 <h3>Worked example</h3>
-<p>Oil Spool Head, bore feeds raised to 0.012, batch of 20 parts:</p>
+<p>Oil Spool Head, bore feeds raised to 0.012, batch of 20 parts (typed on the Summary):</p>
 <div class="table-scroll"><table>
 <thead><tr><th></th><th class="num">Before</th><th class="num">After</th><th class="num">Saved</th></tr></thead>
 <tbody>
@@ -2284,12 +2400,24 @@ reason. Print it or save it as a PDF for the job folder, your lead, or the next 
 </tbody>
 </table></div>
 <div class="table-scroll"><table>
-<thead><tr><th>Op</th><th>Parameter</th><th class="num">Before</th><th class="num">After</th><th>Why</th></tr></thead>
+<thead><tr><th>Op</th><th>Parameter</th><th class="num">As dumped</th><th class="num">Now</th><th>Op time change</th><th>Why (type the reason)</th></tr></thead>
 <tbody>
-<tr><td>7 Rough Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Insert box says 0.008-0.016</td></tr>
-<tr><td>8 Finish Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Same tool; finish checked on first part</td></tr>
+<tr><td>op 7 &ndash; T12 ROUGH &ndash; Rough Bore ID</td><td>Feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="better">1:44:00 &rarr; 1:26:45 (-17:15)</td><td class="edited">Insert box says 0.008-0.016</td></tr>
+<tr><td>op 8 &ndash; T12 FINISH &ndash; Finish Bore ID</td><td>Feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="better">15:24 &rarr; 12:50 (-2:34)</td><td class="edited">Same tool; finish checked on first part</td></tr>
 </tbody>
 </table></div>
+</section>
+
+<section id="report--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>No changes from the dump yet - edit 'Lathe params' first.</q></dt>
+<dd>Nothing to report: the sheet is as dumped.</dd>
+<dt><q>Type the cost per insert on the Tools page for the insert cost per part and per batch.</q></dt>
+<dd>The cost lines are blank until you type the insert costs.</dd>
+<dt><q>The change report stopped: ...</q></dt>
+<dd>Something went wrong making it. Save your work and tell whoever looks after the tool what it said.</dd>
+</dl>
 </section>
 
 <section id="report--related">
@@ -2621,7 +2749,9 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dt id="words--l-p"><span id="words--w-per-rev">Per rev / per min (IPR, IPM)</span></dt>
 <dd><strong>Per rev</strong>: how far the tool moves for each turn of the spindle (inches per rev, IPR, or mm per rev; G95 / G99). <strong>Per min</strong>: how far it moves in a minute (IPM or mm/min; G94 / G98). Per min = per rev &times; RPM. Lathes mostly use per rev; live tools use per min.</dd>
 <dt id="words--w-percent">Percent: +10%, -10%</dt>
-<dd><code>+10%</code> means 10% more than now: 0.010 becomes 0.011. <code>-10%</code> means 10% less: 0.010 becomes 0.009. <!-- CHECK: the percent wording in the finished Scale and Hit a target time windows. --></dd>
+<dd><code>+10%</code> means 10% more than now: 0.010 becomes 0.011. <code>-10%</code> means 10% less: 0.010 becomes 0.009.
+Always type the sign &ndash; a bare <code>10%</code> is refused, because it does not say which way. In
+<a href="#page-target-time">Hit a target time</a>, <code>-10%</code> means 10% less <em>time</em>.</dd>
 <dt id="words--w-post">Post</dt>
 <dd>The post processor: it turns Mastercam's toolpaths into G-code for your machine.</dd>
 <dt id="words--w-primeturning">PrimeTurning</dt>
@@ -2659,7 +2789,9 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dd>An op that copies other ops' toolpaths (mirror, rotate, translate). The sheet shows transforms read-only; their copies count in the part's time and flips.</dd>
 
 <dt id="words--l-u"><span id="words--w-usual-edge-time">Usual edge time</span></dt>
-<dd>What one edge of an insert normally lasts in your shop. You type it on the Tools page; the <a href="#page-check">Program check</a> warns about tools that run an edge much longer. <!-- CHECK: name and place of this column once merged. --></dd>
+<dd>What one edge of an insert normally lasts in your shop. You type it in the last column of the Tools page's
+<a href="#tools-page--usual">inserts table</a>; the <a href="#page-check">Program check</a> warns about a tool whose
+edge runs more than 25% longer.</dd>
 
 <dt id="words--l-w"><span id="words--w-workbook">Workbook, sheet</span></dt>
 <dd>A workbook is one Excel file. A sheet is one page of it, chosen by the tabs along the bottom (Summary, Lathe params, Tools).</dd>
@@ -2672,7 +2804,7 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <section id="words--columns">
 <h3>Columns on the sheet</h3>
 <!-- columns -->
-<p class="note">This part is made from the sheet's own tooltips (the text you see when you hover a column name), so it always matches your sheet. Hover a cell on the sheet to see the same words.</p>
+<p class="note">This part is made from the sheet's own tooltips (the text you see when you hover a column name), so it always matches your sheet. A column not listed here (most of the Tool inspection and Filter settings, the planes, home and reference points) has its own tooltip on the sheet: hover its name.</p>
 <h4 id="words--c-identity-and-context">Identity and context</h4>
 <dl class="words">
 <dt id="words--col-changes"><span class="col">changes</span></dt>
@@ -2983,6 +3115,9 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dt id="words--t-inserts"><span class="col">Inserts / part</span></dt><dd>Flips per part &divide; edges per insert, in whole inserts (a fraction for an insert that outlasts a part).</dd>
 <dt id="words--t-cost"><span class="col">Cost per insert</span>, <span class="col">Insert cost / part</span></dt><dd>Type what one insert costs; the cost per part follows.</dd>
 <dt id="words--t-parts-per-edge"><span class="col">Parts per edge</span></dt><dd>For an insert that lasts more than one part: how many parts one edge makes.</dd>
+<dt id="words--t-usual"><span class="col">Usual edge time</span></dt><dd>How long one edge of this insert usually cuts before it is turned (inserts table). See <a href="#words--w-usual-edge-time">usual edge time</a>.</dd>
+<dt id="words--t-ic"><span class="col">Insert size (IC)</span></dt><dd>The insert's size across its inscribed circle &ndash; a round insert's diameter &ndash; in the part's units. Chip thinning uses it.</dd>
+<dt id="words--t-angle"><span class="col">Entering angle</span></dt><dd>Degrees from the cutting edge to the feed, from the holder's ISO code (PCLNR: 95). 90 = square shoulder, no chip thinning. US lead angle = 90 minus this. See <a href="#words--w-entering-angle">entering angle</a>.</dd>
 </dl>
 </section>
 

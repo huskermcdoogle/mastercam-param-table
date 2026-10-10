@@ -114,11 +114,12 @@ the second set of edits. Save it under another name.</li>
 <li><span class="ui">Scenarios</span> &rsaquo; <span class="ui">Compare scenarios</span>. A <span class="ui">Scenarios</span>
 sheet opens with the totals and every changed parameter, side by side.</li>
 <li>To go on with one: <span class="ui">Scenarios</span> &rsaquo; <span class="ui">Restore a scenario</span>. The sheet goes
-back to the dump, then that scenario's values go in.</li>
+back to the dump, then that scenario's values go in. Edits on the sheet that were not saved are kept first, as a
+scenario named with the date and time, e.g. <span class="ui">(before restore 2026-10-09 22:40)</span> &ndash; nothing is lost.</li>
 <li><span class="ui">Delete a scenario</span> removes one you no longer want (the sheet is not changed).</li>
 </ol>
 <figure class="shot" data-img="win-scenario-save.png" data-kind="window" data-need="The save scenario window with a name typed and the list of edits it keeps.">
-<!-- img --><a class="zoom" href="images/win-scenario-save.png" title="Open the picture full size"><img src="images/win-scenario-save.png" alt="The save scenario window with a name typed and the list of edits it keeps." width="982" height="635" loading="lazy"></a><!-- /img -->
+<!-- img --><a class="zoom" href="images/win-scenario-save.png" title="Open the picture full size"><img src="images/win-scenario-save.png" alt="The save scenario window with a name typed and the list of edits it keeps." width="1022" height="627" loading="lazy"></a><!-- /img -->
 <figcaption>(1) The name. (2) OK. The list shows every edit it keeps.</figcaption>
 </figure>
 <figure class="shot" data-img="sheet-scenarios.png" data-kind="sheet" data-need="The Scenarios sheet comparing two saved scenarios with the dump and the sheet now.">
@@ -146,6 +147,9 @@ back to the dump, then that scenario's values go in.</li>
 <dl class="messages">
 <dt><q>No scenarios saved yet - edit the sheet, then Save scenario.</q></dt>
 <dd>There is nothing to restore, compare or delete yet.</dd>
+<dt>A scenario called <q>(before restore 2026-10-09 22:40)</q></dt>
+<dd>Made for you when you restored another scenario: the edits that were on the sheet then. Restore it to get them
+back, or delete it.</dd>
 <dt><q>... REPLACES the one saved ...</q></dt>
 <dd>A scenario by that name exists. OK writes over it. Type a new name to keep both.</dd>
 <dt><q>'Bore feed 0.012' restored - 2 cell(s) set, 1 refused ...</q></dt>

@@ -114,19 +114,21 @@ are added up together below.</li>
 <span class="ui">Longest between flips</span>, and <span class="ui">Inspection</span> (what its ops stop on).</li>
 <li><strong>Edge life (fallback):</strong> only for ops that stop for inspection with no time of their own. Type the cut
 time one edge lasts, as minutes:seconds (<code>8:00</code>). Greyed out where no op uses it.</li>
+<li><strong>Insert size (IC)</strong> and <strong>Entering angle</strong> (at the right end of each tool row): the insert's
+size across its inscribed circle (a round insert's diameter), and the holder's entering angle &ndash; read from its ISO
+code (PCLNL: an L-style holder, 95&deg;; 90&deg; = square shoulder). The <a href="calculator.html#chip">chip thinning</a>
+calculator uses them. Type over a wrong one; it is kept. Leave the angle blank for round, grooving and PrimeTurning tools.</li>
 <li id="inserts"><strong>In the inserts table, type the edges per insert</strong> (a CNMG: 4; a VNMG: 4; a VCMT: 2; a
 round: about 8). The guess counts one side only &ndash; type over it for a double-sided insert.</li>
 <li><strong>Type the cost per insert.</strong> <span class="ui">Inserts / part</span> and
 <span class="ui">Insert cost / part</span> fill in. The Summary page takes them to a batch.</li>
 <li><strong>Parts per edge</strong> &ndash; only for an insert that lasts more than one part (the toolpath never flips it).
 Type how many parts one edge makes. It is greyed out where the toolpath already flips the edge every part.</li>
+<li id="usual"><strong>Usual edge time</strong> (the last column of the inserts table): how long one edge of this insert
+usually cuts in your shop before it is turned, as minutes:seconds (<code>12:00</code>). The
+<a href="check.html">Program check</a> warns about a tool whose edge runs more than 25% longer. Leave it blank and the
+check compares the tools in this program with each other instead.</li>
 </ol>
-<!-- CHECK: new Tools page columns from the Inspection & inserts / Speed & feed work - "Usual edge time" (per insert),
-"Insert size" and "Entering angle" (per tool): their exact headings and where they sit. -->
-<p>Newer versions add a few typed columns: <span class="ui">Usual edge time</span> for each insert (what one edge
-normally lasts &ndash; the <a href="check.html">Program check</a> compares with it), and
-<span class="ui">Insert size</span> and <span class="ui">Entering angle</span> for each tool (the
-<a href="calculator.html#chip">chip thinning</a> calculator uses them).</p>
 <figure class="shot" data-img="sheet-tools.png" data-kind="sheet" data-need="The Tools page: two tools with pictures, insert, flips per part, edge life.">
 <!-- img --><a class="zoom" href="images/sheet-tools.png" title="Open the picture full size"><img src="images/sheet-tools.png" alt="The Tools page: two tools with pictures, insert, flips per part, edge life." width="3151" height="733" loading="lazy"></a><!-- /img -->
 <figcaption>(1) The insert &ndash; type over it if it is wrong. (2) Flips per part. (3) Edge life, only where it is used.</figcaption>
@@ -161,7 +163,9 @@ Next dump, the 4 and the $12 are already there (kept in the part's <a href="word
 <dt><q>A whole number of edges, 1 or more.</q></dt>
 <dd>Edges per insert takes a whole number.</dd>
 <dt><q>Type a time: minutes:seconds (8:00) or seconds (480).</q></dt>
-<dd>Edge life takes a time. <code>8:00</code> and <code>480</code> mean the same.</dd>
+<dd>Edge life and usual edge time take a time. <code>8:00</code> and <code>480</code> mean the same.</dd>
+<dt><q>A size more than 0, in the part's units - or blank.</q> / <q>An angle in degrees, more than 0 and less than 180 - or blank.</q></dt>
+<dd>Insert size (IC) and Entering angle take a number, or nothing.</dd>
 <dt><q>A number of parts, more than 0 - and only for an insert whose edge is not already flipped every part ...</q></dt>
 <dd>Parts per edge is only for inserts the toolpath never flips. Leave it blank for the others.</dd>
 <dt><span class="ui">no insert data - grouped by its cutting outline</span> (Shape check column)</dt>
