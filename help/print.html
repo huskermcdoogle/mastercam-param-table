@@ -163,7 +163,7 @@ and see what it does to the cycle time and your inserts before anything goes bac
 <h4>Start here</h4>
 <ul>
 <li><a href="#page-start">Getting started</a> <span>&ndash; The five steps: dump, edit, save, load, regenerate.</span></li>
-<li><a href="#page-install">Install the add-in</a> <span>&ndash; Copy two things into Mastercam&#x27;s Add-Ins folder, then put the commands on your ribbon.</span></li>
+<li><a href="#page-install">Install the add-in</a> <span>&ndash; Copy two things into Mastercam&#x27;s Add-Ins folder and start Mastercam - the Parameter Table tab is on the ribbon.</span></li>
 </ul>
 <h4>In Mastercam</h4>
 <ul>
@@ -340,16 +340,16 @@ Inside are <code>ParamTable.ft</code> and a folder called <code>ParamTable</code
 <li><strong>Close Mastercam.</strong> It only looks for add-ins when it starts.</li>
 <li>Open the folder <code>Documents\My Mastercam 2026\Mastercam\Add-Ins</code>.</li>
 <li>Copy <code>ParamTable.ft</code> <strong>and</strong> the <code>ParamTable</code> folder into it. You need both.</li>
-<li>Start Mastercam.</li>
-<li>Put the commands where you can reach them: right-click the ribbon, pick
-<span class="ui">Customize the Ribbon</span> (or <span class="ui">Customize Quick Access Toolbar</span>),
-find the category <span class="ui">Parameter Table Tool</span>, and add the four commands.
-<!-- CHECK: the exact menu names for customizing the ribbon / QAT in Mastercam 2026 --></li>
+<li>Start Mastercam. A <span class="ui">Parameter Table</span> tab is on the ribbon with the four commands:
+dump to Excel, load, undo the last load, and this user manual. Nothing to set up.</li>
 </ol>
-<figure class="shot todo" data-img="mc-customize.png" data-kind="mastercam" data-need="Mastercam's Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button).">
-<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: Mastercam&#x27;s Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button)."><strong>Picture coming: mc-customize.png</strong>Mastercam&#x27;s Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button). <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
-<figcaption>(1) The category. (2) Its four commands. (3) Add them to a ribbon tab or the Quick Access Toolbar.</figcaption>
+<figure class="shot todo" data-img="mc-ribbon-tab.png" data-kind="mastercam" data-need="Mastercam's ribbon with the Parameter Table tab picked and its four buttons (1 the tab, 2 dump to Excel, 3 load, 4 the user manual).">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: Mastercam&#x27;s ribbon with the Parameter Table tab picked and its four buttons (1 the tab, 2 dump to Excel, 3 load, 4 the user manual)."><strong>Picture coming: mc-ribbon-tab.png</strong>Mastercam&#x27;s ribbon with the Parameter Table tab picked and its four buttons (1 the tab, 2 dump to Excel, 3 load, 4 the user manual). <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The Parameter Table tab. (2) Dump to Excel. (3) Load. (4) The user manual.</figcaption>
 </figure>
+<div class="note"><p><strong>Want them somewhere else?</strong> The commands are also in Mastercam's Customize list, in the
+category <span class="ui">Parameter Table Tool</span> - put them on a tab of your own or on the Quick Access Toolbar.
+If you put them on a tab of your own, Mastercam shows yours and does not add the Parameter Table tab as well.</p></div>
 <div class="note"><p><strong>Macros in Excel.</strong> If you tick <span class="ui">Include macros</span> when you dump,
 Excel may show a yellow bar: <q>Macros have been disabled</q>. Click <span class="ui">Enable Content</span> on that bar
 to get the <span class="ui">Parameter Table</span> tab. The workbook works without macros too &ndash; you just do not
@@ -369,16 +369,18 @@ get the extra tools.</p></div>
 <tr><td></td><td class="edited"><code>ParamTable\SHA256SUMS.txt</code>, <code>BUILD-INFO.txt</code>, <code>LICENSE.txt</code></td></tr>
 </tbody>
 </table></div>
-<p>After Mastercam starts, the Customize list shows the category <span class="ui">Parameter Table Tool</span> with four
-commands.</p>
+<p>After Mastercam starts, the ribbon has a <span class="ui">Parameter Table</span> tab with four buttons.</p>
 </section>
 
 <section id="install--messages">
 <h3>What the messages mean</h3>
 <dl class="messages">
-<dt>The commands are not in the Customize list.</dt>
+<dt>There is no Parameter Table tab.</dt>
 <dd>Mastercam was open when you copied, or <code>ParamTable.ft</code> is not in the <code>Add-Ins</code> folder itself
-(it must not be inside the <code>ParamTable</code> folder). Fix it and restart Mastercam.</dd>
+(it must not be inside the <code>ParamTable</code> folder). Fix it and restart Mastercam. If you already put the commands
+on a tab of your own with Customize, that tab is the one you get. Still nothing? The file
+<code>ParamTable-ribbon.log</code> in <code>Add-Ins\ParamTable</code> says what happened at start-up - send it to whoever
+looks after the add-in.</dd>
 <dt><q>The user manual is not installed.</q></dt>
 <dd>The <code>help</code> folder is missing from <code>Add-Ins\ParamTable</code>. Copy the whole
 <code>ParamTable</code> folder again from the zip.</dd>

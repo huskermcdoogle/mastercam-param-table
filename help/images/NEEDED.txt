@@ -5,7 +5,7 @@ help/images under this name, run  python tools/make_help.py  and it is put in.
 MASTERCAM SCREENS - capture by hand (crop to the window; no other windows; number
 callouts 1, 2, 3 as the page's steps say; no part paths or user names in the picture)
 
-  images/mc-customize.png
+  images/mc-ribbon-tab.png
       on: install.html
-      show: Mastercam's Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button).
+      show: Mastercam's ribbon with the Parameter Table tab picked and its four buttons (1 the tab, 2 dump to Excel, 3 load, 4 the user manual).
 

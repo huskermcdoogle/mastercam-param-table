@@ -133,9 +133,12 @@ NCI's time. Other kinds are listed by the dump as "not read yet".
 2. Close Mastercam.
 3. Copy `ParamTable.ft` **and** the `ParamTable` folder into
    `Documents\My Mastercam 2026\Mastercam\Add-Ins`.
-4. Start Mastercam. The four functions appear under **Customize** as
-   *Parameter Table Tool* - "Lathe params - dump to Excel", "Lathe params - load",
-   "Lathe params - undo last load" and "Parameter Table - user manual".
+4. Start Mastercam. A **Parameter Table** tab is on the ribbon with the four commands -
+   "Lathe params - dump to Excel", "Lathe params - load", "Lathe params - undo last load" and
+   "Parameter Table - user manual". The add-in puts it up at every start
+   (`InsertThirdPartyRibbonTabs`, `src\Ribbon.*`; what happened goes to
+   `ParamTable\ParamTable-ribbon.log`). They are also in **Customize** under *Parameter Table
+   Tool*; put them on a tab of your own and that tab is used instead.
 
 `ParamTable\SHA256SUMS.txt` has the hash of each file (the manual's pages too); `BUILD-INFO.txt`
 says which commit and toolset built it. The add-in uses only Mastercam's own DLLs, MFC and
