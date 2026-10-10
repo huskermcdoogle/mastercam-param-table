@@ -9,21 +9,3 @@ callouts 1, 2, 3 as the page's steps say; no part paths or user names in the pic
       on: install.html
       show: Mastercam's Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button).
 
-  images/mc-dump-window.png
-      on: dump.html
-      show: The dump window in Mastercam with a few ops ticked: 1 the op list, 2 Find with Tick matches, 3 Save to, 4 File name and the name line under it, 5 Include macros ticked, 6 the Dump button.
-
-  images/mc-load-preview.png
-      on: load.html
-      show: The load preview window: 1 the impact line at the top (cycle time and flips), 2 an op line with its time, 3 a change with the old value struck through and the new value, 4 a tick box, 5 the Apply button.
-
-  images/mc-undo-load.png
-      on: undo-load.html
-      show: The undo last load window: 1 the line saying which load (date and file), 2 a value to restore, 3 the Changed since the load part, 4 the Restore button.
-
-OTHER SCREENS - capture by hand (Excel's ribbon tab: crop to the group; callouts as above)
-
-  images/ribbon-find.png
-      on: find.html
-      show: Excel's Parameter Table ribbon tab, the Find group: 1 Go to, 2 the Find op box with T12 typed, 3 Next match, 4 Changed ops / This tool's ops / Show all. (A screenshot of Excel, not Mastercam.)
-

@@ -1,5 +1,6 @@
-#include "stdafx.h"
-#include "MastercamSdk.h"
+// The window itself - no Mastercam SDK (Ui.h), so it can be drawn outside
+// Mastercam for the manual's pictures (tests\dialog_shots.cpp).
+#include "Ui.h"
 #include "DumpDialog.h"
 #include "FileRules.h"
 #include "Pick.h"
@@ -235,6 +236,11 @@ namespace
 				SetWindowPos (nullptr, work.left + (work.Width () - wr.Width ()) / 2,
 							  work.top + (work.Height () - wr.Height ()) / 2, wr.Width (), wr.Height (), SWP_NOZORDER);
 				Layout (w, false);
+				// The tree was filled at its first, small size and scrolled to keep an item
+				// in view; grown to its real size it stays scrolled - the first group's line
+				// hidden. Its top back in view.
+				if (!m_items.empty ())
+					m_tree.SelectSetFirstVisible (m_tree.GetRootItem ());
 				Update ();
 				m_ok.SetFocus ();
 				return FALSE;
@@ -826,7 +832,7 @@ namespace DumpDialog
 	bool Show (const std::wstring &partFile, std::vector<Op> &ops, const std::wstring &skipped,
 			   Settings::Dump &settings)
 		{
-		Dlg dlg (partFile, ops, skipped, settings, CWnd::FromHandle (get_MainFrame ()->GetSafeHwnd ()));
+		Dlg dlg (partFile, ops, skipped, settings, Ui::Host ());
 		return dlg.Run () == IDOK;
 		}
 	}

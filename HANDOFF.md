@@ -80,6 +80,12 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
   `load begin: <part>  <-  <sheets>`; loads logged before that line existed cannot be undone.
   Not yet run in Mastercam (built and unit-tested only; the window checked in a harness).
 - Paths/estimate: `src\Paths.*` (NCI walk), `src\Estimate.*` (formula generator, SDK-free).
+- The windows `src\Preview.cpp` and `src\DumpDialog.cpp` include `src\Ui.h` (MFC, NO SDK, no
+  precompiled header); their one SDK need, Mastercam's main window, is `Ui::Host` in
+  `src\Util.cpp`. `tests\dialog_shots.cpp` (built by `tests\build_dialog_shots.bat`, also by
+  run_tests) shows the real windows without Mastercam for the manual's pictures - it gives
+  its own `Ui::Host` and in-memory saved ticks, and puts the preview's lines together the way
+  `Load.cpp` does (change one, change the other).
 
 ## Facts paid for (do not re-derive)
 - Lathe NCI: X is a RADIUS. Lines store (X,0,Z); ARCS store (X,Z,0) - Z in the 2nd slot. Arcs

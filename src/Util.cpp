@@ -1,10 +1,19 @@
 #include "stdafx.h"
 #include "MastercamSdk.h"
 #include "Util.h"
+#include "Ui.h"
 #include "Csv.h"
 
 #include <ctime>
 #include <fstream>
+
+namespace Ui
+	{
+	CWnd *Host ()
+		{
+		return CWnd::FromHandle (get_MainFrame ()->GetSafeHwnd ());
+		}
+	}
 
 namespace Util
 	{
