@@ -31,6 +31,10 @@ $out   = Join-Path $Root "dist\ParamTable-$stamp"
 # top and everything else in a ParamTable\ folder, so the contents of this folder are
 # dropped straight into Add-Ins with no folder to make by hand.
 $sub = Join-Path $out "ParamTable"
+# A second run in the same minute starts clean: copying help\ into a help\ already there
+# would nest a second copy inside it.
+if (Test-Path -LiteralPath $out) { Remove-Item -LiteralPath $out -Recurse -Force }
+if (Test-Path -LiteralPath "$out.zip") { Remove-Item -LiteralPath "$out.zip" -Force }
 New-Item -ItemType Directory -Force -Path $sub | Out-Null
 
 Copy-Item -LiteralPath $dll -Destination (Join-Path $sub "ParamTable.dll")
