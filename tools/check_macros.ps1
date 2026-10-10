@@ -2,8 +2,8 @@
     Real-Excel check of the workbook macros: opens macro_sample.xlsm (tests\macro_test.exe)
     with macros enabled and drives them - two-way links, cross-checks, the cell rules on
     bulk writes, scale, copy, the change list and revert; the planning tools (target time,
-    even out flips, apply to a tool, filters, scenarios) and the chip-thinning calculator.
-    No window is ever shown (a dialog would hang a hidden Excel): each window has a quiet
+    even out flips, apply to a tool, filters, scenarios), the chip-thinning calculator and
+    the op windows (Comments & text, Coolant). No window is ever shown (a dialog would hang a hidden Excel): each window has a quiet
     self-test Function that sets it up, types into it and reads it back.
 
     Usage:  powershell -File tools\check_macros.ps1 [<dir holding macro_sample.xlsm>]
@@ -146,26 +146,7 @@ try {
     $r = $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O3:O4"), "Thru-tool")
     Check ($r -eq "1 1" -and $ws.Range("O3").Text -eq "Thru-tool" -and $ws.Range("O4").Text -eq "Flood + Mist") "Thru-tool set where the machine has it, refused where not ($r)"
 
-    # The coolant window (not shown): boxes from every selected row's machine, * where not all have it.
-    $t = $xl.Run("ParamTable.CoolantPickerSelfTest", $ws.Range("O3:O4"), "1,3")
-    Check ($t -eq "Flood|Mist|Thru-tool  *#Flood + Thru-tool") "coolant window: union with * on Thru-tool, ticks 1+3 ('$t')"
-    $t = $xl.Run("ParamTable.CoolantPickerSelfTest", $ws.Range("O3:O4"), "")
-    Check ($t -like "*#none") "rows that differ start unticked ('$t')"
-    $t = $xl.Run("ParamTable.CoolantPickerSelfTest", $ws.Range("O4"), "")
-    Check ($t -eq "Flood|Mist#Flood + Mist") "one cell starts ticked as it is now ('$t')"
-
-    # The manual-text editor (no window): counter, limit, line breaks as CR LF.
-    $t = $xl.Run("ParamTable.EditorSelfTest", "G4 X1.`r`nM01")
-    Check ($t -eq "11 / 3,111 characters,  2 lines|True|11") "editor counts '$t'"
-    $t = $xl.Run("ParamTable.EditorSelfTest", "a`nb")
-    Check ($t -like "*|True|4") "a bare line feed becomes CR LF ('$t')"
-    $t = $xl.Run("ParamTable.EditorSelfTest", ("x" * 4000))
-    Check ($t -like "*over the limit by 889*|False|4000") "4000 characters: over the limit, OK off ('$t')"
-    # A one-line comment (an op's, an inspection stop's): its own limit, no line breaks.
-    $t = $xl.Run("ParamTable.EditorSelfTest", "ROTATE`r`nINSERT", 119, $true)
-    Check ($t -eq "13 / 119 characters|True|13") "a comment: line break gone, its own limit ('$t')"
-    $t = $xl.Run("ParamTable.EditorSelfTest", ("x" * 120), 119, $true)
-    Check ($t -like "*over the limit by 1|False|120") "a comment past 119: OK off ('$t')"
+    # The Coolant and Comments & text windows are checked at the end (the op windows).
 
     # The Set / Scale / Copy window (not shown): a live line of what OK would do.
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("G3:G4"), "0.02")
@@ -335,6 +316,106 @@ try {
     Check ($t -like "2#op 2    feed    0.01  ->  0.02") "set window lists each cell old -> new ('$t')"
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("G3:I3"), "")
     Check ($t -like "Type or pick*|False|") "set window on mixed columns, nothing typed: OK off ('$t')"
+
+    # ================================================= the op windows (not shown)
+    # Each is set up on the ops of a range, typed into and pressed through its self-test,
+    # and read back ("|" between the fields asked). The sample: ops 2 and 7 on X-style
+    # coolant machines (7's has no Thru-tool), op 9 on a V9 machine with leftover X-style
+    # entries, op 11 on a V9 one; ops 7 and 11 are manual entries; 2, 9, 11 have an
+    # inspection comment (op 11's stop shows none).
+    [void] $xl.Run("ParamTable.RevertCells", $ws.Range("A3:AC6"), $false)
+    function TW ($r, $tab, $steps, $fields) { $xl.Run("ParamTable.TextWindowSelfTest", $ws.Range($r), $tab, $steps, $fields) }
+    function CW ($r, $steps, $fields) { $xl.Run("ParamTable.CoolantWindowSelfTest", $ws.Range($r), $steps, $fields) }
+
+    # ---- Comments & text.
+    $t = TW "A4" "" "" "lblOps,tabs,tab,txtComment,lblCmtCount"
+    Check ($t -eq "op 7  -  T3 FINISH  -  Finish OD|101|comment|Finish OD|9 / 119 characters") "text window on op 7: comment and manual tabs, no inspection ('$t')"
+    $t = TW "P4" "" "" "tab,lblManHint,lblManCount,txtManual"
+    Check ($t -eq "manual|Output as CODE.     Ctrl+Enter = Apply|11 / 3,111 characters,  2 lines|G4 X1. / M01") "double-click on manual text: its tab, output as CODE, 11 characters on 2 lines ('$t')"
+    $t = TW "AA3" "" "" "tab,lblInspCount,txtInsp"
+    Check ($t -eq "insp|13 / 49 characters|ROTATE INSERT") "double-click on insp_comment: the inspection tab, its own limit ('$t')"
+    $t = TW "AA4" "" "" "tab,tabs,lblStatus"
+    Check ($t -like "comment|101|op 7 has no tool inspection comment*") "op 7 has no inspection: that tab is off, and it says why ('$t')"
+    $t = TW "A1" "" "" "lblOps,tabs"
+    Check ($t -eq "Select one or more ops (any cell in their rows)|000") "no op selected: it says to select some ('$t')"
+    $t = TW "A3:A6" "comment" "" "lblOps,txtComment,lblCmtNow,lblInspNow"
+    Check ($t -like "ops 2, 7, 9, 11||Mixed - these 4 ops have different comments now.*|Mixed - these 3 ops*op 7:  no tool inspection - left alone.") "4 ops: Mixed, op 7 left alone on the inspection tab ('$t')"
+    $t = TW "D3,D5" "" "txtComment=Rough;!btnApply" "lblStatus,txtComment,btnApply"
+    Check ($t -eq "2 ops set - Ctrl+Z to undo.|Rough|off" -and $ws.Range("D3").Text -eq "Rough" -and $ws.Range("D5").Text -eq "Rough") "one comment on 2 ops, the result in the window ('$t')"
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($u -eq "2 0" -and $ws.Range("D3").Text -eq "Rough OD" -and $ws.Range("D5").Text -eq "Rough face") "one Undo takes both back ('$u')"
+    $t = TW "D3" "" ("txtComment=" + ("x" * 120)) "lblCmtCount,btnApply"
+    Check ($t -like "120 / 119 characters*over the limit by 1|off") "a comment past 119: Apply off ('$t')"
+    $t = TW "D3" "" "txtComment=ROTATE`r`nINSERT" "lblCmtCount,btnApply"
+    Check ($t -eq "13 / 119 characters|on") "a line break in a comment becomes a space ('$t')"
+    $t = TW "P4" "" "txtManual=a`nb" "lblManCount"
+    Check ($t -eq "4 / 3,111 characters,  2 lines") "manual text: a bare line feed counts as CR LF ('$t')"
+    $t = TW "P4" "" ("txtManual=" + ("x" * 4000)) "lblManCount,btnApply"
+    Check ($t -like "*over the limit by 889|off") "4000 characters of manual text: over the limit, Apply off ('$t')"
+    $t = TW "P4,P6" "" "op=1;txtManual=(CHECK);op=0;txtManual=M00;!btnApply" "lblStatus"
+    Check ($t -eq "2 ops set - Ctrl+Z to undo." -and $ws.Range("P4").Text -eq "M00" -and $ws.Range("P6").Text -eq "(CHECK)") "two manual entries typed one at a time, applied together ('$t')"
+    [void] $xl.Run("Panel.UndoLast")
+    $t = TW "AA3,AA5" "" "!btnQ2;!btnApply" "lblStatus,lblInspNow"
+    Check ($t -like "2 ops set*|The same on both ops*" -and $ws.Range("AA3").Text -eq "CHANGE INSERT" -and $ws.Range("AA5").Text -eq "CHANGE INSERT") "quick pick CHANGE INSERT on 2 ops ('$t')"
+    [void] $xl.Run("Panel.UndoLast")
+    $t = TW "AA6" "" "txtInsp=INDEX INSERT" "chkInspOn"
+    Check ($t -eq "True") "op 11's stop shows no comment: typing one ticks 'switch it on' ('$t')"
+    $t = TW "AA6" "" "txtInsp=INDEX INSERT;!btnApply" "lblStatus"
+    Check ($t -eq "1 op set - Ctrl+Z to undo." -and $ws.Range("AA6").Text -eq "INDEX INSERT" -and $ws.Range("AB6").Value2 -eq 1) "applied: the comment and insp_comment_on 1 ('$t')"
+    [void] $xl.Run("Panel.UndoLast")
+    $t = TW "D3" "" "txtComment=New;follow=A5" "lblOps,lblStatus,txtComment"
+    Check ($t -eq "op 2  -  T1 DYNAMIC  -  Rough OD|Not applied yet - Apply, or Revert to follow the sheet again.|New") "typing not applied: it does not follow the sheet, and says so ('$t')"
+    $t = TW "D3" "" "txtComment=New;follow=A5;!btnRevert" "lblOps,txtComment"
+    Check ($t -eq "op 9  -  T1 ROUGH  -  Rough face|Rough face") "Revert: it follows the sheet again ('$t')"
+    $t = TW "D3" "" "follow=A4:A5" "lblOps"
+    Check ($t -eq "ops 7, 9") "nothing typed: it follows the sheet to ops 7 and 9 ('$t')"
+    $t = TW "D3" "" "txtComment=Q;follow=A6;!btnApply" "lblOps,lblStatus"
+    Check ($t -eq "op 11  -  T1 FINISH  -  Finish face|1 op set - Ctrl+Z to undo." -and $ws.Range("D3").Text -eq "Q") "Apply writes op 2, then goes where the sheet went ('$t')"
+    [void] $xl.Run("Panel.UndoLast")
+    $ws.Rows(4).Hidden = $true
+    $t = TW "D3:E3" "" "!btnNext" "lblOps"
+    $sel = $xl.Selection.Address($false, $false)
+    $ws.Rows(4).Hidden = $false
+    Check ($t -like "op 9 *" -and $sel -eq "D5") "Next skips a hidden op and the sheet goes with it ('$t', $sel)"
+    $t = TW "D3" "" "!btnPrev" "lblStatus"
+    Check ($t -eq "No op above this one.") "Prev on the first op ('$t')"
+    $t = TW "D3" "" "txtComment=zz;!btnNext" "lblOps,lblStatus"
+    Check ($t -like "op 2 *|Apply or Revert first*") "typing not applied: Next waits ('$t')"
+
+    # ---- Coolant.
+    $t = CW "A3:A6" "" "parts,v9,grid,lblV9Now,lblXNow"
+    Check ($t -eq "v9 2, x 2, none 0||Flood:---, Mist:---, Thru-tool  *:---|Now:  Mixed: Flood x1, Off x1|Before the move:  none   (both ops) / With the move:  none   (both ops) / After the move:  none   (both ops)") "4 ops: 2 V9 (op 9's leftover entries do not count), 2 X-style, V9 Mixed ('$t')"
+    $t = CW "A3:A6" "with/Flood=1;!btnApply" "lblStatus,grid"
+    Check ($t -eq "2 ops set - Ctrl+Z to undo.|Flood:-x-, Mist:---, Thru-tool  *:---" -and $ws.Range("O3").Text -eq "Flood" -and $ws.Range("O4").Text -eq "Flood" -and $ws.Range("O5").Text -eq "Flood" -and $ws.Range("Z5").Text -eq "Flood") "Flood with the move: the 2 X-style ops set, the V9 ones left ('$t')"
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($u -eq "2 0" -and $ws.Range("O3").Text -eq "none") "one Undo ('$u')"
+    [void] $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O3"), "Flood + Mist")
+    [void] $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O4"), "Flood")
+    $t = CW "A3:A4" "" "grid,lblXNow,btnApply"
+    Check ($t -eq "Flood:-x-, Mist:-?-, Thru-tool  *:---|Before the move:  none   (both ops) / With the move:  Mixed: Flood + Mist x1, Flood x1 / After the move:  none   (both ops)|off") "ops that differ: Mist grey, said in words ('$t')"
+    $t = CW "A3:A4" "with/Thru-tool=1;!btnApply" "lblStatus"
+    Check ($t -eq "1 op set - Ctrl+Z to undo. / Not set:  op 7 (with the move): this machine has no Thru-tool" -and $ws.Range("O3").Text -eq "Flood + Mist + Thru-tool" -and $ws.Range("O4").Text -eq "Flood") "Thru-tool: set where the machine has it (grey Mist kept), op 7 listed with why ('$t')"
+    $t = CW "A3:A4" "with/Mist=1;with/Mist=?" "btnApply"
+    Check ($t -eq "off") "a box put back to grey is no change ('$t')"
+    $t = CW "A3:A4" "before/Flood=1;after/Mist=1;!btnApply" "lblStatus"
+    Check ($t -eq "2 ops set - Ctrl+Z to undo." -and $ws.Range("X3").Text -eq "Flood" -and $ws.Range("Y4").Text -eq "Mist" -and $ws.Range("O4").Text -eq "Flood") "before and after set together, with left as it was ('$t')"
+    [void] $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O4"), "Flood + Mist off")
+    $t = CW "A4" "with/Flood=0;!btnApply" "lblStatus"
+    Check ($t -eq "1 op set - Ctrl+Z to undo." -and $ws.Range("O4").Text -eq "Mist off") "a 'Mist off' entry is kept when Flood goes ('$t')"
+    $t = CW "A5:A6" "v9=Mist;!btnApply" "lblStatus,v9,lblV9Now"
+    Check ($t -eq "2 ops set - Ctrl+Z to undo.|Mist|Now:  Mist   (both ops)" -and $ws.Range("Z5").Text -eq "Mist" -and $ws.Range("Z6").Text -eq "Mist") "V9: Mist on both ('$t')"
+    [void] $xl.Run("Panel.UndoLast")
+    $t = CW "A3" "with/Mist=0;follow=A5" "lblOps,lblStatus"
+    Check ($t -eq "op 2  -  T1 DYNAMIC  -  Rough OD|Not applied yet - Apply, or Revert to follow the sheet again.") "a change not applied: it does not follow the sheet ('$t')"
+    $t = CW "A3" "with/Mist=0;follow=A5;!btnRevert" "lblOps,parts,v9"
+    Check ($t -eq "op 9  -  T1 ROUGH  -  Rough face|v9 1, x 0, none 0|Flood") "Revert: it follows to op 9, a V9 op set to Flood ('$t')"
+    $t = CW "A4:B4" "!btnNext" "lblOps"
+    $sel = $xl.Selection.Address($false, $false)
+    Check ($t -like "op 9 *" -and $sel -eq "O5,X5:Z5") "Next: op 9, the sheet on its coolant cells ('$t', $sel)"
+    $t = CW "A1" "" "lblOps,parts"
+    Check ($t -eq "Select one or more ops (any cell in their rows)|v9 0, x 0, none 0") "no op selected: it says to select some ('$t')"
+    [void] $xl.Run("ParamTable.RevertCells", $ws.Range("A3:AC6"), $false)
+    Check ($xl.Run("Planner.EditCount") -eq 0) "the sheet is as dumped again"
 
     $wb.Close($false)
 } finally {
