@@ -42,6 +42,11 @@ Private lastKey As String               ' the rows they were last told
 Private marked As Boolean               ' the row mark is on the sheet
 Private lastFind As String              ' what Find op looked for last
 
+' A command is writing (its cells are being recorded for undo).
+Public Function Recording() As Boolean
+    Recording = jOn
+End Function
+
 ' Start recording a command's writes. Nested calls keep the outer command.
 Public Sub BeginEdit(ByVal label As String)
     If jOn Then Exit Sub
@@ -456,10 +461,11 @@ Public Sub SelectionMoved(ByVal Target As Range)
     On Error Resume Next
     MarkRow ActiveCell.Row
     If wins Is Nothing Then Exit Sub
-    If wins.Count = 0 Or Following Then Exit Sub
+    If wins.Count = 0 Then Exit Sub
     Set rows = OpRows(Target)
     If rows.Count = 0 Then Exit Sub
     k = RowsKey(rows)
+    If Following Then lastKey = k: Exit Sub ' a window moved it: remember, so clicking back is a move
     If k = lastKey Then Exit Sub
     lastKey = k
     For Each f In wins
@@ -595,8 +601,8 @@ Public Sub RbTarget(control As IRibbonControl): Planner.ShowTargetWindow: End Su
 Public Sub RbScenLoad(control As IRibbonControl): Recorded "Restore scenario", "ParamTable.ScenarioWindow", "scenload": End Sub
 
 ' The op windows (each its own window module; these just open them).
-Public Sub RbText(control As IRibbonControl): Recorded "Edit text", "ParamTable.EditManualText": End Sub
-Public Sub RbCoolant(control As IRibbonControl): Recorded "Coolant", "ParamTable.PickCoolant": End Sub
+Public Sub RbText(control As IRibbonControl): ParamTable.ShowTextWindow: End Sub
+Public Sub RbCoolant(control As IRibbonControl): ParamTable.ShowCoolantWindow: End Sub
 Public Sub RbSpeed(control As IRibbonControl): ParamTable.CalcSpeed: End Sub      ' modeless: its own writes are each one undo
 Public Sub RbInspect(control As IRibbonControl): Planner.ShowInspectWindow: End Sub
 

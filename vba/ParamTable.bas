@@ -10,6 +10,11 @@ Attribute VB_Name = "ParamTable"
 ' enforces), so a command cannot put in a value a person could not type.
 Option Explicit
 
+' The op windows that stay open beside the sheet - one of each (ShowTextWindow,
+' ShowCoolantWindow); Nothing when closed.
+Private textWin As TextEditor
+Private coolWin As CoolantPicker
+
 Private Const MAIN_SHEET As String = "Lathe params"
 Private Const DUMPED_SHEET As String = "Dumped"
 Private Const HEADER_ROW As Long = 2
@@ -83,6 +88,11 @@ Public Function DataCells(ByVal r As Range) As Range
     If r.Worksheet.Name <> MAIN_SHEET Then Exit Function
     Set body = Intersect(r, MainSheet.Range(MainSheet.Cells(FIRST_ROW, 1), MainSheet.Cells(LastRow, LastCol)))
     If body Is Nothing Then Exit Function
+    ' One cell: SpecialCells on a single cell would search the whole sheet.
+    If body.Cells.Count = 1 Then
+        If Not body.EntireRow.Hidden And Not body.EntireColumn.Hidden Then Set DataCells = body
+        Exit Function
+    End If
     On Error Resume Next
     Set DataCells = body.SpecialCells(xlCellTypeVisible)
 End Function
@@ -111,6 +121,14 @@ Private Function CellOk(ByVal c As Range) As Boolean
     CellOk = c.Validation.Value
 End Function
 
+' A cell that holds words (a comment, a name): its rule counts characters, or it is
+' formatted as text - a typed "123" stays the words 123 there.
+Private Function IsTextCell(ByVal c As Range) As Boolean
+    On Error Resume Next
+    IsTextCell = (c.NumberFormat = "@")
+    If Not IsTextCell Then IsTextCell = (c.Validation.Type = xlValidateTextLength)
+End Function
+
 ' Write a value the way typing it would be judged; undone if the cell's rule refuses it.
 Public Function TryWrite(ByVal c As Range, ByVal v As Variant) As Boolean
     Dim had As Boolean, f As String, old As Variant
@@ -118,7 +136,10 @@ Public Function TryWrite(ByVal c As Range, ByVal v As Variant) As Boolean
     If had Then f = c.Formula Else old = c.Value
     Panel.Journal c                         ' for undo
     If VarType(v) = vbString Then
-        If IsNumeric(v) And Trim$(v) <> "" Then v = CDbl(v)
+        If IsNumeric(v) And Trim$(v) <> "" Then
+            ' Words that look like a number (a comment "123"): Excel would make it one.
+            If IsTextCell(c) Then v = "'" & v Else v = CDbl(v)
+        End If
     End If
     c.Value = v
     If CellOk(c) Then
@@ -1025,7 +1046,134 @@ Public Function SurfaceFromRpm(ByVal dia As Double, ByVal rpm As Double, ByVal m
     SurfaceFromRpm = rpm * Application.Pi() * dia / IIf(metric, 1000, 12)
 End Function
 
-' ============================================================ pickers
+' ============================================================ op windows: shared
+
+' The ops a window opens on: every row with a selected cell; with none, the row the cursor
+' is on; not an op row either - none (the window then says to select some).
+Public Function WindowRows() As Collection
+    Dim rows As Collection, r As Long
+    Set rows = New Collection
+    On Error Resume Next
+    If TypeName(Selection) = "Range" Then Set rows = Panel.OpRows(Selection)
+    If rows.Count = 0 And ActiveSheet.Name = MAIN_SHEET Then
+        r = ActiveCell.Row
+        If r >= FIRST_ROW And r <= LastRow Then
+            If Not MainSheet.Rows(r).Hidden Then rows.Add r
+        End If
+    End If
+    Set WindowRows = rows
+End Function
+
+' The op above or below a row (way -1 / 1), hidden rows skipped; 0 when there is none.
+Public Function NextOpRow(ByVal r As Long, ByVal way As Long) As Long
+    Dim last As Long
+    last = LastRow
+    Do
+        r = r + way
+        If r < FIRST_ROW Or r > last Then Exit Function
+    Loop While MainSheet.Rows(r).Hidden
+    NextOpRow = r
+End Function
+
+' "op 7, op 11" - a few ops by number, the rest as "and 3 more".
+Public Function OpNames(ByVal rows As Collection) As String
+    Dim i As Long, s As String
+    For i = 1 To Application.Min(rows.Count, 5)
+        s = s & IIf(s = "", "", ", ") & "op " & MainSheet.Cells(rows(i), 1).Value
+    Next
+    If rows.Count > 5 Then s = s & " and " & rows.Count - 5 & " more"
+    OpNames = s
+End Function
+
+' A cell's value as text ("" for an error value).
+Public Function CellText(ByVal c As Range) As String
+    If Not IsError(c.Value) Then CellText = CStr(c.Value)
+End Function
+
+' "Flood x3, Off x1" - each value and how many ops have it, most first (a blank cell is
+' "(blank)").
+Public Function CountsText(ByVal values As Collection) As String
+    Dim nm() As String, n() As Long, k As Long, v As Variant, i As Long, j As Long, best As Long, s As String
+    ReDim nm(1 To values.Count + 1): ReDim n(1 To values.Count + 1)
+    For Each v In values
+        If Trim$(CStr(v)) = "" Then v = "(blank)"
+        For i = 1 To k
+            If LCase$(nm(i)) = LCase$(CStr(v)) Then Exit For
+        Next
+        If i > k Then
+            k = k + 1
+            nm(k) = CStr(v)
+        End If
+        n(i) = n(i) + 1
+    Next
+    For j = 1 To k
+        best = 0
+        For i = 1 To k
+            If n(i) > 0 Then
+                If best = 0 Then best = i Else If n(i) > n(best) Then best = i
+            End If
+        Next
+        s = s & IIf(s = "", "", ", ") & nm(best) & " x" & n(best)
+        n(best) = 0
+    Next
+    CountsText = s
+End Function
+
+' Count an op once in an Apply's "ops set".
+Public Sub CountOp(ByVal done As Collection, ByVal r As Long)
+    On Error Resume Next
+    done.Add r, CStr(r)
+End Sub
+
+' An op window's result line after Apply: "3 ops set - Ctrl+Z to undo." and the ops
+' refused, with why ("op 7 (with the move): this machine has no Thru-tool").
+Public Function ApplyResult(ByVal done As Collection, ByVal bad As Collection, ByVal why As String) As String
+    Dim s As String, i As Long
+    If done.Count > 0 Then
+        s = done.Count & IIf(done.Count = 1, " op", " ops") & " set - Ctrl+Z to undo."
+    ElseIf bad.Count = 0 And why = "" Then
+        s = "Nothing to change - the ops already have that."
+    Else
+        s = "Nothing set."
+    End If
+    If bad.Count > 0 Then
+        s = s & vbCrLf & "Not set:  "
+        For i = 1 To Application.Min(bad.Count, 4)
+            s = s & IIf(i = 1, "", ";  ") & bad(i)
+        Next
+        If bad.Count > 4 Then s = s & ";  and " & bad.Count - 4 & " more"
+    End If
+    If why <> "" Then s = s & vbCrLf & "Stopped by an error: " & why
+    ApplyResult = s
+End Function
+
+' A window closed: forget it, so the next press opens a fresh one.
+Public Sub WindowClosed(ByVal f As Object)
+    If Not textWin Is Nothing Then
+        If f Is textWin Then Set textWin = Nothing
+    End If
+    If Not coolWin Is Nothing Then
+        If f Is coolWin Then Set coolWin = Nothing
+    End If
+End Sub
+
+' Whether a cell takes input at all (read-only and does-not-apply cells refuse everything).
+Public Function TakesInput(ByVal c As Range) As Boolean
+    Dim f As String
+    TakesInput = True
+    On Error Resume Next
+    f = UCase$(Replace(c.Validation.Formula1, "=", ""))
+    On Error GoTo 0
+    If f = "FALSE" Then TakesInput = False
+End Function
+
+' The most characters a cell takes, from its own rule (0 = none known).
+Public Function TextLimit(ByVal c As Range) As Long
+    On Error Resume Next
+    If c.Validation.Type = xlValidateTextLength Then TextLimit = CLng(c.Validation.Formula1)
+End Function
+
+' ============================================================ coolant
 
 Private Function IsCoolantHeader(ByVal hdr As String) As Boolean
     IsCoolantHeader = (hdr = "coolant_before" Or hdr = "coolant_with" Or hdr = "coolant_after")
@@ -1040,7 +1188,7 @@ Private Function AllCoolant(ByVal cells As Range) As Boolean
 End Function
 
 ' A coolant cell's choices: its dropdown list ("none" first), or an empty array.
-Private Function CoolantChoices(ByVal c As Range) As Variant
+Public Function CoolantChoices(ByVal c As Range) As Variant
     Dim list As String
     On Error Resume Next
     list = c.Validation.Formula1
@@ -1053,187 +1201,132 @@ Private Function CoolantChoices(ByVal c As Range) As Variant
     End If
 End Function
 
-' The coolant window for some cells: one tick box per coolant any of their machines has
-' (marked * when not every row's machine has it), ticked as the cells are now when they
-' all agree. Not shown - the caller shows it.
-Private Function CoolantForm(ByVal cells As Range, ByVal what As String) As CoolantPicker
-    Dim c As Range, opts As Variant, i As Long, k As Long, offer() As String, hits() As Long, n As Long
-    Dim partial() As Boolean, current As String, same As Boolean, f As CoolantPicker
-    ReDim offer(0 To 0): ReDim hits(0 To 0)
-    same = True
-    For Each c In cells.Cells
-        opts = CoolantChoices(c)
-        For i = 1 To UBound(opts)                         ' 0 is "none"
-            For k = 0 To n - 1
-                If LCase$(offer(k)) = LCase$(Trim$(opts(i))) Then Exit For
-            Next
-            If k = n Then
-                ReDim Preserve offer(0 To n): ReDim Preserve hits(0 To n)
-                offer(n) = Trim$(opts(i)): n = n + 1
-            End If
-            hits(k) = hits(k) + 1
-        Next
-        If c.Address <> cells.Cells(1, 1).Address Then
-            If LCase$(CStr(c.Value)) <> LCase$(CStr(cells.Cells(1, 1).Value)) Then same = False
-        End If
-    Next
-    If n = 0 Then Exit Function
-    ReDim partial(0 To n - 1)
-    For k = 0 To n - 1
-        partial(k) = (hits(k) < cells.Count)
-    Next
-    If same Then current = CStr(cells.Cells(1, 1).Value)
-    Set f = New CoolantPicker
-    f.Setup offer, partial, current, what & ":  tick the coolants to turn on.  None ticked = none."
-    Set CoolantForm = f
-End Function
+' The Coolant window on the ops selected - one of it: pressed again it comes to the front
+' and follows the selection.
+Public Sub ShowCoolantWindow()
+    If coolWin Is Nothing Then Set coolWin = New CoolantPicker
+    coolWin.ShowOn WindowRows()
+End Sub
 
-' Ask with the coolant window; the names joined by " + ", "none", or "" if cancelled.
+' Set selected on coolant cells: the Coolant window, on their ops. It sets the coolant
+' itself (Apply), so nothing comes back for Set to write.
 Public Function AskCoolants(ByVal cells As Range, ByVal what As String) As String
-    Dim f As CoolantPicker
-    Set f = CoolantForm(cells, what)
-    If f Is Nothing Then
-        MsgBox "No coolant choices here - is this a row with coolant?", vbInformation, TITLE
-        Exit Function
-    End If
-    f.Show
-    If f.Accepted Then AskCoolants = f.Result()
-    Unload f
+    If coolWin Is Nothing Then Set coolWin = New CoolantPicker
+    coolWin.ShowOn Panel.OpRows(cells)
 End Function
 
-' For tools\check_macros.ps1 (no window): the boxes offered, then what ticking boxes
-' "1,3" (positions) would set - "captions|...#result".
-Public Function CoolantPickerSelfTest(ByVal cells As Range, ByVal ticks As String) As String
-    Dim f As CoolantPicker, t As Variant, i As Long
-    Set f = CoolantForm(cells, "test")
-    If f Is Nothing Then Exit Function
-    If ticks <> "" Then
-        For i = 1 To 12
-            f.Tick i, False
-        Next
-        For Each t In Split(ticks, ",")
-            f.Tick CLng(t), True
-        Next
-    End If
-    CoolantPickerSelfTest = f.Captions() & "#" & f.Result()
-    Unload f
-End Function
-
-' Coolant names into cells, each row checked against ITS OWN choices (machines differ).
-' "A + B" is not a dropdown choice but is what the load reads - so the check is by name.
-Public Function SetCoolantCells(ByVal cells As Range, ByVal names As String) As String
-    Dim c As Range, ok As Long, bad As Long, opts As Variant, want() As String, i As Long, j As Long, found As Boolean, good As Boolean
-    want = Split(names, " + ")
-    For Each c In cells.Cells
-        opts = CoolantChoices(c)
-        good = UBound(opts) >= 0
-        For i = 0 To UBound(want)
-            found = False
-            For j = 0 To UBound(opts)
-                If LCase$(Trim$(opts(j))) = LCase$(Trim$(want(i))) Then found = True
-            Next
-            If Not found Then good = False
-        Next
-        If good Then
-            Panel.Journal c
-            c.Value = names
-            ok = ok + 1
-        Else
-            bad = bad + 1
+' Coolant names into one X-style cell, checked against THAT cell's own choices (machines
+' differ). "A + B" and "A off" are not dropdown choices but are what the load reads, so
+' the check is by name; a single choice (or none) still goes through the cell's rule.
+' "" when written, else why not.
+Public Function WriteCoolant(ByVal c As Range, ByVal names As String) As String
+    Dim opts As Variant, want() As String, i As Long, j As Long, found As Boolean, nm As String, offs As Boolean
+    opts = CoolantChoices(c)
+    If UBound(opts) < 0 Or Not TakesInput(c) Then WriteCoolant = "no coolant on this op": Exit Function
+    want = Split(names, "+")
+    For i = 0 To UBound(want)
+        nm = Trim$(want(i))
+        If LCase$(Right$(nm, 4)) = " off" Then
+            nm = Trim$(Left$(nm, Len(nm) - 4))
+            offs = True
         End If
+        found = False
+        For j = 0 To UBound(opts)
+            If LCase$(Trim$(opts(j))) = LCase$(nm) Then found = True
+        Next
+        If Not found Then WriteCoolant = "this machine has no " & nm: Exit Function
+    Next
+    If UBound(want) = 0 And Not offs Then
+        If Not TryWrite(c, Trim$(names)) Then WriteCoolant = "the cell does not take " & Trim$(names)
+    Else
+        Panel.Journal c                     ' for undo
+        c.Value = names
+    End If
+End Function
+
+' Coolant names into cells, each row checked against ITS OWN choices: "done refused".
+Public Function SetCoolantCells(ByVal cells As Range, ByVal names As String) As String
+    Dim c As Range, ok As Long, bad As Long
+    For Each c In cells.Cells
+        If WriteCoolant(c, names) = "" Then ok = ok + 1 Else bad = bad + 1
     Next
     SetCoolantCells = ok & " " & bad
 End Function
 
-' Several coolants at one timing, for the active cell.
-Public Sub PickCoolant()
-    Dim c As Range, names As String
-    If Not OnMain() Then Exit Sub
-    Set c = ActiveCell
-    If Not IsCoolantHeader(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) Or c.Row < FIRST_ROW Then
-        MsgBox "Click a cell in coolant_before, coolant_with or coolant_after first.", vbInformation, TITLE
-        Exit Sub
+' For tools\check_macros.ps1 (no window shown): the Coolant window on a range's ops, then
+' steps joined by ";" (CoolantPicker.Act: "v9=Flood", "with/Flood=1", "!btnApply",
+' "follow=A5" ...), read back: the fields asked for, joined by "|" (CoolantPicker.Field).
+Public Function CoolantWindowSelfTest(ByVal r As Range, ByVal steps As String, ByVal fields As String) As String
+    Dim f As CoolantPicker, t As Variant, s As String
+    Set f = New CoolantPicker
+    f.LoadRows Panel.OpRows(r)
+    If steps <> "" Then
+        For Each t In Split(steps, ";")
+            f.Act CStr(t)
+        Next
     End If
-    names = AskCoolants(c, "op " & MainSheet.Cells(c.Row, 1).Value & "  " & MainSheet.Cells(HEADER_ROW, c.Column).Value)
-    If names <> "" Then SetCoolantCells c, names
-End Sub
-
-' ============================================================ manual entry text
-
-' Whether a cell takes input at all (read-only and does-not-apply cells refuse everything).
-Public Function TakesInput(ByVal c As Range) As Boolean
-    Dim f As String
-    TakesInput = True
-    On Error Resume Next
-    f = UCase$(Replace(c.Validation.Formula1, "=", ""))
-    On Error GoTo 0
-    If f = "FALSE" Then TakesInput = False
-End Function
-
-' The columns the text editor opens on (double-click, or the ribbon's Edit text).
-Public Function IsTextColumn(ByVal hdr As String) As Boolean
-    IsTextColumn = (hdr = "manual_text" Or hdr = "comment" Or hdr = "insp_comment")
-End Function
-
-Public Sub EditManualText()
-    Dim c As Range
-    If Not OnMain() Then Exit Sub
-    Set c = ActiveCell
-    If Not IsTextColumn(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) Or c.Row < FIRST_ROW Then
-        MsgBox "Click a comment, inspection comment or manual entry text cell first.", vbInformation, TITLE
-        Exit Sub
-    End If
-    EditText c
-End Sub
-
-' The most characters a cell takes, from its own rule (0 = none known).
-Private Function TextLimit(ByVal c As Range) As Long
-    On Error Resume Next
-    If c.Validation.Type = xlValidateTextLength Then TextLimit = CLng(c.Validation.Formula1)
-End Function
-
-' The editor window on one text cell. True when the text was changed.
-Public Function EditText(ByVal c As Range) As Boolean
-    Dim f As TextEditor, info As String, g As Variant, hdr As String, what As String
-    hdr = CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)
-    If Not TakesInput(c) Then
-        If hdr = "manual_text" Then
-            MsgBox "This row is not a manual entry.", vbInformation, TITLE
-        Else
-            MsgBox "This operation has no " & IIf(hdr = "comment", "comment", "tool inspection comment") & " to edit.", vbInformation, TITLE
-        End If
-        Exit Function
-    End If
-    info = "op " & MainSheet.Cells(c.Row, 1).Value
-    Set f = New TextEditor
-    If hdr = "manual_text" Then
-        g = ValueAt(c.Row, "manual_gcode")
-        If CStr(g) = "1006" Then info = info & "  -  output as CODE" Else If CStr(g) = "1005" Then info = info & "  -  output as a COMMENT"
-        info = info & "        (Ctrl+Enter = OK,  Esc = Cancel)"
-        f.LoadText CStr(c.Value), info
-    Else
-        what = IIf(hdr = "comment", "operation comment", "tool inspection comment")
-        If hdr = "insp_comment" Then info = info & "  -  shown at each inspection stop; ROTATE / FLIP / CHANGE / INDEX makes it an insert flip"
-        info = info & "      (Enter = OK,  Esc = Cancel)"
-        f.LoadText CStr(c.Value), info, TextLimit(c), what, True
-    End If
-    f.Show
-    If f.Accepted Then
-        If f.EditedText() <> CStr(c.Value) Then
-            Panel.Journal c
-            c.Value = f.EditedText()
-            EditText = True
-        End If
-    End If
+    For Each t In Split(fields, ",")
+        s = s & IIf(s = "", "", "|") & f.Field(CStr(t))
+    Next
+    CoolantWindowSelfTest = s
     Unload f
 End Function
 
-' For the checks (no window): the counter and the limit, on given text.
-Public Function EditorSelfTest(ByVal text As String, Optional ByVal maxLen As Long = 0, Optional ByVal oneLine As Boolean = False) As String
-    Dim f As TextEditor
+' ============================================================ comments and text
+
+' The tab of the Comments & text window for a column: "comment", "insp", "manual", or "".
+Public Function TextTab(ByVal hdr As String) As String
+    Select Case hdr
+        Case "comment": TextTab = "comment"
+        Case "insp_comment": TextTab = "insp"
+        Case "manual_text": TextTab = "manual"
+    End Select
+End Function
+
+' The columns the Comments & text window opens on with a double-click.
+Public Function IsTextColumn(ByVal hdr As String) As Boolean
+    IsTextColumn = (TextTab(hdr) <> "")
+End Function
+
+' The Comments & text window on the ops selected - one of it: pressed again it comes to
+' the front and follows the selection. Its tab: "comment", "insp", "manual"; "" = the
+' one for the column the cursor is in (else as it was).
+Public Sub ShowTextWindow(Optional ByVal tabName As String = "")
+    On Error Resume Next
+    If tabName = "" And ActiveSheet.Name = MAIN_SHEET Then tabName = TextTab(CStr(MainSheet.Cells(HEADER_ROW, ActiveCell.Column).Value))
+    On Error GoTo 0
+    If textWin Is Nothing Then Set textWin = New TextEditor
+    textWin.ShowOn WindowRows(), tabName
+End Sub
+
+' Double-click on a comment, inspection comment or manual entry text cell: the window, on
+' that tab, for that op. True when it is one of those cells.
+Public Function EditText(ByVal c As Range) As Boolean
+    Dim tb As String
+    tb = TextTab(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value))
+    If tb = "" Or c.Row < FIRST_ROW Then Exit Function
+    ShowTextWindow tb
+    EditText = True
+End Function
+
+' For tools\check_macros.ps1 (no window shown): the Comments & text window on a range's
+' ops - on a tab, or "" for the tab of the range's column (as a double-click opens it) -
+' then steps joined by ";" (TextEditor.Act: "txtComment=...", "!btnApply", "follow=A5"
+' ...), read back: the fields asked for, joined by "|" (TextEditor.Field).
+Public Function TextWindowSelfTest(ByVal r As Range, ByVal tabName As String, ByVal steps As String, ByVal fields As String) As String
+    Dim f As TextEditor, t As Variant, s As String
+    If tabName = "" Then tabName = TextTab(CStr(MainSheet.Cells(HEADER_ROW, r.Cells(1, 1).Column).Value))
     Set f = New TextEditor
-    f.LoadText text, "test", maxLen, IIf(oneLine, "comment", ""), oneLine
-    EditorSelfTest = f.CountText() & "|" & f.CanAccept() & "|" & Len(f.EditedText())
+    f.LoadRows Panel.OpRows(r), tabName
+    If steps <> "" Then
+        For Each t In Split(steps, ";")
+            f.Act CStr(t)
+        Next
+    End If
+    For Each t In Split(fields, ",")
+        s = s & IIf(s = "", "", "|") & f.Field(CStr(t))
+    Next
+    TextWindowSelfTest = s
     Unload f
 End Function
 
