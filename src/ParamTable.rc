@@ -60,6 +60,7 @@ BEGIN
     IDS_FT_LOAD     "Parameter Table Tool\nLathe params - load"
     IDS_FT_UNDO     "Parameter Table Tool\nLathe params - undo last load"
     IDS_FT_HELP     "Parameter Table Tool\nParameter Table - user manual"
+    IDS_FT_GROUP    "Parameter Table Tool\nParameter Table"
 END
 
 #endif

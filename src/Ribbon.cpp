@@ -3,6 +3,7 @@
 namespace Ribbon
 	{
 	const wchar_t *const kApplication = L"_ParamTableAddIn_";
+	const wchar_t *const kGroup = L"ParamTableGroup";
 
 	namespace
 		{
@@ -21,47 +22,23 @@ namespace Ribbon
 			return o;
 			}
 
-		/// One CATEGORY as Mastercam's own ribbon writes them (en\RibbonUIRes.dll):
-		/// a panel of buttons, each naming its function table function. No image
-		/// index - the buttons take the icons ParamTable.ft gives each function.
-		std::wstring Category (const std::vector<Button> &buttons)
+		/// "APPLICATION.FUNCTION", as the ribbon names a function table entry.
+		std::wstring Command (const std::wstring &function)
 			{
-			std::wstring x = L"<CATEGORY>"
-							 L"<ACCTESTING_NAME>ParameterTableTab</ACCTESTING_NAME>"
-							 L"<ELEMENT_NAME>Category</ELEMENT_NAME>"
-							 L"<NAME>Parameter Table</NAME>"
-							 L"<PANELS><PANEL>"
-							 L"<ACCTESTING_NAME>ParameterTableGroup</ACCTESTING_NAME>"
-							 L"<ELEMENT_NAME>Panel</ELEMENT_NAME>"
-							 L"<NAME>Parameter Table</NAME>"
-							 L"<ELEMENTS>";
-			for (const Button &b : buttons)
-				{
-				const std::wstring id = std::to_wstring (b.id);
-				x += L"<ELEMENT>"
-					 L"<ELEMENT_NAME>Button</ELEMENT_NAME>"
-					 L"<ID><NAME>" + id + L"</NAME><VALUE>" + id + L"</VALUE>"
-					 L"<FT_APPLICATION>" + std::wstring (kApplication) + L"</FT_APPLICATION>"
-					 L"<FT_FUNCTION>" + Esc (b.function) + L"</FT_FUNCTION></ID>"
-					 L"<TEXT>" + Esc (b.text) + L"</TEXT>"
-					 L"<TOOLTIP>" + Esc (b.text) + L"</TOOLTIP>"
-					 L"<DESCRIPTION>" + Esc (b.tip) + L"</DESCRIPTION>"
-					 L"</ELEMENT>";
-				}
-			return x + L"</ELEMENTS></PANEL></PANELS></CATEGORY>";
+			return Esc (std::wstring (kApplication) + L"." + function);
 			}
 		}
 
-	std::wstring TabXml (const std::vector<Button> &buttons, int shape)
+	std::wstring TabXml (const std::vector<Button> &buttons)
 		{
-		const std::wstring cat = Category (buttons);
-		if (shape == 2)
-			return cat;
-		const std::wstring cats = L"<CATEGORIES>" + cat + L"</CATEGORIES>";
-		if (shape == 1)
-			return cats;
-		return L"<?xml version=\"1.0\"?><BCGP_RIBBON><HEADER><VERSION>1</VERSION></HEADER>"
-			   L"<RIBBON_BAR><ELEMENT_NAME>RibbonBar</ELEMENT_NAME>" + cats + L"</RIBBON_BAR></BCGP_RIBBON>";
+		// Labels, icons and tips come from the function table entries themselves.
+		std::wstring x = L"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+						 L"<Ribbon><Tabs><Tab Label=\"Parameter Table\" KeyTip=\"PT\"><Groups>"
+						 L"<Group FTCommand=\"" + Command (kGroup) + L"\" KeyTip=\"PG\"><Elements>";
+		for (const Button &b : buttons)
+			x += L"<Button FTCommand=\"" + Command (b.function) + L"\" KeyTip=\"" + Esc (b.keyTip)
+				 + L"\" LargeMode=\"Always\" />";
+		return x + L"</Elements></Group></Groups></Tab></Tabs></Ribbon>";
 		}
 
 	bool OnRibbonAlready (const std::string &workspace, const std::vector<unsigned> &ids)

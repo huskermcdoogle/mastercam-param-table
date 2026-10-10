@@ -1,4 +1,4 @@
-// The add-in's own ribbon tab: the XML it hands Mastercam (in each shape it offers),
+// The add-in's own ribbon tab: the XML it hands Mastercam,
 // and whether the commands are on a tab of the person's own already.
 #include "../src/Ribbon.h"
 
@@ -23,26 +23,22 @@ static size_t Count (const std::wstring &s, const std::wstring &what)
 int main ()
 	{
 	const std::vector<Ribbon::Button> buttons = {
-		{ L"LatheParamsDumpEntry", 42014, L"Dump to Excel", L"Write the parameters." },
-		{ L"LatheParamsLoadEntry", 42015, L"Load from Excel", L"Load <edited> & checked." } };
+		{ L"LatheParamsDumpEntry", 42014, L"D" }, { L"LatheParamsLoadEntry", 42015, L"L" } };
 
-	const std::wstring whole = Ribbon::TabXml (buttons, 0);
-	Check (whole.rfind (L"<?xml", 0) == 0 && whole.find (L"<BCGP_RIBBON>") != std::wstring::npos
-			   && whole.find (L"</BCGP_RIBBON>") != std::wstring::npos, "shape 0: a whole BCGP_RIBBON document");
-	Check (Count (whole, L"<CATEGORY>") == 1 && Count (whole, L"<ELEMENT>") == 2, "one tab, two buttons");
-	Check (whole.find (L"<ID><NAME>42014</NAME><VALUE>42014</VALUE><FT_APPLICATION>_ParamTableAddIn_</FT_APPLICATION>"
-					   L"<FT_FUNCTION>LatheParamsDumpEntry</FT_FUNCTION></ID>") != std::wstring::npos,
-		   "a button names its command id and its function table function, as Mastercam's own do");
-	Check (whole.find (L"Load &lt;edited&gt; &amp; checked.") != std::wstring::npos, "text is escaped for XML");
-	for (const wchar_t *tag : { L"CATEGORY", L"PANELS", L"PANEL", L"ELEMENTS", L"ELEMENT", L"ID", L"CATEGORIES", L"RIBBON_BAR" })
+	// Mastercam's ribbon schema, as the posting app's KinBench tab used it.
+	const std::wstring x = Ribbon::TabXml (buttons);
+	Check (x.rfind (L"<?xml", 0) == 0 && x.find (L"<Ribbon><Tabs><Tab Label=\"Parameter Table\"") != std::wstring::npos
+			   && x.find (L"</Tab></Tabs></Ribbon>") != std::wstring::npos, "a Ribbon / Tabs / Tab document");
+	Check (x.find (L"<Group FTCommand=\"_ParamTableAddIn_.ParamTableGroup\"") != std::wstring::npos,
+		   "the group names its hidden function as APPLICATION.FUNCTION");
+	Check (x.find (L"<Button FTCommand=\"_ParamTableAddIn_.LatheParamsDumpEntry\" KeyTip=\"D\" LargeMode=\"Always\" />")
+			   != std::wstring::npos && Count (x, L"<Button ") == 2, "each button names its function the same way, large");
+	for (const wchar_t *tag : { L"Ribbon", L"Tabs", L"Tab ", L"Groups", L"Group ", L"Elements" })
 		{
-		const std::wstring open = std::wstring (L"<") + tag + L">", close = std::wstring (L"</") + tag + L">";
-		if (Count (whole, open) != Count (whole, close))
+		const std::wstring t (tag), name = t.back () == L' ' ? t.substr (0, t.size () - 1) : t;
+		if (Count (x, L"<" + t) != Count (x, L"</" + name + L">"))
 			Check (false, "every tag closed");
 		}
-	const std::wstring cats = Ribbon::TabXml (buttons, 1), cat = Ribbon::TabXml (buttons, 2);
-	Check (cats.rfind (L"<CATEGORIES><CATEGORY>", 0) == 0 && cat.rfind (L"<CATEGORY>", 0) == 0
-			   && whole.find (cats) != std::wstring::npos, "shapes 1 and 2: the CATEGORIES, the CATEGORY - the same tab");
 
 	// A workspace as Mastercam writes one: a tab made with Customize, and the Quick
 	// Access Toolbar.

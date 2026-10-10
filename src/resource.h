@@ -5,6 +5,7 @@
 #define IDS_FT_LOAD                     2
 #define IDS_FT_UNDO                     3
 #define IDS_FT_HELP                     4
+#define IDS_FT_GROUP                    5
 #define IDB_DUMP_SMALL                  18001
 #define IDB_DUMP_LARGE                  18002
 #define IDB_LOAD_SMALL                  18003

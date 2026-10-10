@@ -82,10 +82,8 @@ namespace
 			return;
 		done = true;
 		std::vector<Ribbon::Button> buttons = {
-			{ L"LatheParamsDumpEntry", 0, L"Dump to Excel", L"Write the part's operation parameters to an Excel workbook to edit." },
-			{ L"LatheParamsLoadEntry", 0, L"Load from Excel", L"Load an edited workbook back into the operations - every change shown first." },
-			{ L"LatheParamsUndoEntry", 0, L"Undo last load", L"Put back the values the last load changed." },
-			{ L"ParamTableHelpEntry", 0, L"User manual", L"Open the user manual: how every tool works, with examples." } };
+			{ L"LatheParamsDumpEntry", 0, L"D" }, { L"LatheParamsLoadEntry", 0, L"L" },
+			{ L"LatheParamsUndoEntry", 0, L"U" }, { L"ParamTableHelpEntry", 0, L"H" } };
 		std::vector<unsigned> ids;
 		std::wstring said = std::wstring (L"ribbon (") + when + L"): command ids";
 		const Cnc::IFunctionTableManagerPtr ft = Cnc::GetFunctionTableManager ();
@@ -117,16 +115,10 @@ namespace
 			return;
 			}
 		std::ofstream (marker) << "offering the ribbon tab\n";
-		for (int shape = 0; shape < Ribbon::kShapes; ++shape)
-			{
-			RibbonLog (L"ribbon: offering shape " + std::to_wstring (shape));
-			const bool ok = InsertThirdPartyRibbonTabs (Ribbon::TabXml (buttons, shape).c_str ());
-			RibbonLog (L"ribbon: shape " + std::to_wstring (shape) + (ok ? L" taken" : L" refused"));
-			if (ok)
-				break;
-			if (shape == Ribbon::kShapes - 1)
-				RibbonLog (L"ribbon: no shape taken - add the commands with Customize instead");
-			}
+		RibbonLog (L"ribbon: offering the tab");
+		const bool ok = InsertThirdPartyRibbonTabs (Ribbon::TabXml (buttons).c_str ());
+		RibbonLog (ok ? L"ribbon: taken (only the tab on screen proves it worked)"
+					  : L"ribbon: refused - add the commands with Customize instead");
 		std::filesystem::remove (marker, ec);
 		}
 	}
@@ -161,6 +153,13 @@ extern "C" __declspec(dllexport) int m_notify (int notify_code)
 			RibbonLog (L"ribbon: failed");
 			}
 		}
+	return MC_NOERROR;
+	}
+
+/// The ribbon tab's group. The ribbon names a group by a function, like a button,
+/// so it is one (HIDDEN in ParamTable.ft) - and does nothing.
+extern "C" __declspec(dllexport) int ParamTableGroup (int param)
+	{
 	return MC_NOERROR;
 	}
 

@@ -42,3 +42,13 @@ FUNCTION CPP "ParamTableHelpEntry"
   SPNG 18005
   LPNG 18006
 END_FUNCTION
+
+# The ribbon tab's group (main.cpp puts the tab up at start-up). The group is named
+# by a function like any button, so it has to be one - HIDDEN, so it is not a
+# command in Customize, and doing nothing.
+FUNCTION CPP "ParamTableGroup"
+  HIDDEN
+  TIP  5
+  SPNG 18001
+  LPNG 18002
+END_FUNCTION
