@@ -25,6 +25,22 @@ namespace Settings
 	Dump LoadDump ();
 	void SaveDump (const Dump &d);
 
+	/// The batch dump ("dump a folder of parts"): where the parts are, where their
+	/// workbooks go, and its own options - the stock simulation OFF to start with,
+	/// because it is slow and a batch is many parts.
+	struct Batch
+		{
+		std::wstring folder;			//!< the parts ("" = the open part's folder)
+		bool subfolders = false;
+		std::wstring outFolder;			//!< "" = each workbook beside its part
+		bool pictures = true;
+		bool macros = false;
+		bool stockSim = false;
+		};
+
+	Batch LoadBatch ();
+	void SaveBatch (const Batch &b);
+
 	/// The last sheet dumped, and for which part - where a load starts looking.
 	void SetLastDump (const std::wstring &file, const std::wstring &part);
 	std::wstring LastDumpFor (const std::wstring &part);

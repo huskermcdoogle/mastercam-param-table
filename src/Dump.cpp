@@ -790,13 +790,14 @@ namespace
 						 + (kept.angle.empty () ? L"" : L" | angle typed " + kept.angle));
 		}
 
+	/// `s` comes in empty and goes out as written - its cached values are what the
+	/// batch dump compares parts by (Shop.h).
 	bool WriteXlsx (const std::filesystem::path &file, const std::vector<Csv::Row> &out,
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
 					const std::vector<Stats> &stats, std::vector<Xlsx::Sheet::ToolRow> tools,
 					const std::vector<int> &toolOfRow, bool macros, const std::wstring &title,
-					const std::wstring &subtitle, PartConfig::Config &cfg, bool wholePart)
+					const std::wstring &subtitle, PartConfig::Config &cfg, bool wholePart, Xlsx::Sheet &s)
 		{
-		Xlsx::Sheet s;
 		s.rows = out;
 		s.groupNames = kGroupNames;
 		s.frozenCols = 5;				// op_idn, type, tool, comment, changes
@@ -2088,36 +2089,35 @@ namespace
 		}
 	}
 
-namespace Dump
+namespace
 	{
-	int Run ()
+	/// Every operation this tool reads in the open part, in Operation Manager order
+	/// (the order they run); which of them are selected; and what it does not read
+	/// yet, by kind - for the message (skippedText) and the window (skippedLine).
+	struct Ops
+		{
+		std::vector<Found> all, selected;
+		std::map<std::wstring, int> allByType, selByType;
+		std::wstring skippedText, skippedLine;
+		};
+
+	/// The start of every dump: the coolant labels of THIS part's machines (a batch
+	/// dump opens part after part), and the troubleshooting switches in its log.
+	/// The open part, empty when it has never been saved.
+	std::filesystem::path Begin ()
 		{
 		Coolant::Reset ();
-		// EVERY DUMP GETS ITS OWN FILES: the date and time are in the name, so a
-		// dump never overwrites an earlier one (or an edited sheet).
-		wchar_t stampBuf[32] = L"";
-		{
-		const std::time_t now = std::time (nullptr);
-		std::tm tmv = {};
-		localtime_s (&tmv, &now);
-		std::wcsftime (stampBuf, 32, L"%Y%m%d-%H%M%S", &tmv);
-		}
-		const std::wstring stamp = stampBuf;
-
 		const std::filesystem::path part = Util::PartFile ();
 		if (const unsigned long diag = Settings::Diag ())
 			Util::Log (part, L"diag " + std::to_wstring (diag) + L": "
 							 + ((diag & 1) ? L"no Mastercam cycle time  " : L"")
 							 + ((diag & 2) ? L"no NCI walk  " : L"")
 							 + ((diag & 4) ? L"stock sim" : L""));
-		if (part.empty ())
-			{
-			Util::Say (L"Save the part first - the CSV file is written beside "
-					   L"it, and there is nowhere to put it yet.");
-			return 0;
-			}
+		return part;
+		}
 
-
+	Ops Collect (const std::filesystem::path &part)
+		{
 		// ---- EVERY OPERATION THIS TOOL KNOWS, in Operation Manager order (the
 		// order they run), and which of them are selected.
 		Cnc::Tool::TpPartOpList &opList = TpMainOpMgr.GetMainOpList ();
@@ -2166,48 +2166,50 @@ namespace Dump
 				Util::Log (part, p);
 			}
 
-		if (all.empty ())
-			{
-			Util::Say (L"This part has no operations of a kind this tool reads, so "
-					   L"there is nothing to dump." + skippedText);
-			return 0;
-			}
+		Ops found;
+		found.all = all;
+		found.selected = selected;
+		found.allByType = allByType;
+		found.selByType = selByType;
+		found.skippedText = skippedText;
+		found.skippedLine = skippedLine;
+		return found;
+		}
 
-		// ---- ASK, IN A WINDOW: which operations (ticked in a tree of toolpath
-		// groups - to start, what is selected in the Operation Manager, else all),
-		// where it goes and what it is called. All but the ticks remembered.
-		Settings::Dump settings = Settings::LoadDump ();
-		std::vector<DumpDialog::Op> ops;
-		for (const Found &f : all)
-			{
-			DumpDialog::Op o;
-			o.idn = f.op->op_idn;
-			o.group = f.op->cmn.grp_idn;
-			o.groupName = GroupName (f.op->cmn.grp_idn);
-			o.kind = f.t->schema.type;
-			o.text = L"op " + std::to_wstring (f.op->op_idn) + L"    " + f.t->schema.type
-					 + (HasTool (*f.t) ? L"    T" + std::to_wstring (f.op->tl.tlno) : std::wstring ())
-					 + L"    " + Comment (f.op) + (f.op->db.nci_flag ? L"    [needs regen]" : L"");
-			o.selectedInMgr = f.op->db.select_flag;
-			o.on = selected.empty () || o.selectedInMgr;
-			ops.push_back (o);
-			}
-		if (!DumpDialog::Show (part.wstring (), ops, skippedLine, settings))
-			return 0;
-		Settings::SaveDump (settings);
-
-		std::vector<Found> chosen;
-		std::map<std::wstring, int> byType;
-		for (size_t i = 0; i < all.size () && i < ops.size (); ++i)
-			if (ops[i].on)
+	/// The stock material of the part's machine group, "" when none is set. The SDK
+	/// keeps it on the group (op_group ogi.pg2.matl_name, "this group's material
+	/// filename and path") without saying which group of the tree holds it, so each
+	/// group the ops sit in is asked, up to the top, and what each gives is logged;
+	/// the first named wins, and only what follows a path's last \ is kept.
+	std::wstring Material (const std::vector<Found> &ops, const std::filesystem::path &part)
+		{
+		TpGrpList &groups = TpMainGrpMgr.GetMainGrpList ();
+		std::set<long> asked;
+		std::wstring found;
+		for (const Found &f : ops)
+			for (long id = f.op->cmn.grp_idn; id > 0 && asked.insert (id).second;)
 				{
-				chosen.push_back (all[i]);
-				++byType[all[i].t->schema.type];
+				const INT_PTR i = groups.IndexByID (id);
+				const op_group *g = i < 0 ? nullptr : groups.GetAt (i);
+				if (g == nullptr)
+					break;
+				const std::wstring raw (g->ogi.pg2.matl_name, wcsnlen (g->ogi.pg2.matl_name, MAX_MATL_NAME + 1));
+				Util::Log (part, L"batch: group " + std::to_wstring (id) + L" '" + GroupName (id) + L"' material '" + raw + L"'");
+				if (found.empty ())
+					found = Csv::Trim (raw);
+				id = g->parent_grp_idn;
 				}
-		if (chosen.empty ())
-			return 0;
-		const bool onlySelected = chosen.size () < all.size ();
+		const size_t slash = found.find_last_of (L"\\/");
+		return slash == std::wstring::npos ? found : Csv::Trim (found.substr (slash + 1));
+		}
 
+	/// THE DUMP ITSELF: the chosen operations' workbook written with these settings,
+	/// and the part's .ptconfig kept - asking nothing and saying nothing (the caller
+	/// does both). The one function behind "dump to Excel" and the batch dump, so the
+	/// two cannot drift apart. False when the workbook could not be written.
+	bool DumpPart (const std::filesystem::path &part, const std::vector<Found> &chosen, bool onlySelected,
+				   const Settings::Dump &settings, Dump::Outcome &result)
+		{
 		// What was typed into this part's earlier dumps (edges, costs, edge life,
 		// batch ...): the part's .ptconfig, brought up to date from the newest
 		// earlier workbook - saved there is enough, it need not have been loaded.
@@ -2742,12 +2744,11 @@ namespace Dump
 									  + (rows.size () == 1 ? L" operation" : L" operations") + (onlySelected ? L" (a selection)" : L"")
 									  + L" - " + part.wstring ();
 		if (!WriteXlsx (file, out, columns, rows, rowStats, tools, toolOfRow, settings.macros,
-						L"Summary - " + part.filename ().wstring (), subtitle, cfg, !onlySelected))
+						L"Summary - " + part.filename ().wstring (), subtitle, cfg, !onlySelected, result.sheet))
 			{
-			Util::Say (L"Could not write " + file.wstring () + L"\r\n\r\nCheck the "
-					   L"folder can be written to, and try again.",
-					   MB_ICONWARNING);
-			return 0;
+			result.file = file;
+			result.why = L"could not write " + file.wstring () + L" - check the folder can be written to";
+			return false;
 			}
 
 		if (radiusHow[0] + radiusHow[1] + radiusHow[2] > 0)
@@ -2760,6 +2761,93 @@ namespace Dump
 						 + std::to_wstring (rows.size ()) + L" operation(s) (" + which + L"), "
 						 + std::to_wstring (columns.size ()) + L" columns");
 
+		result.file = file;
+		result.ops = rows.size ();
+		if (!PartConfig::Save (cfgFile, cfg))
+			Util::Log (part, L"part config: could not write " + cfgFile.wstring ());
+		return true;
+		}
+	}
+
+namespace Dump
+	{
+	int Run ()
+		{
+		// EVERY DUMP GETS ITS OWN FILES: the date and time are in the name, so a
+		// dump never overwrites an earlier one (or an edited sheet).
+		wchar_t stampBuf[32] = L"";
+		{
+		const std::time_t now = std::time (nullptr);
+		std::tm tmv = {};
+		localtime_s (&tmv, &now);
+		std::wcsftime (stampBuf, 32, L"%Y%m%d-%H%M%S", &tmv);
+		}
+		const std::wstring stamp = stampBuf;
+
+		const std::filesystem::path part = Begin ();
+		if (part.empty ())
+			{
+			Util::Say (L"Save the part first - the CSV file is written beside "
+					   L"it, and there is nowhere to put it yet.");
+			return 0;
+			}
+
+		const Ops found = Collect (part);
+		const std::vector<Found> &all = found.all, &selected = found.selected;
+		const std::wstring &skippedLine = found.skippedLine;
+		if (all.empty ())
+			{
+			Util::Say (L"This part has no operations of a kind this tool reads, so "
+					   L"there is nothing to dump." + found.skippedText);
+			return 0;
+			}
+
+		// ---- ASK, IN A WINDOW: which operations (ticked in a tree of toolpath
+		// groups - to start, what is selected in the Operation Manager, else all),
+		// where it goes and what it is called. All but the ticks remembered.
+		Settings::Dump settings = Settings::LoadDump ();
+		std::vector<DumpDialog::Op> ops;
+		for (const Found &f : all)
+			{
+			DumpDialog::Op o;
+			o.idn = f.op->op_idn;
+			o.group = f.op->cmn.grp_idn;
+			o.groupName = GroupName (f.op->cmn.grp_idn);
+			o.kind = f.t->schema.type;
+			o.text = L"op " + std::to_wstring (f.op->op_idn) + L"    " + f.t->schema.type
+					 + (HasTool (*f.t) ? L"    T" + std::to_wstring (f.op->tl.tlno) : std::wstring ())
+					 + L"    " + Comment (f.op) + (f.op->db.nci_flag ? L"    [needs regen]" : L"");
+			o.selectedInMgr = f.op->db.select_flag;
+			o.on = selected.empty () || o.selectedInMgr;
+			ops.push_back (o);
+			}
+		if (!DumpDialog::Show (part.wstring (), ops, skippedLine, settings))
+			return 0;
+		Settings::SaveDump (settings);
+
+		std::vector<Found> chosen;
+		std::map<std::wstring, int> byType;
+		for (size_t i = 0; i < all.size () && i < ops.size (); ++i)
+			if (ops[i].on)
+				{
+				chosen.push_back (all[i]);
+				++byType[all[i].t->schema.type];
+				}
+		if (chosen.empty ())
+			return 0;
+		const bool onlySelected = chosen.size () < all.size ();
+
+		Outcome result;
+		if (!DumpPart (part, chosen, onlySelected, settings, result))
+			{
+			Util::Say (L"Could not write " + result.file.wstring () + L"\r\n\r\nCheck the "
+					   L"folder can be written to, and try again.",
+					   MB_ICONWARNING);
+			return 0;
+			}
+		const std::vector<Found> &rows = chosen;
+		const std::filesystem::path &file = result.file;
+		const std::wstring which = onlySelected ? L"selected" : L"all";
 		Util::Say (L"Dumped " + std::to_wstring (rows.size ()) + L" operation(s) (" + which
 				   + L"), in Operation Manager order:" + Counts (byType)
 				   + L"\r\n\r\nto\r\n  " + file.filename ().wstring () + L"\r\nin\r\n  "
@@ -2771,12 +2859,31 @@ namespace Dump
 				   L"them. Hover a cell for what it is and what it takes.");
 
 		Settings::SetLastDump (file.wstring (), part.wstring ());
-		if (!PartConfig::Save (cfgFile, cfg))
-			Util::Log (part, L"part config: could not write " + cfgFile.wstring ());
 
 		// Straight into Excel - the next thing anyone does with it.
 		if (settings.openExcel)
 			ShellExecuteW (nullptr, L"open", file.c_str (), nullptr, nullptr, SW_SHOWNORMAL);
 		return 0;
+		}
+
+	bool Quiet (const Settings::Dump &settings, Outcome &result)
+		{
+		const std::filesystem::path part = Begin ();
+		if (part.empty ())
+			{
+			result.why = L"the open part has no file name (never saved)";
+			return false;
+			}
+		const Ops found = Collect (part);
+		result.skipped = found.skippedLine;
+		if (found.all.empty ())
+			{
+			result.why = L"no operations of a kind this tool reads" + (found.skippedLine.empty () ? std::wstring ()
+						 : L" (" + found.skippedLine + L")");
+			return false;
+			}
+		result.material = Material (found.all, part);
+		// The whole part, every op: the batch compares parts, not selections.
+		return DumpPart (part, found.all, false, settings, result);
 		}
 	}

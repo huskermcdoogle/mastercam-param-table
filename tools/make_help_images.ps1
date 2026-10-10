@@ -151,6 +151,7 @@ $Shots = @(
     @{ Name = "mc-dump-window"; Dialog = "dump" },
     @{ Name = "mc-load-preview"; Dialog = "load" },
     @{ Name = "mc-undo-load"; Dialog = "undo" },
+    @{ Name = "mc-batch-window"; Dialog = "batch" },
 
     # Excel's ribbon, the Parameter Table tab, T12 in Find op.
     @{ Name = "ribbon-find"; Ribbon = "ptFindGroup"; Type = "T12"

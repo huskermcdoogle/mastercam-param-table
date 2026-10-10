@@ -1,9 +1,10 @@
 // Mastercam 2026 C++ Add-In: Parameter Table Tool
 //
-// Four entry points. Each is its own FUNCTION block in ParamTable.ft, so each
+// Five entry points. Each is its own FUNCTION block in ParamTable.ft, so each
 // can sit on a ribbon or the Quick Access Toolbar:
 //
 //   LatheParamsDumpEntry  - the operations' parameters to a workbook
+//   ParamTableBatchEntry  - every part of a folder dumped, and a shop workbook of them all
 //   LatheParamsLoadEntry  - the edited workbook back into the operations
 //   LatheParamsUndoEntry  - the last load's old values back, from ParamTable.log
 //   ParamTableHelpEntry   - the user manual (help\index.html beside the DLL)
@@ -11,6 +12,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "ParamTable.h"
+#include "Batch.h"
 #include "Dump.h"
 #include "Load.h"
 #include "Settings.h"
@@ -82,7 +84,7 @@ namespace
 			return;
 		done = true;
 		std::vector<Ribbon::Button> buttons = {
-			{ L"LatheParamsDumpEntry", 0, L"D" }, { L"LatheParamsLoadEntry", 0, L"L" },
+			{ L"LatheParamsDumpEntry", 0, L"D" }, { L"ParamTableBatchEntry", 0, L"B" }, { L"LatheParamsLoadEntry", 0, L"L" },
 			{ L"LatheParamsUndoEntry", 0, L"U" }, { L"ParamTableHelpEntry", 0, L"H" } };
 		std::vector<unsigned> ids;
 		std::wstring said = std::wstring (L"ribbon (") + when + L"): command ids";
@@ -176,6 +178,26 @@ extern "C" __declspec(dllexport) int LatheParamsDumpEntry (int param)
 		{
 		Util::Say (L"The dump failed unexpectedly. Nothing was changed in the part.",
 				   MB_ICONERROR);
+		}
+	return MC_NOERROR | MC_UNLOADAPP;
+	}
+
+/// Every part of a folder dumped, then compared in one shop workbook. The part on
+/// screen must be saved first (Mastercam has one part open at a time); it is
+/// opened again at the end.
+extern "C" __declspec(dllexport) int ParamTableBatchEntry (int param)
+	{
+	ChangeResCl res (GetChookResourceHandle ());
+
+	try
+		{
+		Batch::Run ();
+		}
+	catch (...)
+		{
+		Util::Say (L"The batch dump failed unexpectedly. No part was changed or saved; the batch log "
+				   L"beside the shop workbook says how far it got. Open your part again with File > Open "
+				   L"if it is not on screen.", MB_ICONERROR);
 		}
 	return MC_NOERROR | MC_UNLOADAPP;
 	}

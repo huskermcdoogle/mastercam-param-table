@@ -93,6 +93,15 @@ the file, then writes one `.xlsx`:
     status bar (CSS with no max RPM, a per-minute feed that looks like a per-rev one).
 - Never overwrites a file - a name that is taken gets ` (2)`.
 
+**Dump a folder of parts** - continuous improvement across the shop, not one part at a time:
+every part of a folder (and its subfolders, if ticked) opened in turn - not regenerated, never
+saved - dumped exactly as a normal dump of the whole part, and closed; then one
+`Shop_compare_<date>.xlsx` puts them side by side: per part (cycle time, flips, insert cost), per
+insert and kind of op (the parts and tools that use it; range and median of SFM, feed per rev,
+depth of cut and edge time - in inch units, metric converted) and per op. Save the open part
+first - Mastercam has one part open at a time; it is opened again at the end. A part that will
+not open or dump is passed over and said why (the batch log beside the shop workbook).
+
 **Load** - pick the edited, saved workbook (or a CSV). A preview window lists every change
 grouped by operation - old value struck through in red, new value in green - and every
 refused row with the reason. **Apply** writes; **Cancel** writes nothing.
@@ -133,12 +142,13 @@ NCI's time. Other kinds are listed by the dump as "not read yet".
 2. Close Mastercam.
 3. Copy `ParamTable.ft` **and** the `ParamTable` folder into
    `Documents\My Mastercam 2026\Mastercam\Add-Ins`.
-4. Start Mastercam. A **Parameter Table** tab is on the ribbon with the four commands -
-   "Lathe params - dump to Excel", "Lathe params - load", "Lathe params - undo last load" and
-   "Parameter Table - user manual". The add-in puts it up at every start
-   (`InsertThirdPartyRibbonTabs`, `src\Ribbon.*`; what happened goes to
+4. Start Mastercam. A **Parameter Table** tab is on the ribbon with the commands -
+   "Lathe params - dump to Excel", "Parameter Table - dump a folder of parts", "Lathe params -
+   load", "Lathe params - undo last load" and "Parameter Table - user manual". The add-in puts it
+   up at every start (`InsertThirdPartyRibbonTabs`, `src\Ribbon.*`; what happened goes to
    `ParamTable\ParamTable-ribbon.log`). They are also in **Customize** under *Parameter Table
-   Tool*; put them on a tab of your own and that tab is used instead.
+   Tool*; put them on a tab of your own and that tab is used instead (a tab made before a new
+   command came is not changed - add the new one to it with Customize).
 
 `ParamTable\SHA256SUMS.txt` has the hash of each file (the manual's pages too); `BUILD-INFO.txt`
 says which commit and toolset built it. The add-in uses only Mastercam's own DLLs, MFC and
@@ -196,7 +206,8 @@ tests\run_tests.bat
 ```
 
 `tests\run_tests.bat` builds and runs the SDK-free tests (CSV, load rules, workbook writer and
-reader - including its own DEFLATE - file naming, and the estimate formula) and builds the
+reader - including its own DEFLATE - file naming, the estimate formula, and the batch dump's
+shop workbook: medians, ranges, grouping per insert) and builds the
 manual's window-picture program;
 `tools\check_estimate.ps1` checks the estimate formula in real Excel, `tools\check_summary.ps1`
 the Summary page.
@@ -218,6 +229,7 @@ the build machine; `package.ps1` makes the release zip.
 | `src\Paths.*`, `src\Estimate.*` | the NCI walk and the live estimate formula |
 | `src\Inspect.*`, `src\StockSim.*`, `src\MillMrr.*` | tool inspection and flips, material removed, mill MRR |
 | `src\Summary.*`, `src\PartConfig.*` | the Summary page, and the part's kept typed values |
+| `src\Batch.*`, `src\BatchDialog.*`, `src\Shop.*` | dump a folder of parts: the run, its windows, the shop workbook (SDK-free) |
 | `src\Coolant.*` | X-style coolant: codes, machine labels, write-back |
 | `vba\` | the workbook macros (module, sheet events, ribbon XML) |
 | `help\` | the user manual (plain HTML; `tools\make_help.py` builds and checks it) |

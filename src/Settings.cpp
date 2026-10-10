@@ -65,6 +65,28 @@ namespace Settings
 		SetText (L"SkipKinds", d.skipKinds);
 		}
 
+	Batch LoadBatch ()
+		{
+		Batch b;
+		b.folder = GetText (L"BatchFolder", L"");
+		b.subfolders = GetFlag (L"BatchSubfolders", false);
+		b.outFolder = GetText (L"BatchOutFolder", L"");
+		b.pictures = GetFlag (L"BatchToolPictures", true);
+		b.macros = GetFlag (L"BatchMacros", false);
+		b.stockSim = GetFlag (L"BatchStockSim", false);
+		return b;
+		}
+
+	void SaveBatch (const Batch &b)
+		{
+		SetText (L"BatchFolder", b.folder);
+		SetFlag (L"BatchSubfolders", b.subfolders);
+		SetText (L"BatchOutFolder", b.outFolder);
+		SetFlag (L"BatchToolPictures", b.pictures);
+		SetFlag (L"BatchMacros", b.macros);
+		SetFlag (L"BatchStockSim", b.stockSim);
+		}
+
 	void SetLastDump (const std::wstring &file, const std::wstring &part)
 		{
 		SetText (L"LastDumpFile", file);

@@ -11,14 +11,21 @@ RES_DLL  "ParamTable\ParamTable.dll"
 
 CATEGORY "Parameter Table Tool"
 
-# Four entry points: dump the operation parameters to a workbook, load the
-# edited workbook back, undo the last load, and open the user manual. Each is its
-# own FUNCTION block so each gets its own Customize entry and can be put on a
-# ribbon or the Quick Access Toolbar.
+# Five entry points: dump the operation parameters to a workbook, dump a whole
+# folder of parts (and compare them), load the edited workbook back, undo the last
+# load, and open the user manual. Each is its own FUNCTION block so each gets its
+# own Customize entry and can be put on a ribbon or the Quick Access Toolbar.
 # Icons (tools\make_icons.ps1): sheet + blue arrow in = dump, orange arrow out = load,
 # blue "?" = the manual.
 FUNCTION CPP "LatheParamsDumpEntry"
   TIP  1
+  SPNG 18001
+  LPNG 18002
+END_FUNCTION
+
+# Dump a folder of parts: the dump's own icons - it is the dump, part after part.
+FUNCTION CPP "ParamTableBatchEntry"
+  TIP  7
   SPNG 18001
   LPNG 18002
 END_FUNCTION

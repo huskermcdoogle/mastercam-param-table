@@ -2,8 +2,8 @@
 // dialog_shots.cpp - the user manual's pictures of the add-in's own windows,
 // made without Mastercam and without a screenshot.
 //
-// The windows are the add-in's own code - src\DumpDialog.cpp and src\Preview.cpp,
-// which need no Mastercam SDK (src\Ui.h) - shown here with a real part's ops,
+// The windows are the add-in's own code - src\DumpDialog.cpp, src\Preview.cpp and
+// src\BatchDialog.cpp, which need no Mastercam SDK (src\Ui.h) - shown here with a real part's ops,
 // read from a dump workbook that tools\make_help_images.ps1 has edited in Excel
 // and saved, and the story the manual's pages tell:
 //
@@ -11,6 +11,7 @@
 //   load   the load preview of that workbook - the part's time and flips, each
 //          op's, every change with its tick box
 //   undo   the undo of that same load, one value changed by hand since
+//   batch  the batch dump's window, over the part's folder
 //
 // Each window is moved off the screen as it opens, filled in the way a person
 // would (text typed into its boxes, its buttons clicked - messages to its own
@@ -34,10 +35,11 @@
 //     --since <op>:<column>=<v>   a value changed by hand after the load
 //     --find <words>              typed into the dump window's Find
 //     --saved <name>              the matches ticked and saved under this name
-//     --only <dump|load|undo>     just one picture (repeat)
+//     --only <dump|load|undo|batch>  just one picture (repeat)
 //
 #include "../src/Ui.h"
 #include "../src/Csv.h"
+#include "../src/BatchDialog.h"
 #include "../src/DumpDialog.h"
 #include "../src/Impact.h"
 #include "../src/Plan.h"
@@ -731,6 +733,74 @@ namespace
 		return ok;
 		}
 
+	/// The batch window: the part's folder as the folder of parts, with a few parts in
+	/// it (any that are not there are made, empty, for the picture and taken away
+	/// after - so the count reads as on a real folder), each workbook beside its
+	/// part, the options as they start.
+	bool BatchWindow (const Args &a)
+		{
+		const std::filesystem::path folder = std::filesystem::path (a.part).parent_path ();
+		std::vector<std::filesystem::path> madeDirs, madeFiles;
+		std::error_code ec;
+		for (std::filesystem::path p = folder; !p.empty () && !std::filesystem::exists (p, ec); p = p.parent_path ())
+			madeDirs.push_back (p);
+		if (!madeDirs.empty ())
+			std::filesystem::create_directories (folder, ec);
+		for (const std::wstring &name : { std::filesystem::path (a.part).filename ().wstring (), std::wstring (L"Bushing.mcam"),
+										  std::wstring (L"Cap.mcam"), std::wstring (L"Flange.mcam"), std::wstring (L"Shaft.mcam"),
+										  std::wstring (L"Sleeve.mcam") })
+			{
+			const std::filesystem::path f = folder / name;
+			if (!std::filesystem::exists (f, ec))
+				{
+				std::ofstream (f) << "";
+				madeFiles.push_back (f);
+				}
+			}
+
+		Settings::Batch settings;
+		settings.folder = folder.wstring ();
+
+		Scene scene;
+		scene.name = L"batch";
+		scene.callouts = [] (HWND dlg, const RECT &frame, int dpi)
+			{
+			std::vector<Callout> c;
+			// After a static's (or a tick box's) words: its box first, for a button.
+			auto after = [&] (int n, HWND h, bool box)
+				{
+				if (h == nullptr)
+					return;
+				const RECT r = InPicture (h, frame);
+				const int at = r.left + (box ? GetSystemMetrics (SM_CXMENUCHECK) + TextH (h) / 2 : 0) + TextW (h, TextOf (h));
+				c.push_back (RightOf (n, at, box ? (r.top + r.bottom) / 2 : r.top + TextH (h) / 2, dpi));
+				};
+			for (HWND s : Controls (dlg, [] (HWND x) { return ClassOf (x) == L"Static"; }))
+				{
+				const std::wstring t = TextOf (s);
+				if (t == L"Dump a folder of parts")
+					after (1, s, false);
+				else if (t.find (L"found") != std::wstring::npos)
+					after (3, s, false);
+				}
+			const auto edits = Controls (dlg, [] (HWND x) { return ClassOf (x) == L"Edit"; });
+			if (!edits.empty ())
+				c.push_back (InsideRight (2, InPicture (edits.front (), frame), dpi));
+			after (4, Button (dlg, L"Beside each part", true), true);
+			after (5, Button (dlg, L"Simulate the stock", true), true);
+			c.push_back (LeftOf (6, InPicture (GetDlgItem (dlg, IDOK), frame), dpi));
+			std::sort (c.begin (), c.end (), [] (const Callout &x, const Callout &y) { return x.n < y.n; });
+			return c;
+			};
+		const bool ok = Make (scene, [&] { BatchDialog::Show (a.part, L".mcam", settings); });
+
+		for (const std::filesystem::path &f : madeFiles)
+			std::filesystem::remove (f, ec);
+		for (const std::filesystem::path &p : madeDirs)
+			std::filesystem::remove (p, ec);			// only if still empty
+		return ok;
+		}
+
 	/// The load's lines, as src\Load.cpp's Run puts them together.
 	bool LoadPreview (const Args &a, const Sheet &sheet, const std::vector<Csv::Row> &dumped,
 					  const std::vector<Edit> &edits)
@@ -1043,7 +1113,7 @@ int wmain (int argc, wchar_t **argv)
 	if (!ReadArgs (argc, argv, a))
 		{
 		std::puts ("usage: dialog_shots <workbook> <output folder> [--part p] [--edit op:column]... "
-				   "[--stamp t] [--since op:column=value] [--find words] [--saved name] [--only dump|load|undo]");
+				   "[--stamp t] [--since op:column=value] [--find words] [--saved name] [--only dump|load|undo|batch]");
 		return 1;
 		}
 	gOut = a.out;
@@ -1104,5 +1174,7 @@ int wmain (int argc, wchar_t **argv)
 		failed += !LoadPreview (a, sheet, dumped.rows, edits);
 	if (want (L"undo"))
 		failed += !UndoWindow (a, edits);
+	if (want (L"batch"))
+		failed += !BatchWindow (a);
 	return failed == 0 ? 0 : 1;
 	}
