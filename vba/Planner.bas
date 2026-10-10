@@ -1,16 +1,20 @@
 Attribute VB_Name = "Planner"
-' Parameter Table Tool - the planning tools on the ribbon: hit a target time, even out
-' insert flips, what-if scenarios, one-click filters, and copy to every op of a tool.
+' Parameter Table Tool - the planning tools on the ribbon: hit a target time, inspection
+' and inserts (the edge time that uses every insert edge evenly), what-if scenarios,
+' one-click filters, and copy to every op of a tool.
 '
 ' Plain text in the repo (vba\Planner.bas); tools\build_vba.ps1 compiles it with
-' ParamTable.bas. The windows (PlanBox, EditBox) call the quiet Functions here, and so do
-' the checks (tools\check_macros.ps1) - nothing here shows a window or a message.
+' ParamTable.bas. The windows (PlanBox, InspectBox, EditBox) call the quiet Functions
+' here, and so do the checks (tools\check_macros.ps1) - nothing here shows a message.
 '
 ' HOW A PLAN IS MADE. The sheet's own live formulas (est_seconds, flips_part, mrr_avg) are
 ' the model: a plan puts trial values into the cells, recalculates, reads the result and
 ' puts the old values back - so what the window shows is exactly what the sheet will
-' say. Nothing is kept until OK, and then every value goes in through TryWrite, so each
-' cell's own limits still have the last word.
+' say. The trials are never recorded for undo. Nothing is kept until Apply, and then every
+' value goes in through TryWrite, so each cell's own limits still have the last word.
+'
+' PERCENT, everywhere: +10% is 10% more, -10% is 10% less. The sign is always typed - a
+' bare 10% is never guessed at (more? less? to 10%?).
 Option Explicit
 
 Private Const FIRST_ROW As Long = 3
@@ -26,11 +30,49 @@ Public Const SCEN_SHEET As String = "Scenarios"
 ' Column numbers, looked up once per plan (0 = the sheet has no such column).
 Private cEst As Long, cCut As Long, cFlips As Long, cMrr As Long, cRem As Long, cTool As Long, cInsp As Long
 
-' The plan the window shows and OK writes.
+' The plan the window shows and Apply writes (the window takes it with TakePlan).
 Private pCells As Collection
 Private pVals As Collection
-Private pLines As Collection                ' each an Array of 6 strings; the first is the heading
+Private pLines As Collection                ' each an Array of 7 strings; the first is the heading
 Private pOk As Boolean
+Private pTimes(1) As Double                 ' the time of the ops before and with the plan
+Private lastAutoSave As String              ' the scenario the last restore kept the sheet's edits in
+
+' The planning windows: one of each, kept while open (WindowGone forgets one).
+Private timeWin As PlanBox
+Private inspWin As InspectBox
+
+' The inspection window's plan, one entry per tool (see PlanInspect).
+Private Type ToolInsp
+    tool As String
+    insert As String
+    first As Long                   ' its rows in aRows: first .. last
+    last As Long
+    cells As Collection             ' the insp_time cells its flips listen to (editable)
+    anyStop As Boolean              ' any of its ops stops for inspection
+    cut As Double                   ' cut time per part (s)
+    f0 As Double                    ' flips per part now
+    L0 As Double                    ' edge time now (s; 0 = none set)
+    fMax As Double                  ' flips at the shortest edge time
+    fMin As Double                  ' flips at a very long one: what the toolpath fixes
+    even As Double                  ' the shortest edge time that keeps f0 (0 = none)
+    goal As Double
+    L As Double                     ' the edge time suggested (0 = none)
+    f1 As Double                    ' flips with it
+    change As Boolean               ' Apply would write something
+    warn As Boolean                 ' its edges would run longer than now
+    note As String                  ' what to know, in a sentence
+    stamp As String                 ' its cells and flips as the plan found them (InspectStale)
+End Type
+
+Private iT() As ToolInsp
+Private nTool As Long
+Private aRows() As Long             ' every row of the tools, tool by tool
+Private aW() As Double              ' and its weight: 1 + the copies transforms cut of it
+Private aN As Long
+Private iTotal As Double            ' flips per part of every tool on the sheet now
+Private cDo As Long, cTon As Long, cCon As Long, cEnd As Long, cDon As Long, cDist As Long
+Private cNon As Long, cNcut As Long, cUnits As Long, cLim As Long, cCopies As Long
 
 ' ============================================================ small things
 
@@ -118,6 +160,35 @@ End Function
 Private Function Pct(ByVal a As Double, ByVal b As Double) As String
     If a = 0 Then Exit Function
     Pct = Format$((b - a) / a * 100, "+0.0;-0.0;0.0") & "%"
+End Function
+
+' A typed change in percent: "+10%" -> 10, "-7.5" -> -7.5 (the % sign may be left off,
+' the + or - may not). "" when understood, else what to type instead.
+Public Function PercentChange(ByVal s As String, ByRef pc As Double) As String
+    Dim t As String
+    pc = 0
+    t = Replace(Replace(Trim$(s), " ", ""), "%", "")
+    If t = "" Then PercentChange = "Type +10% for 10% more, or -10% for 10% less.": Exit Function
+    If Left$(t, 1) <> "+" And Left$(t, 1) <> "-" Then
+        If IsNumeric(t) Then
+            PercentChange = "'" & Trim$(s) & "' - say which way: +" & t & "% for more, -" & t & "% for less."
+        Else
+            PercentChange = "'" & Trim$(s) & "' is not a percent - type +10% or -10%."
+        End If
+        Exit Function
+    End If
+    If Not IsNumeric(Mid$(t, 2)) Or InStr(Mid$(t, 2), "+") > 0 Or InStr(Mid$(t, 2), "-") > 0 Then
+        PercentChange = "'" & Trim$(s) & "' is not a percent - type +10% or -10%."
+        Exit Function
+    End If
+    pc = CDbl(t)
+    If pc = 0 Then PercentChange = "0% changes nothing.": Exit Function
+    If pc <= -100 Then PercentChange = Trim$(s) & " would leave nothing - type a smaller cut, such as -10%.": pc = 0
+End Function
+
+' 10 -> "10% more", -10 -> "10% less".
+Public Function PercentWords(ByVal pc As Double) As String
+    PercentWords = NumText(Abs(pc)) & "% " & IIf(pc < 0, "less", "more")
 End Function
 
 Private Function InList(ByVal name As String, ByVal list As String) As Boolean
@@ -278,6 +349,16 @@ Public Function ScopeDefault(ByVal sel As Range) As Long
     End If
 End Function
 
+' Op rows (a window's) as a range of their op_idn cells - Nothing when there are none.
+Public Function RowsRange(ByVal rows As Collection) As Range
+    Dim r As Variant, out As Range
+    If rows Is Nothing Then Exit Function
+    For Each r In rows
+        If out Is Nothing Then Set out = ParamTable.MainSheet.Cells(r, 1) Else Set out = Union(out, ParamTable.MainSheet.Cells(r, 1))
+    Next
+    Set RowsRange = out
+End Function
+
 ' ============================================================ trying values
 
 ' Put values in, recalculate, read the rows, put the old values back. Returns per row
@@ -364,18 +445,20 @@ Private Sub ClearPlan()
     pOk = False
 End Sub
 
-Private Sub AddLine(ByVal a As String, ByVal b As String, ByVal c As String, ByVal d As String, ByVal e As String, ByVal f As String)
-    pLines.Add Array(a, b, c, d, e, f)
+Private Sub AddLine(ByVal a As String, ByVal b As String, ByVal c As String, ByVal d As String, ByVal e As String, _
+                    ByVal f As String, Optional ByVal g As String = "")
+    pLines.Add Array(a, b, c, d, e, f, g)
 End Sub
 
-' The plan's table for the window: a 2-D array, row 0 the heading - or Empty.
+' The plan's table for the window: a 2-D array, row 0 the heading - or Empty. Column 6
+' is the changes in full (column 5 is cut to fit the window).
 Public Function PlanList() As Variant
     Dim out() As String, i As Long, j As Long
     If pLines Is Nothing Then Exit Function
     If pLines.Count = 0 Then Exit Function
-    ReDim out(0 To pLines.Count - 1, 0 To 5)
+    ReDim out(0 To pLines.Count - 1, 0 To 6)
     For i = 1 To pLines.Count
-        For j = 0 To 5
+        For j = 0 To 6
             out(i - 1, j) = pLines(i)(j)
         Next
     Next
@@ -385,6 +468,26 @@ End Function
 Public Function PlanCount() As Long
     If Not pCells Is Nothing Then PlanCount = pCells.Count
 End Function
+
+' The ops' time before and with the plan last worked out (seconds).
+Public Function PlanTimes() As Variant
+    PlanTimes = Array(pTimes(0), pTimes(1))
+End Function
+
+' Hand the plan to a window, which keeps its own copy (two windows may be open) - Nothing
+' when there is none to apply.
+Public Sub TakePlan(ByRef cells As Collection, ByRef vals As Collection)
+    If pOk And Not pCells Is Nothing Then
+        Set cells = pCells
+        Set vals = pVals
+    Else
+        Set cells = Nothing
+        Set vals = Nothing
+    End If
+    Set pCells = Nothing
+    Set pVals = Nothing
+    pOk = False
+End Sub
 
 ' Write the plan, each value through its cell's rule - "done refused".
 Public Function ApplyPlan() As String
@@ -397,37 +500,27 @@ Public Function ApplyPlan() As String
     ClearPlan
 End Function
 
-' The window's work: which tool ("time" / "flips"), the ops, what was typed and ticked.
-Public Function PlanRun(ByVal mode As String, ByVal sel As Range, ByVal scopeIdx As Long, ByVal target As String, _
-                        ByVal howIdx As Long, ByVal opt1 As Boolean, ByVal opt2 As Boolean) As String
-    Dim scope As Range
-    Set scope = ScopeRange(sel, scopeIdx)
-    If mode = "time" Then
-        PlanRun = PlanTargetTime(scope, target, opt1, opt2)
-    Else
-        PlanRun = PlanFlips(scope, target, IIf(howIdx = 1, "feed", "insp_time"))
-    End If
-End Function
-
 ' ---------------------------------------------------------------- hit a target time
 
 ' Scale the feeds (and speeds) of some ops, all by one factor, so their estimated time
-' comes to a target: "12:30", "1:02:00", "540" (seconds) or "10%" (10% less; -5% = 5%
-' more). Each cell stays inside its own limits; the others make up for one that is held.
-' "1|summary" when there is a plan, "0|why" when not. PlanList / ApplyPlan follow.
+' comes to a target: "12:30", "1:02:00", "540" (seconds) or a change - "-10%" for 10%
+' less time, "+5%" for 5% more. Each cell stays inside its own limits; the others make up
+' for one that is held. "1|summary" when there is a plan, "0|why" when not. PlanList /
+' TakePlan (or ApplyPlan) follow.
 Public Function PlanTargetTime(ByVal scope As Range, ByVal target As String, ByVal withSpeeds As Boolean, _
                                ByVal mainOnly As Boolean) As String
     Dim rows() As Long, n As Long, i As Long, j As Long, k As Double, T As Double, e0 As Double, fixedT As Double
     Dim c0 As Double, s0 As Variant, s1 As Variant, best As Variant, bestK As Double, bestErr As Double
     Dim cs As Collection, v0 As Collection, isSp As Collection, vs As Collection, hits As Collection, bestVals As Collection, bestHits As Collection
     Dim it As Long, e As Double, ePrev As Double, p As Double, hdr As String, c As Range, x As Double, h As String
-    Dim cols As String, what As String, s As String, nh As Long, msg As String, nc As Long, typed As String
+    Dim cols As String, what As String, s As String, nh As Long, msg As String, nc As Long, typed As String, pc As Double, why As String
 
     ClearPlan
+    pTimes(0) = 0: pTimes(1) = 0
     LoadCols
     If cEst = 0 Or cCut = 0 Then PlanTargetTime = "0|This sheet has no live time estimate (est_seconds, cut_seconds_est) - dump it again with this version.": Exit Function
     rows = RowsIn(scope, n)
-    If n = 0 Then PlanTargetTime = "0|Select the operations first (or pick a tool).": Exit Function
+    If n = 0 Then PlanTargetTime = "0|Select one or more ops (or pick a tool).": Exit Function
     s0 = Snap(rows, n)
     e0 = SumOf(s0, n, 1)
     For i = 1 To n
@@ -436,19 +529,21 @@ Public Function PlanTargetTime(ByVal scope As Range, ByVal target As String, ByV
         End If
     Next
     If e0 <= 0 Then PlanTargetTime = "0|No time estimate on " & OpsText(rows, n) & ".": Exit Function
+    pTimes(0) = e0: pTimes(1) = e0
 
     typed = Replace(Trim$(target), " ", "")
     If typed = "" Then
         PlanTargetTime = "0|" & OpsText(rows, n) & IIf(n = 1, " takes ", " take ") & TimeText(e0) & " now (" & TimeText(c0) & " of it cutting)." & _
-                         vbCrLf & "Type the time you want (" & TimeText(e0 * 0.9) & ") or a cut (10%), then Enter."
+                         vbCrLf & "Type the time you want (" & TimeText(e0 * 0.9) & ") or a change (-10% for 10% less time), then press Enter."
         Exit Function
     End If
-    If Right$(typed, 1) = "%" Then
-        If Not IsNumeric(Left$(typed, Len(typed) - 1)) Then PlanTargetTime = "0|'" & target & "' - type a percent such as 10%.": Exit Function
-        T = e0 * (1 - CDbl(Left$(typed, Len(typed) - 1)) / 100)
+    If InStr(typed, "%") > 0 Or Left$(typed, 1) = "+" Or Left$(typed, 1) = "-" Then
+        why = PercentChange(typed, pc)
+        If why <> "" Then PlanTargetTime = "0|" & why & "  (-10% = 10% less time.)": Exit Function
+        T = e0 * (1 + pc / 100)
     Else
         T = SecondsOfText(typed)
-        If T <= 0 Then PlanTargetTime = "0|'" & target & "' is not a time - type 12:30, 1:02:00, or a cut such as 10%.": Exit Function
+        If T <= 0 Then PlanTargetTime = "0|'" & target & "' is not a time - type 12:30, 1:02:00, or a change such as -10%.": Exit Function
     End If
     If Abs(T - e0) < 0.5 Then PlanTargetTime = "0|" & OpsText(rows, n) & IIf(n = 1, " already takes ", " already take ") & TimeText(e0) & ".": Exit Function
     If c0 <= 0 Then PlanTargetTime = "0|No feed time on these ops for the feeds to move.": Exit Function
@@ -522,17 +617,21 @@ Public Function PlanTargetTime(ByVal scope As Range, ByVal target As String, ByV
         what = ""
         For j = 1 To cs.Count
             If cs(j).Row = rows(i) And Abs(bestVals(j) - v0(j)) > 1E-12 Then
-                If Len(what) < 120 Then what = what & IIf(what = "", "", ";  ") & ParamTable.MainSheet.Cells(HEADER_ROW, cs(j).Column).Value & " " & _
-                                                NumText(v0(j)) & " -> " & NumText(bestVals(j)) & IIf(bestHits(j) <> "", " (" & bestHits(j) & ")", "")
+                what = what & IIf(what = "", "", ";  ") & ParamTable.MainSheet.Cells(HEADER_ROW, cs(j).Column).Value & " " & _
+                       NumText(v0(j)) & " -> " & NumText(bestVals(j)) & IIf(bestHits(j) <> "", " (" & bestHits(j) & ")", "")
             End If
         Next
-        AddLine OpOf(rows(i)), ToolOf(rows(i)), Arrow(s0(i, 1), best(i, 1), True), Arrow(s0(i, 3), best(i, 3), False), _
-                Arrow(s0(i, 4), best(i, 4), False), what
+        ' The list shows what fits beside the numbers; the window shows the rest for the
+        ' op picked.
+        AddLine OpOf(rows(i)), ToolOf(rows(i)), Tight(Arrow(s0(i, 1), best(i, 1), True)), Tight(Arrow(s0(i, 3), best(i, 3), False)), _
+                Tight(Arrow(s0(i, 4), best(i, 4), False)), IIf(Len(what) > 62, Left$(what, 59) & "...", what), what
     Next
     e = SumOf(best, n, 1)
+    pTimes(1) = e
     s = OpsText(rows, n) & ":  " & TimeText(e0) & "  ->  " & TimeText(e) & "  (" & Pct(e0, e) & ")"
     If Abs(e - T) >= 1 Then s = s & "  -  the target " & TimeText(T) & " is out of reach"
-    s = s & vbCrLf & "Feeds x" & Format$(bestK, "0.000") & IIf(withSpeeds, " and speeds x" & Format$(bestK, "0.000"), "") & _
+    s = s & vbCrLf & IIf(mainOnly, "Main feeds ", "Feeds ") & Format$((bestK - 1) * 100, "+0.0;-0.0;0.0") & "%" & _
+        IIf(withSpeeds, ", speeds " & Format$((bestK - 1) * 100, "+0.0;-0.0;0.0") & "%", "") & _
         ".   Flips / part " & Arrow(SumOf(s0, n, 3), SumOf(best, n, 3), False) & _
         IIf(cRem > 0 And MrrOf(s0, n) > 0, ".   MRR avg " & Arrow(MrrOf(s0, n), MrrOf(best, n), False), "") & "."
     If nh > 0 Then s = s & vbCrLf & nh & " cell(s) held at a limit: " & msg & IIf(nh > 4, ", ...", "") & "."
@@ -541,229 +640,497 @@ Public Function PlanTargetTime(ByVal scope As Range, ByVal target As String, ByV
     PlanTargetTime = IIf(pOk, "1|", "0|") & nc & " cell(s) will change.  " & s
 End Function
 
-' ---------------------------------------------------------------- even out flips
-
-' The targets offered in the window.
-Public Function FlipTargets() As Variant
-    FlipTargets = Array("Even out - same flips, every edge cut the same time", "One flip fewer per tool", _
-                        "Two flips fewer per tool", "One flip more per tool")
+' "11:00  ->  10:22" as the list shows it: "11:00 -> 10:22".
+Private Function Tight(ByVal s As String) As String
+    Tight = Replace(s, "  ->  ", " -> ")
 End Function
 
-' How many flips a tool should end with: "Even..." keeps the count; "One flip fewer" -1,
-' "Two flips fewer" -2, "One flip more" +1; a number is the count itself. -1 = not understood.
-Private Function FlipGoal(ByVal target As String, ByVal now As Double) As Double
-    Dim t As String
-    t = LCase$(Trim$(target))
-    FlipGoal = -1
-    If t = "" Or Left$(t, 4) = "even" Then
-        FlipGoal = now
-    ElseIf Left$(t, 14) = "one flip fewer" Then
-        FlipGoal = now - 1
-    ElseIf Left$(t, 15) = "two flips fewer" Then
-        FlipGoal = now - 2
-    ElseIf Left$(t, 13) = "one flip more" Then
-        FlipGoal = now + 1
-    ElseIf IsNumeric(t) Then
-        If CDbl(t) >= 0 Then FlipGoal = Int(CDbl(t))
-    End If
-    If FlipGoal < -0.5 Then Exit Function
-    If FlipGoal < 0 Then FlipGoal = 0
+' ---------------------------------------------------------------- inspection & inserts
+'
+' Per tool: its flips per part (flips_part over ALL its ops - an edge carries on from op
+' to op), the edge time now, and the edge time that uses every edge evenly - the SHORTEST
+' insp_time that still gives the flips wanted, so each edge cuts about the same and the
+' last one in a part is not left a stub. Worked out on the sheet's own flips, with every
+' tool's trial in the same recalculation (a tool's flips hang on its own ops only).
+'
+' Stops the toolpath places itself - every so much cut, every few cuts, at the end of an
+' op, a comment stop that does not go by time - do not move with insp_time or the feeds
+' on the sheet; they change when the toolpath is made again in Mastercam. A tool whose
+' flips do not move at any edge time says so, and gets no suggestion.
+
+' The goals the window offers.
+Public Function InspectGoals() As Variant
+    InspectGoals = Array("Same flips - use every edge evenly", "One flip fewer per part", "One flip more per part")
 End Function
 
-' Change insp_time (one edge time for each tool) or the feeds of some ops so each tool's
-' flips per part come to a goal - by default the same count with every edge used evenly
-' (the last edge is not left a stub): the SHORTEST edge time, or the slowest feeds, that
-' still gives that count. The flips are the sheet's own (flips_part, live), summed over
-' every op of the tool, since an edge carries on from one op of a tool to its next.
-Public Function PlanFlips(ByVal scope As Range, ByVal target As String, ByVal how As String) As String
-    Dim rows() As Long, n As Long, tools As String, tl As Variant, i As Long, j As Long
-    Dim trows() As Long, tn As Long, cs As Collection, v0 As Collection, vs As Collection, c As Range, x As Double
-    Dim f0 As Double, goal As Double, lo As Double, hi As Double, mid_ As Double, fl As Double, fh As Double, fm As Double
-    Dim L0 As Double, L As Double, cut As Double, s As String, note As String, nc As Long, it As Long, h As String
-    Dim allCells As New Collection, allVals As New Collection, s0 As Variant, s1 As Variant, allRows() As Long, an As Long
-    Dim before As Variant, what As String, feedCols As String, kBest As Double, fBest As Double, inspCol As Long
-
-    ClearPlan
+' The two ways to say which tools: those of the ops selected, or every tool.
+Public Function InspectScopes(ByVal rows As Collection) As Variant
+    Dim t As Variant, s As String, n As Long
     LoadCols
-    If cFlips = 0 Or cTool = 0 Then PlanFlips = "0|This sheet has no live flips (flips_part) - dump it again with this version.": Exit Function
-    If how = "insp_time" And cInsp = 0 Then PlanFlips = "0|This sheet has no insp_time column.": Exit Function
-    rows = RowsIn(scope, n)
-    If n = 0 Then PlanFlips = "0|Select the operations first (or pick a tool).": Exit Function
-
-    ' The tools of the selected ops, in order.
-    For i = 1 To n
-        If ToolOf(rows(i)) <> "" And InStr(tools & "|", "|" & ToolOf(rows(i)) & "|") = 0 Then tools = tools & "|" & ToolOf(rows(i))
+    For Each t In ToolsOf(rows, False)
+        n = n + 1
+        If n <= 8 Then s = s & IIf(s = "", "", ", ") & "T" & t
     Next
-    If tools = "" Then PlanFlips = "0|No tool numbers on these rows.": Exit Function
+    If n > 8 Then s = s & ", ..."
+    InspectScopes = Array(IIf(n = 0, "Tools of the ops selected (none selected)", "Tools of the ops selected: " & s), _
+                          "Every tool on the sheet (" & ToolsOf(Nothing, True).Count & ")")
+End Function
 
-    For Each tl In Split(Mid$(tools, 2), "|")
-        trows = RowsIn(ToolRange(CStr(tl)), tn)
-        before = Snap(trows, tn)
-        f0 = SumOf(before, tn, 3)
-        goal = FlipGoal(target, f0)
-        If goal < 0 Then PlanFlips = "0|'" & target & "' - pick from the list or type how many flips per part.": ClearPlan: Exit Function
-        cut = SumOf(before, tn, 2)
+' "|1|12|" - the tools of some rows, to tell whether other rows are about the same tools.
+Public Function ToolsKey(ByVal rows As Collection) As String
+    Dim t As Variant
+    LoadCols
+    ToolsKey = "|"
+    For Each t In ToolsOf(rows, False)
+        ToolsKey = ToolsKey & t & "|"
+    Next
+End Function
 
-        ' The cells this tool's selected ops give to change.
-        Set cs = New Collection: Set v0 = New Collection
-        L0 = -1
-        For i = 1 To n
-            If ToolOf(rows(i)) = CStr(tl) Then
-                If how = "insp_time" Then
-                    ' Only ops that inspect (an insp_time is set): a blank one stays blank.
-                    Set c = ParamTable.MainSheet.Cells(rows(i), cInsp)
+Private Sub LoadInspCols()
+    cDo = ParamTable.ColOf("insp_do_stop")
+    cTon = ParamTable.ColOf("insp_time_on")
+    cCon = ParamTable.ColOf("insp_comment_on")
+    cEnd = ParamTable.ColOf("insp_at_end")
+    cDon = ParamTable.ColOf("insp_dist_on")
+    cDist = ParamTable.ColOf("insp_dist")
+    cNon = ParamTable.ColOf("insp_n_cuts_on")
+    cNcut = ParamTable.ColOf("insp_n_cuts")
+    cUnits = ParamTable.ColOf("units")
+    cLim = ParamTable.ColOf("edge_limit")
+    cCopies = ParamTable.ColOf("xf_copies")
+End Sub
+
+' The tools of some rows (or of every row), in sheet order, each once.
+Private Function ToolsOf(ByVal rows As Collection, ByVal allTools As Boolean) As Collection
+    Dim out As New Collection, r As Variant, t As String, seen As String, last As Long, i As Long
+    Set ToolsOf = out
+    If cTool = 0 Then Exit Function
+    If allTools Then
+        last = ParamTable.LastRow
+        For i = FIRST_ROW To last
+            t = ToolOf(i)
+            If t <> "" And InStr(seen & "|", "|" & t & "|") = 0 Then seen = seen & "|" & t: out.Add t
+        Next
+    ElseIf Not rows Is Nothing Then
+        For Each r In rows
+            t = ToolOf(CLng(r))
+            If t <> "" And InStr(seen & "|", "|" & t & "|") = 0 Then seen = seen & "|" & t: out.Add t
+        Next
+    End If
+End Function
+
+' 1 or 0 for an on/off cell, -1 when the sheet has no such column.
+Private Function Flag(ByVal r As Long, ByVal c As Long) As Long
+    Dim v As Variant
+    If c = 0 Then Flag = -1: Exit Function
+    v = ParamTable.MainSheet.Cells(r, c).Value
+    If IsError(v) Then Exit Function
+    If CStr(v) = "1" Or UCase$(CStr(v)) = "TRUE" Then Flag = 1
+End Function
+
+' Whether an op's insp_time counts for its flips: it stops for inspection and times its
+' stops - or, with no comment to name the stop, the edge time decides whether its stop at
+' the end turns the insert. (A sheet without the switches: an op that sets a time.)
+Private Function TimeMatters(ByVal r As Long) As Boolean
+    If Flag(r, cDo) = 0 Then Exit Function
+    Select Case Flag(r, cTon)
+    Case 1: TimeMatters = True
+    Case 0: TimeMatters = (Flag(r, cCon) <> 1 And Flag(r, cEnd) = 1)
+    Case Else: TimeMatters = (SecondsOfText(ParamTable.MainSheet.Cells(r, cInsp).Value) > 0)
+    End Select
+End Function
+
+' Whether an op stops for inspection at all.
+Private Function Stops(ByVal r As Long) As Boolean
+    Select Case Flag(r, cDo)
+    Case 1: Stops = True
+    Case -1: Stops = SecondsOfText(ParamTable.MainSheet.Cells(r, cInsp).Value) > 0 Or Flag(r, cDon) = 1 Or _
+                     Flag(r, cNon) = 1 Or Flag(r, cEnd) = 1
+    End Select
+End Function
+
+' A cell of the Tools page by tool number and heading ("Insert"), as shown - "" when none.
+Private Function ToolsText(ByVal tool As String, ByVal head As String) As String
+    Dim ws As Worksheet, f As Range, r As Long
+    On Error Resume Next
+    Set ws = ThisWorkbook.Worksheets("Tools")
+    On Error GoTo 0
+    If ws Is Nothing Then Exit Function
+    Set f = ws.Rows(1).Find(What:=head, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False)
+    If f Is Nothing Then Exit Function
+    r = 2
+    Do While Trim$(CStr(ws.Cells(r, 1).Text)) <> "" And r < 2000
+        If Trim$(CStr(ws.Cells(r, 1).Text)) = tool Then ToolsText = Trim$(CStr(ws.Cells(r, f.Column).Text)): Exit Function
+        r = r + 1
+    Loop
+End Function
+
+' What a tool's stops placed by the toolpath are, in words - "every 5 in of cut, at the
+' end of the op" - from its ops' own settings, else the Tools page's Inspection column.
+Private Function StopsText(ByVal k As Long) As String
+    Dim j As Long, r As Long, s As String, u As String, x As Double
+    For j = iT(k).first To iT(k).last
+        r = aRows(j)
+        If Flag(r, cDo) <> 0 Then
+            u = ""
+            If cUnits > 0 Then u = Trim$(CStr(ParamTable.MainSheet.Cells(r, cUnits).Value))
+            If Flag(r, cDon) = 1 And cDist > 0 Then
+                If Num(ParamTable.MainSheet.Cells(r, cDist).Value, x) Then AddWords s, "every " & NumText(x) & IIf(u = "", "", " " & u) & " of cut"
+            End If
+            If Flag(r, cNon) = 1 And cNcut > 0 Then
+                If Num(ParamTable.MainSheet.Cells(r, cNcut).Value, x) Then AddWords s, "every " & NumText(x) & " cuts"
+            End If
+            If Flag(r, cEnd) = 1 Then AddWords s, "at the end of the op"
+        End If
+    Next
+    If s = "" Then s = ToolsText(iT(k).tool, "Inspection")
+    StopsText = s
+End Function
+
+Private Sub AddWords(ByRef s As String, ByVal t As String)
+    If InStr(", " & s & ",", ", " & t & ",") = 0 Then s = s & IIf(s = "", "", ", ") & t
+End Sub
+
+' Each tool's insp_time cells at its own trial edge time (seconds; 0 leaves the tool as
+' it is), all in one recalculation - each tool's flips per part.
+Private Function TryEdges(ByRef Lx() As Double) As Double()
+    Dim cs As New Collection, vs As New Collection, k As Long, j As Long, c As Variant, s As Variant, out() As Double
+    ReDim out(1 To nTool)
+    For k = 1 To nTool
+        If Lx(k) > 0 Then
+            For Each c In iT(k).cells
+                cs.Add c
+                vs.Add InspValue(c, Lx(k))
+            Next
+        End If
+    Next
+    s = TrialSnap(cs, vs, aRows, aN)
+    For k = 1 To nTool
+        For j = iT(k).first To iT(k).last
+            If Not IsEmpty(s(j, 3)) Then out(k) = out(k) + s(j, 3) * aW(j)
+        Next
+    Next
+    TryEdges = out
+End Function
+
+' For each tool with a goal (-1 = none): the shortest edge time, in whole seconds, whose
+' flips are no more than the goal - halving the gap between 5 s (too many flips) and its
+' long end (few enough), every tool in each recalculation.
+Private Function Shortest(ByRef goal() As Double, ByRef hiB() As Double) As Double()
+    Dim lo() As Double, hi() As Double, Lx() As Double, f() As Double, k As Long, more As Boolean, out() As Double
+    ReDim lo(1 To nTool): ReDim hi(1 To nTool): ReDim Lx(1 To nTool): ReDim out(1 To nTool)
+    For k = 1 To nTool
+        lo(k) = 5
+        hi(k) = hiB(k)
+    Next
+    Do
+        more = False
+        For k = 1 To nTool
+            Lx(k) = 0
+            If goal(k) >= 0 And hi(k) - lo(k) > 1 Then
+                Lx(k) = Int((lo(k) + hi(k)) / 2)
+                more = True
+            End If
+        Next
+        If Not more Then Exit Do
+        f = TryEdges(Lx)
+        For k = 1 To nTool
+            If Lx(k) > 0 Then
+                If f(k) <= goal(k) Then hi(k) = Lx(k) Else lo(k) = Lx(k)
+            End If
+        Next
+    Loop
+    For k = 1 To nTool
+        If goal(k) >= 0 Then out(k) = hi(k)
+    Next
+    Shortest = out
+End Function
+
+' The inspection window's work: a line per tool of the rows given (or of every op) for a
+' goal - 0 the same flips with every edge used evenly, 1 one flip fewer per part, 2 one
+' more. "1|..." when Apply would change something, "0|why" when not; InspectList,
+' InspectTotal and InspectApply follow.
+Public Function PlanInspect(ByVal rows As Collection, ByVal allTools As Boolean, ByVal goalIdx As Long) As String
+    Dim tools As Collection, t As Variant, r As Long, k As Long, j As Long, c As Range, x As Double, last As Long
+    Dim Lx() As Double, f() As Double, goal() As Double, hiB() As Double, res() As Double, nc As Long, s0 As Variant
+
+    nTool = 0: aN = 0: iTotal = 0
+    LoadCols
+    LoadInspCols
+    If cFlips = 0 Or cTool = 0 Or cInsp = 0 Then
+        PlanInspect = "0|This sheet has no live insert flips (flips_part, insp_time) - dump it again with this version."
+        Exit Function
+    End If
+    Set tools = ToolsOf(rows, allTools)
+    If tools.Count = 0 Then
+        PlanInspect = "0|" & IIf(allTools, "No op on this sheet has a tool number.", "Select one or more ops (rows with a tool number).")
+        Exit Function
+    End If
+
+    ' Every row of the tools, tool by tool; the cells that set each one's edge time.
+    last = ParamTable.LastRow
+    nTool = tools.Count
+    ReDim iT(1 To nTool)
+    ReDim aRows(1 To 1): ReDim aW(1 To 1)
+    k = 0
+    For Each t In tools
+        k = k + 1
+        iT(k).tool = t
+        iT(k).first = aN + 1
+        Set iT(k).cells = New Collection
+        For r = FIRST_ROW To last
+            If ToolOf(r) = t Then
+                aN = aN + 1
+                ReDim Preserve aRows(1 To aN): ReDim Preserve aW(1 To aN)
+                aRows(aN) = r
+                aW(aN) = 1
+                If cCopies > 0 Then If Num(ParamTable.MainSheet.Cells(r, cCopies).Value, x) Then aW(aN) = 1 + x
+                If Num(ParamTable.MainSheet.Cells(r, cCut).Value, x) Then iT(k).cut = iT(k).cut + x * aW(aN)
+                If Stops(r) Then iT(k).anyStop = True
+                If TimeMatters(r) Then
+                    Set c = ParamTable.MainSheet.Cells(r, cInsp)
+                    If Editable(c) Then iT(k).cells.Add c
                     x = SecondsOfText(c.Value)
-                    If x > 0 And Editable(c) Then
-                        cs.Add c
-                        v0.Add x
-                        If L0 < 0 Then L0 = x
-                    End If
-                Else
-                    For j = 1 To ParamTable.LastCol
-                        If InList(CStr(ParamTable.MainSheet.Cells(HEADER_ROW, j).Value), FEEDS) Then
-                            Set c = ParamTable.MainSheet.Cells(rows(i), j)
-                            If Num(c.Value, x) And VarType(c.Value) <> vbString Then
-                                If x > 0 And Editable(c) Then cs.Add c: v0.Add x
-                            End If
-                        End If
-                    Next
+                    If x > iT(k).L0 Then iT(k).L0 = x
                 End If
             End If
         Next
-
-        If cs.Count = 0 Then
-            note = note & vbCrLf & "Tool " & tl & ": no " & IIf(how = "insp_time", "insp_time", "feed") & " to change on the selected ops."
-        ElseIf goal = f0 And goal = 0 Then
-            note = note & vbCrLf & "Tool " & tl & ": no flips to even out."
-        ElseIf how = "insp_time" Then
-            ' Flips fall as the edge time grows: find the shortest that gives the goal.
-            lo = 5
-            hi = Application.Max(2 * cut + 60, 4 * L0, 600)
-            fl = FlipsWithInsp(cs, lo, trows, tn)
-            fh = FlipsWithInsp(cs, hi, trows, tn)
-            If fl = fh Then
-                note = note & vbCrLf & "Tool " & tl & ": insp_time does not move its flips (is the timer, insp_time_on, off?)."
-            ElseIf fh > goal Then
-                note = note & vbCrLf & "Tool " & tl & ": no edge time gives " & goal & " flips - the fewest is " & fh & "."
-            ElseIf fl <= goal Then
-                note = note & vbCrLf & "Tool " & tl & ": " & goal & " flips at any edge time - nothing to even out."
-            Else
-                Do While hi - lo > 1
-                    mid_ = Int((lo + hi) / 2)
-                    If FlipsWithInsp(cs, mid_, trows, tn) <= goal Then hi = mid_ Else lo = mid_
-                Loop
-                L = -Int(-hi / 5) * 5                      ' up to whole 5 seconds
-                If L0 > 0 And goal = f0 And L > L0 Then L = L0
-                If FlipsWithInsp(cs, L, trows, tn) > goal Then L = hi
-                If L0 > 0 And Abs(L - L0) < 0.5 Then
-                    note = note & vbCrLf & "Tool " & tl & ": already even - " & goal & " flips at " & TimeText(L0) & "."
-                Else
-                    For i = 1 To cs.Count
-                        allCells.Add cs(i): allVals.Add InspValue(cs(i), L)
-                    Next
-                    note = note & vbCrLf & "Tool " & tl & ": flips " & NumText(f0) & " -> " & NumText(goal) & ",  insp_time " & _
-                           IIf(L0 > 0, TimeText(L0) & " -> ", "") & TimeText(L) & IIf(L0 > 0, "  (" & Pct(L0, L) & " edge time)", "") & "."
+        iT(k).last = aN
+        iT(k).insert = ToolsText(CStr(t), "Insert")
+        If iT(k).L0 = 0 And iT(k).cells.Count > 0 Then
+            ' No time typed: its stops go by the tool's edge life (edge_limit).
+            For j = iT(k).first To iT(k).last
+                If cLim > 0 Then
+                    If Num(ParamTable.MainSheet.Cells(aRows(j), cLim).Value, x) Then If x > iT(k).L0 Then iT(k).L0 = x
                 End If
+            Next
+            If iT(k).L0 = 0 Then iT(k).L0 = Application.Max(0, SecondsOfText(ToolsText(CStr(t), "Edge life (fallback)")))
+        End If
+    Next
+
+    ' Now; then the two ends - the shortest edge time (5 s) and one longer than the tool
+    ' cuts in a part: what is left at the long end comes from the toolpath itself.
+    ReDim Lx(1 To nTool): ReDim hiB(1 To nTool): ReDim goal(1 To nTool)
+    f = TryEdges(Lx)
+    For k = 1 To nTool
+        iT(k).f0 = f(k)
+    Next
+    iTotal = SheetFlips()
+    For k = 1 To nTool
+        If iT(k).cells.Count > 0 Then
+            Lx(k) = 5
+            hiB(k) = Application.Max(2 * iT(k).cut + 60, 4 * iT(k).L0, 600)
+        End If
+    Next
+    f = TryEdges(Lx)
+    For k = 1 To nTool
+        iT(k).fMax = IIf(Lx(k) > 0, f(k), iT(k).f0)
+        Lx(k) = hiB(k)
+    Next
+    f = TryEdges(Lx)
+    For k = 1 To nTool
+        iT(k).fMin = IIf(Lx(k) > 0, f(k), iT(k).f0)
+    Next
+
+    ' Even: the shortest edge time that keeps today's flips (also says how much of the
+    ' last edge a part uses now).
+    For k = 1 To nTool
+        goal(k) = -1
+        If iT(k).cells.Count > 0 And iT(k).fMax > iT(k).f0 And iT(k).f0 >= iT(k).fMin Then goal(k) = iT(k).f0
+    Next
+    res = Shortest(goal, hiB)
+    For k = 1 To nTool
+        If goal(k) >= 0 Then iT(k).even = res(k)
+        Select Case goalIdx
+        Case 1: iT(k).goal = iT(k).f0 - 1
+        Case 2: iT(k).goal = iT(k).f0 + 1
+        Case Else: iT(k).goal = iT(k).f0
+        End Select
+    Next
+    If goalIdx <> 0 Then
+        For k = 1 To nTool
+            goal(k) = -1
+            If iT(k).cells.Count > 0 And iT(k).goal >= 0 And iT(k).goal >= iT(k).fMin And iT(k).goal < iT(k).fMax Then goal(k) = iT(k).goal
+        Next
+        res = Shortest(goal, hiB)
+    End If
+
+    ' The suggestion: up to whole 5 seconds; "the same flips" never makes an edge longer.
+    For k = 1 To nTool
+        x = 0
+        If goal(k) >= 0 Then x = res(k)
+        If goalIdx = 0 And iT(k).f0 = 0 Then x = 0          ' no flips to spread
+        If x > 0 Then
+            iT(k).L = -Int(-x / 5) * 5
+            If goalIdx = 0 And iT(k).L0 > 0 And iT(k).L > iT(k).L0 Then iT(k).L = iT(k).L0
+            For Each c In iT(k).cells
+                If Abs(SecondsOfText(c.Value) - iT(k).L) >= 0.5 Then iT(k).change = True
+            Next
+        End If
+        Lx(k) = IIf(iT(k).change, iT(k).L, 0)
+    Next
+    f = TryEdges(Lx)
+    For k = 1 To nTool
+        iT(k).f1 = IIf(iT(k).change, f(k), iT(k).f0)
+        NoteOf k, goalIdx
+        iT(k).stamp = ToolStamp(k)
+        If iT(k).change Then nc = nc + 1
+    Next
+    If nc = 0 Then
+        PlanInspect = "0|Nothing to change - " & IIf(goalIdx = 0, "every tool here is even already, or its flips come from the toolpath.", "see each tool's note.")
+    Else
+        PlanInspect = "1|" & nc & " tool(s) can change."
+    End If
+End Function
+
+' Flips per part of every tool on the sheet now (an op transforms cut again counts again).
+Private Function SheetFlips() As Double
+    Dim r As Long, x As Double, w As Double
+    For r = FIRST_ROW To ParamTable.LastRow
+        If ToolOf(r) <> "" Then
+            If Num(ParamTable.MainSheet.Cells(r, cFlips).Value, x) Then
+                w = 1
+                If cCopies > 0 Then If Num(ParamTable.MainSheet.Cells(r, cCopies).Value, w) Then w = 1 + w Else w = 1
+                SheetFlips = SheetFlips + x * w
             End If
+        End If
+    Next
+End Function
+
+' What to know about a tool's line, in plain words.
+Private Sub NoteOf(ByVal k As Long, ByVal goalIdx As Long)
+    Dim why As String, d As Double, s As String
+    With iT(k)
+        If .cells.Count = 0 Or .fMax = .fMin Then
+            ' Nothing on the sheet moves its flips.
+            If .f0 = 0 Then
+                s = IIf(.anyStop, "No flips - its stops do not turn the insert.", "No flips - it does not stop to turn the insert.")
+            Else
+                why = StopsText(k)
+                s = "Flips come from stops in the toolpath" & IIf(why = "", "", " (" & why & ")") & " - change them in Mastercam."
+            End If
+        ElseIf .goal < .fMin Then
+            why = StopsText(k)
+            s = "It cannot go below " & NumText(.fMin) & " - " & IIf(.fMin = 1, "that flip comes", "those flips come") & _
+                " from stops in the toolpath" & IIf(why = "", "", " (" & why & ")") & " - change them in Mastercam."
+        ElseIf .goal >= .fMax Then
+            s = "It cannot flip more often - it already stops as often as its settings allow."
+        ElseIf goalIdx = 0 And .f0 = 0 Then
+            s = "No flips to spread - one edge does the whole part."
+        ElseIf Not .change Then
+            s = IIf(goalIdx = 0, "Already even - every edge cuts about the same.", "Already at that edge time.")
         Else
-            ' Flips fall as the feeds rise: the slowest feeds that give the goal.
-            lo = Log(0.5): hi = Log(2)
-            fl = FlipsWithFeeds(cs, v0, Exp(lo), trows, tn)
-            fh = FlipsWithFeeds(cs, v0, Exp(hi), trows, tn)
-            If fl = fh Then
-                note = note & vbCrLf & "Tool " & tl & ": feeds from 50% to 200% do not move its flips."
-            ElseIf fh > goal Then
-                note = note & vbCrLf & "Tool " & tl & ": even at double feed it flips " & fh & " times - change insp_time instead."
+            d = .L - .L0
+            If .L0 > 0 And d >= 0.5 Then
+                .warn = True
+                s = "Edge runs " & TimeText(d) & " longer than now - check the insert can take it."
+            ElseIf .L0 > 0 And d <= -0.5 Then
+                s = IIf(.f1 = .f0, "Same flips - each edge cuts " & TimeText(-d) & " less.", "Each edge cuts " & TimeText(-d) & " less.")
             Else
-                If fl <= goal Then
-                    hi = lo                                ' slower than half: stop at half
-                Else
-                    For it = 1 To 16
-                        mid_ = (lo + hi) / 2
-                        If FlipsWithFeeds(cs, v0, Exp(mid_), trows, tn) <= goal Then hi = mid_ Else lo = mid_
-                    Next
-                End If
-                kBest = Exp(hi)
-                ' Rounding the feeds can tip it back: nudge up until it holds.
-                For it = 1 To 6
-                    If FlipsWithFeeds(cs, v0, kBest, trows, tn) <= goal Then Exit For
-                    kBest = kBest * 1.003
-                Next
-                If Abs(kBest - 1) < 0.002 Then
-                    note = note & vbCrLf & "Tool " & tl & ": already even - " & goal & " flips."
-                Else
-                    For i = 1 To cs.Count
-                        x = Scaled(cs(i), v0(i), kBest, False, h)
-                        If Abs(x - v0(i)) > 1E-12 Then allCells.Add cs(i): allVals.Add x
-                    Next
-                    note = note & vbCrLf & "Tool " & tl & ": flips " & NumText(f0) & " -> " & NumText(goal) & ",  feeds x" & _
-                           Format$(kBest, "0.000") & IIf(fl <= goal And goal = f0, " (stopped at half feed)", "") & "."
-                End If
+                s = "The same edge time on every op of the tool."
             End If
+            If .f1 <> .goal Then s = s & "  It gives " & NumText(.f1) & " - the count jumps past " & NumText(.goal) & " there."
         End If
-    Next
+        .note = s
+    End With
+End Sub
 
-    ' Every op of the tools, before and after all of it together.
-    an = 0
-    ReDim allRows(1 To 1)
-    For Each tl In Split(Mid$(tools, 2), "|")
-        trows = RowsIn(ToolRange(CStr(tl)), tn)
-        For i = 1 To tn
-            an = an + 1
-            ReDim Preserve allRows(1 To an)
-            allRows(an) = trows(i)
-        Next
-    Next
-    s0 = Snap(allRows, an)
-    s1 = TrialSnap(allCells, allVals, allRows, an)
-    AddLine "op", "tool", IIf(how = "insp_time", "insp_time", "feed"), "flips / part", "time", "MRR avg"
-    For i = 1 To an
-        what = ""
-        For j = 1 To allCells.Count
-            If allCells(j).Row = allRows(i) Then
-                If how = "insp_time" Then
-                    what = InspText(allCells(j).Value) & "  ->  " & InspText(allVals(j))
-                ElseIf what = "" Then
-                    what = NumText(allCells(j).Value) & "  ->  " & NumText(allVals(j))
-                End If
-            End If
-        Next
-        If what = "" And how = "insp_time" Then
-            what = InspText(ParamTable.MainSheet.Cells(allRows(i), cInsp).Value)
-        End If
-        AddLine OpOf(allRows(i)), ToolOf(allRows(i)), what, Arrow(s0(i, 3), s1(i, 3), False), _
-                Arrow(s0(i, 1), s1(i, 1), True), Arrow(s0(i, 4), s1(i, 4), False)
-    Next
-    For i = 1 To allCells.Count
-        pCells.Add allCells(i): pVals.Add allVals(i)
-    Next
-    nc = pCells.Count
-    pOk = (nc > 0)
-    s = "Flips / part " & Arrow(SumOf(s0, an, 3), SumOf(s1, an, 3), False) & ",  time " & _
-        Arrow(SumOf(s0, an, 1), SumOf(s1, an, 1), True) & "." & note
-    PlanFlips = IIf(pOk, "1|", "0|") & nc & " cell(s) will change.  " & s
-End Function
-
-Private Function InspText(ByVal v As Variant) As String
+' How much of its edge time the last edge in a part gets to cut now: today's flips at
+' the even edge time stand for the cut time a part has for this tool - (f + 1) x even -
+' and the last edge gets what f edges of today's time leave of it.
+Private Function LastEdgeText(ByVal k As Long) As String
     Dim x As Double
-    x = SecondsOfText(v)
-    If x >= 0 Then InspText = TimeText(x)
+    With iT(k)
+        If .even <= 0 Or .L0 <= 0 Then Exit Function
+        x = ((.f0 + 1) * .even - .f0 * .L0) / .L0
+    End With
+    If x < 0 Then x = 0
+    If x > 1 Then x = 1
+    LastEdgeText = Format$(x * 100, "0") & "%"
 End Function
 
-Private Function FlipsWithInsp(ByVal cs As Collection, ByVal sec As Double, ByRef trows() As Long, ByVal tn As Long) As Double
-    Dim vs As New Collection, i As Long
-    For i = 1 To cs.Count
-        vs.Add InspValue(cs(i), sec)
+' The window's list: a row per tool - tool, insert, flips now, edge time now, last edge
+' used, new edge time, new flips, note; then (hidden) 1 when Apply changes it, the tool,
+' flips now and new as numbers, 1 when its edges run longer. Empty when none.
+Public Function InspectList() As Variant
+    Dim out() As String, k As Long, e As String
+    If nTool = 0 Then Exit Function
+    ReDim out(0 To nTool - 1, 0 To 12)
+    For k = 1 To nTool
+        With iT(k)
+            If .cells.Count = 0 Or .fMax = .fMin Then
+                e = ToolsText(.tool, "Longest between flips")      ' as the toolpath has it
+            ElseIf .L0 > 0 Then
+                e = TimeText(.L0)
+            Else
+                e = ""
+            End If
+            out(k - 1, 0) = "T" & .tool
+            out(k - 1, 1) = .insert
+            out(k - 1, 2) = NumText(.f0)
+            out(k - 1, 3) = e
+            out(k - 1, 4) = LastEdgeText(k)
+            out(k - 1, 5) = IIf(.change, TimeText(.L), "")
+            out(k - 1, 6) = IIf(.change, NumText(.f1), "")
+            out(k - 1, 7) = .note
+            out(k - 1, 8) = IIf(.change, "1", "0")
+            out(k - 1, 9) = .tool
+            out(k - 1, 10) = CStr(.f0)
+            out(k - 1, 11) = CStr(.f1)
+            out(k - 1, 12) = IIf(.warn, "1", "0")
+        End With
     Next
-    FlipsWithInsp = SumOf(TrialSnap(cs, vs, trows, tn), tn, 3)
+    InspectList = out
 End Function
 
-Private Function FlipsWithFeeds(ByVal cs As Collection, ByVal v0 As Collection, ByVal k As Double, ByRef trows() As Long, ByVal tn As Long) As Double
-    Dim vs As New Collection, i As Long, h As String
-    For i = 1 To cs.Count
-        vs.Add Scaled(cs(i), v0(i), k, False, h)
+' A tool's edge-time cells, its ops and its flips as they are on the sheet now - the plan
+' keeps it, to tell whether the sheet changed under the window since.
+Private Function ToolStamp(ByVal k As Long) As String
+    Dim c As Variant, j As Long, x As Double, f As Double, s As String
+    For Each c In iT(k).cells
+        s = s & c.Address(False, False) & "=" & CStr(c.Value) & "|"
     Next
-    FlipsWithFeeds = SumOf(TrialSnap(cs, vs, trows, tn), tn, 3)
+    For j = iT(k).first To iT(k).last
+        s = s & ParamTable.MainSheet.Cells(aRows(j), 1).Value & ","
+        If Num(ParamTable.MainSheet.Cells(aRows(j), cFlips).Value, x) Then f = f + x * aW(j)
+    Next
+    ToolStamp = s & "|" & f
+End Function
+
+' Whether the sheet changed under the plan (typed over, undone, sorted) since it was worked
+' out - Apply would then write values worked out on a sheet that is not there any more.
+Public Function InspectStale() As Boolean
+    Dim k As Long
+    For k = 1 To nTool
+        If ToolStamp(k) <> iT(k).stamp Then InspectStale = True: Exit Function
+    Next
+End Function
+
+' Flips per part of every tool on the sheet, when the plan was last worked out.
+Public Function InspectTotal() As Double
+    InspectTotal = iTotal
+End Function
+
+' Write each ticked tool's edge time ("1|12": tool numbers) to its ops, each through its
+' cell's rule - "done|refused|ops|tools".
+Public Function InspectApply(ByVal ticked As String) As String
+    Dim k As Long, c As Variant, ok As Long, bad As Long, ops As String, tl As String
+    For k = 1 To nTool
+        If iT(k).change And InStr("|" & ticked & "|", "|" & iT(k).tool & "|") > 0 Then
+            tl = tl & IIf(tl = "", "", ", ") & "T" & iT(k).tool
+            For Each c In iT(k).cells
+                If Abs(SecondsOfText(c.Value) - iT(k).L) >= 0.5 Then
+                    If ParamTable.TryWrite(c, InspValue(c, iT(k).L)) Then
+                        ok = ok + 1
+                        ops = ops & IIf(ops = "", "", ", ") & OpOf(c.Row)
+                    Else
+                        bad = bad + 1
+                    End If
+                End If
+            Next
+        End If
+    Next
+    InspectApply = ok & "|" & bad & "|" & ops & "|" & tl
 End Function
 
 ' ============================================================ what-if scenarios
@@ -807,23 +1174,26 @@ Public Function ScenarioExists(ByVal name As String) As Boolean
     Next
 End Function
 
-' Every edit on the sheet now: a Collection of Array(op_idn, column name, value).
+' Every edit on the sheet now: a Collection of Array(op_idn, column name, value). Each
+' column is compared with the dumped one of the same NAME (DumpedColumns).
 Private Function CurrentEdits() As Collection
     Dim ws As Worksheet, out As New Collection, r As Long, c As Long, dr As Long, lc As Long, hdr As String, mc As Range
+    Dim dcol() As Long
     Set CurrentEdits = out
     On Error Resume Next
     Set ws = ThisWorkbook.Worksheets("Dumped")
     On Error GoTo 0
     If ws Is Nothing Then Exit Function
     lc = ParamTable.LastCol
+    dcol = ParamTable.DumpedColumns()
     For r = FIRST_ROW To ParamTable.LastRow
         dr = ParamTable.DumpedRow(ParamTable.MainSheet.Cells(r, 1).Value)
         If dr > 0 Then
             For c = 1 To lc
                 hdr = CStr(ParamTable.MainSheet.Cells(HEADER_ROW, c).Value)
                 Set mc = ParamTable.MainSheet.Cells(r, c)
-                If hdr <> "" And Not ParamTable.Untracked(hdr) And Not mc.HasFormula Then
-                    If Not ParamTable.SameValue(mc.Value, ws.Cells(dr, c).Value) Then
+                If hdr <> "" And Not ParamTable.Untracked(hdr) And Not mc.HasFormula And dcol(c) > 0 Then
+                    If Not ParamTable.SameValue(mc.Value, ws.Cells(dr, dcol(c)).Value) Then
                         out.Add Array(ParamTable.MainSheet.Cells(r, 1).Value, hdr, mc.Value)
                     End If
                 End If
@@ -858,13 +1228,16 @@ Private Function ScenarioSaved(ByVal name As String) As String
     Next
 End Function
 
-' The totals of the sheet now: cycle time | cut time | flips | removed (sums).
+' The totals of a sheet (the main one, or Dumped): cycle time | cut time | flips | removed
+' (sums). Each column found by its name on that sheet's own column-name row.
 Private Function TotalsNow(ByVal ws As Worksheet) As Variant
-    Dim out(0 To 3) As Double, names As Variant, i As Long, c As Long, r As Long, x As Double, last As Long
+    Dim out(0 To 3) As Double, names As Variant, i As Long, c As Long, r As Long, x As Double, last As Long, f As Range
     names = Array("est_seconds", "cut_seconds_est", "flips_part", "removed")
     last = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
     For i = 0 To 3
-        c = ParamTable.ColOf(CStr(names(i)))
+        Set f = ws.Rows(HEADER_ROW).Find(What:=CStr(names(i)), LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=True)
+        c = 0
+        If Not f Is Nothing Then c = f.Column
         If c > 0 Then
             For r = FIRST_ROW To last
                 If Num(ws.Cells(r, c).Value, x) Then out(i) = out(i) + x
@@ -947,12 +1320,28 @@ Public Function DeleteScenario(ByVal name As String) As Boolean
     Next
 End Function
 
+' The name the edits on the sheet are kept under when a restore would wipe them.
+Private Function BeforeRestoreName() As String
+    BeforeRestoreName = "(before restore " & Format$(Now, "mmm d hh:nn") & ")"
+End Function
+
+' The scenario the last restore saved the sheet's edits into ("" when none needed it).
+Public Function AutoSaved() As String
+    AutoSaved = lastAutoSave
+End Function
+
 ' Put the sheet back to the dump, then the scenario's values in through each cell's rule.
-' "set refused reverted".
+' Edits on the sheet that no scenario keeps are saved first, as "(before restore <when>)",
+' so a restore never loses work (AutoSaved says under what). "set refused reverted".
 Public Function RestoreScenario(ByVal name As String) As String
     Dim e As Collection, v As Variant, f As Range, c As Long, ok As Long, bad As Long, back As Long
+    lastAutoSave = ""
     If Not ScenarioExists(name) Then RestoreScenario = "0 0 0": Exit Function
     Set e = ScenarioCells(name)
+    If Not EditsSaved() Then
+        lastAutoSave = BeforeRestoreName()
+        If SaveScenario(lastAutoSave) = 0 Then lastAutoSave = ""
+    End If
     back = ParamTable.RevertCells(ParamTable.AllData(), False)
     For Each v In e
         Set f = ParamTable.OpCell(v(0))
@@ -985,7 +1374,8 @@ Public Function ScenarioPreview(ByVal mode As String, ByVal name As String) As S
         e = EditCount()
         ScenarioPreview = "1|Sets " & n & " cell(s) from '" & name & "' (saved " & ScenarioSaved(name) & ")" & _
                           IIf(e > 0, "; the " & e & " edit(s) on the sheet now go back to the dump first", "") & "." & _
-                          IIf(EditsSaved(), "", vbCrLf & "Your edits now are not in any scenario - Cancel and Save them first to keep them.")
+                          IIf(EditsSaved(), "", vbCrLf & "Your edits now are not in any scenario - they are kept first, as a " & _
+                              "scenario named '" & BeforeRestoreName() & "'.")
     Case "scendel"
         If Not ScenarioExists(name) Then ScenarioPreview = "0|Pick the scenario to delete.": Exit Function
         ScenarioPreview = "1|Deletes '" & name & "' (" & ScenarioCells(name).Count & " cell(s), saved " & ScenarioSaved(name) & "). The sheet is not changed."
@@ -1012,8 +1402,9 @@ End Function
 Public Function CompareScenarios() As Long
     Dim out As Worksheet, names As Variant, i As Long, r As Long, tot As Variant, d As Worksheet, dump As Variant
     Dim dict As Object, k As Variant, e As Collection, v As Variant, col As Long, keyOf As String, nm As Variant
-    Dim sc As Long, cmt As Long, f As Range, dr As Long, hdrCol As Long, parts() As String
+    Dim sc As Long, cmt As Long, f As Range, dr As Long, hdrCol As Long, parts() As String, dcol() As Long
     names = ScenarioNames()
+    dcol = ParamTable.DumpedColumns()
     Application.DisplayAlerts = False
     On Error Resume Next
     ThisWorkbook.Worksheets(SCEN_SHEET).Delete
@@ -1089,7 +1480,9 @@ Public Function CompareScenarios() As Long
         End If
         dr = 0
         If Not d Is Nothing Then dr = ParamTable.DumpedRow(parts(0))
-        If dr > 0 And col > 0 Then out.Cells(r, 5).NumberFormat = "@": out.Cells(r, 5).Value = CStr(d.Cells(dr, col).Value)
+        If dr > 0 And col > 0 Then
+            If dcol(col) > 0 Then out.Cells(r, 5).NumberFormat = "@": out.Cells(r, 5).Value = CStr(d.Cells(dr, dcol(col)).Value)
+        End If
         For i = 0 To UBound(names)
             out.Cells(r, 6 + i).NumberFormat = "@"
             out.Cells(r, 6 + i).Value = out.Cells(r, 5).Value      ' as dumped unless the scenario sets it
@@ -1226,24 +1619,6 @@ Public Function ToolCopyCells(ByVal cells As Range, ByVal srcOp As Variant) As S
     ToolCopyCells = ParamTable.CopyCells(t, srcOp)
 End Function
 
-' The ops of a row's tool (keys and list captions) for the window.
-Public Function ToolOps(ByVal r As Long, ByRef keys As Variant) As Variant
-    Dim tool As String, rr As Long, items As String, k As String, cmt As Long
-    LoadCols
-    tool = ToolOf(r)
-    cmt = ParamTable.ColOf("comment")
-    For rr = FIRST_ROW To ParamTable.LastRow
-        If ToolOf(rr) = tool And tool <> "" Then
-            k = k & IIf(k = "", "", vbLf) & OpOf(rr)
-            items = items & IIf(items = "", "", vbLf) & "op " & OpOf(rr) & "    " & ParamTable.MainSheet.Cells(rr, 2).Value & _
-                    IIf(cmt > 0, "    " & ParamTable.MainSheet.Cells(rr, IIf(cmt > 0, cmt, 1)).Value, "")
-        End If
-    Next
-    If k = "" Then keys = Empty: ToolOps = Empty: Exit Function
-    keys = Split(k, vbLf)
-    ToolOps = Split(items, vbLf)
-End Function
-
 Public Function ToolOfRow(ByVal r As Long) As String
     LoadCols
     ToolOfRow = ToolOf(r)
@@ -1275,8 +1650,8 @@ End Function
 
 ' ============================================================ ribbon
 
-' Hit a target time, the inspection window, To all ops of tool and Restore scenario are
-' in Panel.bas (undo around each).
+' Hit a target time, Inspection & inserts, Copy from op and Restore scenario are in
+' Panel.bas.
 Public Sub RbScenSave(control As IRibbonControl): ParamTable.ScenarioWindow "scensave": End Sub
 Public Sub RbScenDel(control As IRibbonControl): ParamTable.ScenarioWindow "scendel": End Sub
 Public Sub RbScenCompare(control As IRibbonControl)
@@ -1306,39 +1681,119 @@ Public Sub RbShowAll(control As IRibbonControl)
     Application.StatusBar = "Parameter Table:  all " & ShowAllOps() & " op(s) showing."
 End Sub
 
-' ============================================================ the plan window
+' ============================================================ the planning windows
 
-Public Function PlanWindow(ByVal mode As String, ByVal sel As Range) As PlanBox
-    Dim f As PlanBox
-    Set f = New PlanBox
-    f.Setup mode, sel, ScopeChoices(sel), ScopeDefault(sel)
-    Set PlanWindow = f
+' The ops a window starts on: the rows selected on the main sheet, else the active cell's
+' row - none when neither is an op (the window then asks for one).
+Public Function WindowRows() As Collection
+    Dim rows As New Collection, r As Long
+    Set WindowRows = rows
+    On Error Resume Next
+    If TypeName(Selection) = "Range" Then Set WindowRows = Panel.OpRows(Selection)
+    If WindowRows.Count > 0 Then Exit Function
+    If ActiveSheet.Name <> ParamTable.MainSheet.Name Then Exit Function
+    r = ActiveCell.Row
+    If r >= FIRST_ROW And r <= ParamTable.LastRow Then
+        rows.Add r
+        Set WindowRows = rows
+    End If
 End Function
 
-Public Sub ShowPlanWindow(ByVal mode As String)
-    Dim f As PlanBox, r As String
-    If TypeName(Selection) <> "Range" Then Exit Sub
-    If Selection.Worksheet.Name <> ParamTable.MainSheet.Name Then
-        MsgBox "Select operations (cells in their rows) on the '" & ParamTable.MainSheet.Name & "' sheet first.", vbInformation, "Parameter Table"
-        Exit Sub
+' Hit a target time. One window: pressed again, it comes to the front on the ops selected
+' now - unless it holds a plan not applied yet, which it says. The sheet shows the ops'
+' time and feed. Writes only on Apply (undo there), never while it is worked out.
+Public Sub ShowTargetWindow()
+    Dim rows As Collection
+    Set rows = WindowRows()
+    If timeWin Is Nothing Then
+        Set timeWin = New PlanBox
+        timeWin.Setup rows
+    Else
+        timeWin.FollowRows rows
     End If
-    Set f = PlanWindow(mode, Selection)
-    f.Show
-    If f.Accepted Then
-        r = ApplyPlan()
-        Application.StatusBar = "Parameter Table:  " & Split(r, " ")(0) & " cell(s) changed" & _
-                                IIf(Split(r, " ")(1) <> "0", ", " & Split(r, " ")(1) & " refused by their cell's rule", "") & "."
-    End If
-    Unload f
+    If rows.Count > 0 And Not timeWin.Holding() Then Panel.ShowColumns "est_cycle_time|feed", rows
+    timeWin.Show vbModeless
+    Panel.Opened timeWin
 End Sub
 
-' For tools\check_macros.ps1 (no window): set the window's inputs, read back
-' "summary|OK on|list rows".
-Public Function PlanSelfTest(ByVal mode As String, ByVal sel As Range, ByVal scopeIdx As Long, ByVal target As String, _
-                             ByVal howIdx As Long, ByVal opt1 As Boolean, ByVal opt2 As Boolean) As String
-    Dim f As PlanBox
-    Set f = PlanWindow(mode, sel)
-    f.SetInputs scopeIdx, target, howIdx, opt1, opt2
-    PlanSelfTest = f.Summary() & "|" & f.CanAccept() & "|" & f.ListRows()
+' Inspection & inserts - the same way; the sheet shows the ops' inspection and flips.
+Public Sub ShowInspectWindow()
+    Dim rows As Collection
+    Set rows = WindowRows()
+    If inspWin Is Nothing Then
+        Set inspWin = New InspectBox
+        inspWin.Setup rows
+    Else
+        inspWin.FollowRows rows
+    End If
+    If rows.Count > 0 And Not inspWin.Holding() Then Panel.ShowColumns "insp_do_stop|insp_time_on|insp_time|flips_part", rows
+    inspWin.Show vbModeless
+    Panel.Opened inspWin
+End Sub
+
+' A planning window closed: the next ribbon press makes a new one.
+Public Sub WindowGone(ByVal f As Object)
+    If Not timeWin Is Nothing Then
+        If f Is timeWin Then Set timeWin = Nothing
+    End If
+    If Not inspWin Is Nothing Then
+        If f Is inspWin Then Set inspWin = Nothing
+    End If
+End Sub
+
+' For the self-tests: press a window's button ("apply") - or "set G5=0.02", a value typed
+' on the sheet in the meantime.
+Private Sub SelfTestStep(ByVal f As Object, ByVal p As String)
+    Dim kv() As String
+    p = Trim$(p)
+    If p = "" Then Exit Sub
+    If LCase$(Left$(p, 4)) = "set " Then
+        kv = Split(Mid$(p, 5), "=")
+        If IsNumeric(kv(1)) Then
+            ParamTable.MainSheet.Range(kv(0)).Value = CDbl(kv(1))
+        Else
+            ParamTable.MainSheet.Range(kv(0)).Value = kv(1)
+        End If
+    Else
+        f.Press p
+    End If
+End Sub
+
+' For tools\check_macros.ps1 (no window shown): the target-time window on a range's ops.
+' Fill it in (scopeIdx -1: type the target only, the rest as the window opens), press its
+' buttons ("enter", "preview", "apply", "revert" - comma-separated), then, if given, click
+' other ops on the sheet; read back
+' "summary|Apply on|list rows|result line|speeds note|heading|options ticked".
+Public Function PlanSelfTest(ByVal sel As Range, ByVal scopeIdx As Long, ByVal target As String, ByVal mainOnly As Boolean, _
+                             ByVal withSpeeds As Boolean, Optional ByVal presses As String = "", _
+                             Optional ByVal followSel As Range) As String
+    Dim f As PlanBox, p As Variant
+    Set f = New PlanBox
+    f.Setup Panel.OpRows(sel)
+    If scopeIdx < 0 Then f.TypeTarget target Else f.SetInputs scopeIdx, target, mainOnly, withSpeeds
+    For Each p In Split(presses, ",")
+        SelfTestStep f, CStr(p)
+    Next
+    If Not followSel Is Nothing Then f.FollowRows Panel.OpRows(followSel)
+    PlanSelfTest = f.Summary() & "|" & f.CanApply() & "|" & f.ListRows() & "|" & f.Result() & "|" & f.NoteText() & "|" & _
+                   f.Heading() & "|" & f.Options()
+    Unload f
+End Function
+
+' The inspection window the same way: the tools of a range's ops (or every tool), a goal
+' (0 same flips, 1 one fewer, 2 one more), tools to untick ("3|5"), presses ("apply",
+' "revert"), other ops clicked after - "summary|Apply on|list rows|result line|heading".
+Public Function InspectSelfTest(ByVal sel As Range, ByVal allTools As Boolean, ByVal goalIdx As Long, _
+                                Optional ByVal untick As String = "", Optional ByVal presses As String = "", _
+                                Optional ByVal followSel As Range) As String
+    Dim f As InspectBox, p As Variant
+    Set f = New InspectBox
+    f.Setup Panel.OpRows(sel)
+    f.SetInputs IIf(allTools, 1, 0), goalIdx, untick
+    For Each p In Split(presses, ",")
+        SelfTestStep f, CStr(p)
+    Next
+    If Not followSel Is Nothing Then f.FollowRows Panel.OpRows(followSel)
+    InspectSelfTest = f.Summary() & "|" & f.CanApply() & "|" & f.ListRows() & "|" & f.Result() & "|" & f.Heading()
     Unload f
 End Function

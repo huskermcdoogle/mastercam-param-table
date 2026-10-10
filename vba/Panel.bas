@@ -572,18 +572,17 @@ Public Sub RbFindNext(control As IRibbonControl): FindNext: End Sub
 Public Sub RbSet(control As IRibbonControl): Recorded "Set selected", "ParamTable.SetSelected": End Sub
 Public Sub RbScale(control As IRibbonControl): Recorded "Scale", "ParamTable.ScaleSelected": End Sub
 Public Sub RbCopy(control As IRibbonControl): Recorded "Copy from op", "ParamTable.CopyFromOp": End Sub
-Public Sub RbToTool(control As IRibbonControl): Recorded "To all ops of tool", "ParamTable.ApplyToTool": End Sub
 Public Sub RbRevertSel(control As IRibbonControl): Recorded "Revert cells", "ParamTable.RevertSelected": End Sub
 Public Sub RbRevertRows(control As IRibbonControl): Recorded "Revert rows", "ParamTable.RevertRows": End Sub
 Public Sub RbRevertAll(control As IRibbonControl): Recorded "Revert everything", "ParamTable.RevertAll": End Sub
-Public Sub RbTarget(control As IRibbonControl): Recorded "Hit a target time", "Planner.ShowPlanWindow", "time": End Sub
+Public Sub RbTarget(control As IRibbonControl): Planner.ShowTargetWindow: End Sub
 Public Sub RbScenLoad(control As IRibbonControl): Recorded "Restore scenario", "ParamTable.ScenarioWindow", "scenload": End Sub
 
 ' The op windows (each its own window module; these just open them).
 Public Sub RbText(control As IRibbonControl): Recorded "Edit text", "ParamTable.EditManualText": End Sub
 Public Sub RbCoolant(control As IRibbonControl): Recorded "Coolant", "ParamTable.PickCoolant": End Sub
 Public Sub RbSpeed(control As IRibbonControl): Recorded "Speed and feed", "ParamTable.CalcSpeed": End Sub
-Public Sub RbInspect(control As IRibbonControl): Recorded "Inspection", "Planner.ShowPlanWindow", "flips": End Sub
+Public Sub RbInspect(control As IRibbonControl): Planner.ShowInspectWindow: End Sub
 
 ' The Go to menu: every column group of this sheet, and All columns.
 Public Sub RbGoToMenu(control As IRibbonControl, ByRef content)

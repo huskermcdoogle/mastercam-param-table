@@ -2,7 +2,8 @@
     Real-Excel check of the workbook macros: opens macro_sample.xlsm (tests\macro_test.exe)
     with macros enabled and drives them - two-way links, cross-checks, the cell rules on
     bulk writes, scale, copy, the change list and revert; the planning tools (target time,
-    even out flips, apply to a tool, filters, scenarios) and the chip-thinning calculator.
+    inspection and inserts, copy into a tool's ops, filters, scenarios) and the
+    chip-thinning calculator.
     No window is ever shown (a dialog would hang a hidden Excel): each window has a quiet
     self-test Function that sets it up, types into it and reads it back.
 
@@ -79,8 +80,8 @@ try {
     Check ($ws.Range("A3").Value2 -eq 2) "op_idn (read-only) is refused"
     $xl.Run("ParamTable.SetCells", $ws.Range("L4"), "0.3") | Out-Null
     Check ($null -eq $ws.Range("L4").Value2) "a FINISH row's stepover (does not apply) is refused"
-    $xl.Run("ParamTable.ScaleCells", $ws.Range("I3:I4"), 110) | Out-Null
-    Check ($ws.Range("I3").Value2 -eq 220 -and $ws.Range("I4").Value2 -eq 330) "scale speeds 110% (got $($ws.Range('I3').Value2), $($ws.Range('I4').Value2))"
+    $xl.Run("ParamTable.ScaleCells", $ws.Range("I3:I4"), 10) | Out-Null
+    Check ($ws.Range("I3").Value2 -eq 220 -and $ws.Range("I4").Value2 -eq 330) "scale speeds +10% (got $($ws.Range('I3').Value2), $($ws.Range('I4').Value2))"
     $xl.Run("ParamTable.CopyCells", $ws.Range("J4:K4"), 2) | Out-Null
     Check ($ws.Range("J4").Text -eq "CSS" -and $ws.Range("K4").Value2 -eq 3500) "copy speed_mode/max_ss from op 2"
 
@@ -178,16 +179,20 @@ try {
     Check ($t -like "2 cell(s) will change.|True|per min") "both feed_mode cells share a list: pick from it ('$t')"
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "set", $ws.Range("A3,G3"), "0.03")
     Check ($t -like "1 cell(s) will change,  1 refused*|True|0.03") "read-only op_idn counted as refused ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "scale", $ws.Range("I3:I4"), "+10%")
+    Check ($t -like "10% more:  2 cell(s) will change.*200 -> 220*300 -> 330|True|+10%") "scale window: +10% is 10% more, 200 -> 220 ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "scale", $ws.Range("I3:I4"), "-10%")
+    Check ($t -like "10% less:  2 cell(s) will change.*200 -> 180*300 -> 270|True|-10%") "scale window: -10% is 10% less, 200 -> 180 ('$t')"
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "scale", $ws.Range("I3:I4"), "110")
-    Check ($t -like "2 cell(s) will change.*200 -> 220*300 -> 330|True|110") "scale window shows 200 -> 220 ('$t')"
+    Check ($t -like "'110' - say which way: +110% for more, -110% for less.|False|110") "scale by 110 (no sign): asks which way, OK off ('$t')"
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "scale", $ws.Range("I3:I4"), "abc")
-    Check ($t -like "Type a percent*|False|abc") "scale by 'abc': OK off ('$t')"
+    Check ($t -like "*is not a percent*|False|abc") "scale by 'abc': OK off ('$t')"
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("G4:I4"), "#0")
-    Check ($t -like "2 cell(s) will change,  1 already that.|True|2") "copy window: pick op 2 from the list ('$t')"
+    Check ($t -like "2 cell(s) will change,  1 already that.*Into op 7.|True|2") "copy window: pick op 2, into the selected row ('$t')"
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("J4:K4"), "#0")
     Check ($t -like "0 cell(s) will change,  2 already that.|False|2") "copying what is already there: OK off ('$t')"
     $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("J4:K4"), "")
-    Check ($t -like "Pick the operation*|False|*") "copy with nothing picked: OK off ('$t')"
+    Check ($t -like "Pick the op to copy from.*|False|*") "copy with nothing picked: OK off ('$t')"
     Check ($ws.Range("G3").Value2 -eq 0.01 -and $ws.Range("I3").Value2 -eq 200) "the windows wrote nothing"
 
     # The calculator (not shown): filled from the row, the boxes follow each other.
@@ -222,9 +227,9 @@ try {
     Check ((Total 3, 5, 6) -eq 1910) "tool 1's ops take 1910 s as dumped ($(Total 3, 5, 6))"
 
     # ---- Hit a target time.
-    $p = $xl.Run("Planner.PlanTargetTime", $ws.Range("A3,A5,A6"), "10%", $false, $false)
+    $p = $xl.Run("Planner.PlanTargetTime", $ws.Range("A3,A5,A6"), "-10%", $false, $false)
     "        plan: $p"
-    Check ($p -like "1|*31:50  ->  28:39*") "10% off tool 1: 31:50 -> 28:39 ('$($p.Substring(0, [math]::Min(90, $p.Length)))...')"
+    Check ($p -like "1|*31:50  ->  28:39*") "-10% on tool 1: 31:50 -> 28:39 ('$($p.Substring(0, [math]::Min(90, $p.Length)))...')"
     Check ($p -like "*held at a limit: op 9 feed (max 0.013)*") "op 9's feed is held at its ceiling and said so"
     Check ($ws.Range("G3").Value2 -eq 0.01 -and (Total 3, 5, 6) -eq 1910) "the plan wrote nothing yet"
     $rows = $xl.Run("Planner.PlanCount")
@@ -235,7 +240,7 @@ try {
     Check ($ws.Range("G5").Value2 -eq 0.013 -and $ws.Range("G3").Value2 -gt 0.0112) "op 9 at 0.013, the others went further (op 2 $($ws.Range('G3').Value2))"
     Check ($ws.Range("S4").Value2 -eq 330) "tool 3's op is untouched"
     [void] $xl.Run("ParamTable.RevertCells", $all, $false)
-    $p = $xl.Run("Planner.PlanTargetTime", $ws.Range("A3"), "20%", $true, $false)
+    $p = $xl.Run("Planner.PlanTargetTime", $ws.Range("A3"), "-20%", $true, $false)
     [void] $xl.Run("Planner.ApplyPlan"); $xl.Calculate()
     Check ([math]::Abs((Total 3) - 528) -lt 1.5 -and $ws.Range("I3").Value2 -gt 200) "speeds too: op 2 20% faster = 528 s, speed $($ws.Range('I3').Value2), feed $($ws.Range('G3').Value2)"
     [void] $xl.Run("ParamTable.RevertCells", $all, $false)
@@ -245,41 +250,121 @@ try {
     Check ($p -like "0|Out of reach: 1:00 of the 11:00*") "a target under the time feeds cannot move is refused ('$p')"
     $p = $xl.Run("Planner.PlanTargetTime", $ws.Range("A3"), "abc", $false, $false)
     Check ($p -like "0|'abc' is not a time*") "a target that is not a time ('$p')"
-    $t = $xl.Run("Planner.PlanSelfTest", "time", $ws.Range("G3"), 1, "30:00", 0, $false, $false)
+    $p = $xl.Run("Planner.PlanTargetTime", $ws.Range("A3"), "10%", $false, $false)
+    Check ($p -like "0|'10%' - say which way: +10% for more, -10% for less.*") "10% with no sign: asks which way ('$p')"
+    $p = $xl.Run("Planner.PlanTargetTime", $ws.Range("A3"), "+10%", $false, $false)
+    Check ($p -like "1|*11:00  ->  12:06  (+10.0%)*") "+10% is 10% more time: 11:00 -> 12:06 ('$p')"
+
+    # The window (not shown): opens with the main cutting feed only; Enter previews, never
+    # applies - Apply is its own button, one Ctrl+Z.
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), -1, "30:00", $true, $false, "")
+    Check ($t -like "Press Enter*|False|*|main") "the window starts on the main cutting feed only; typed, Apply waits for Enter ('$t')"
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), 1, "30:00", $true, $false, "enter,enter")
     "        window: $t"
-    Check ($t -like "*31:50  ->  30:00*|True|op;tool;time;*") "the window: op 2's tool picked, 30:00 typed - before -> after per op, OK on"
+    Check ($t -like "*31:50  ->  30:00*|True|op;tool;time;*") "Enter twice: op 2's tool, 30:00 - before -> after per op, Apply on"
+    Check ($ws.Range("G3").Value2 -eq 0.01 -and (Total 3, 5, 6) -eq 1910) "and Enter twice wrote nothing"
+    $rows = @($t.Split("|")[2] -split " // ")
+    Check (@($rows | Where-Object { $_.Split(";")[5].Length -gt 62 }).Count -eq 0) "the list's changes column fits (no sideways scrolling)"
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), 1, "-10%", $true, $false, "enter,apply")
+    $xl.Calculate()
+    Check ($t -like "*|Done: 3 cell(s) changed - the ops now take 28:39 (were 31:50). Ctrl+Z to undo.|*" -and [math]::Abs((Total 3, 5, 6) - 1719) -lt 1.5) "Apply writes the plan and says so in the window ($(Total 3, 5, 6))"
+    $u = $xl.Run("Panel.UndoLast")
+    $xl.Calculate()
+    Check ($u -eq "3 0" -and (Total 3, 5, 6) -eq 1910) "one Ctrl+Z takes the whole plan back ('$u')"
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), 1, "-10%", $true, $false, "enter,set G5=0.0125,apply")
+    Check ($t -like "*|True|*|The sheet changed since this was worked out - here it is again. Check it, then Apply.|*" -and $ws.Range("G5").Value2 -eq 0.0125 -and $ws.Range("G3").Value2 -eq 0.01) "a feed typed over after the preview: Apply works it out again instead of writing"
+    [void] $xl.Run("ParamTable.RevertCells", $all, $false)
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), 0, "-20%", $true, $true, "enter")
+    Check ($t -like "*|True|op;tool;time;flips / part *;*|* Speeds raised: the flips here count cut time only*") "speeds too: the flips column is marked and the note says why ('$($t.Substring(0, [math]::Min(60, $t.Length)))...')"
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), 1, "30:00", $true, $false, "enter", $ws.Range("A4"))
+    Check ($t -like "*|Not applied yet - Apply, or Revert to follow the sheet again.||op 2*") "a plan not applied: the window stays on op 2 when op 7 is clicked"
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), 1, "", $true, $false, "", $ws.Range("A4"))
+    Check ($t -like "op 7 takes 5:30 now*|op 7  -  T3 FINISH  -  Finish OD|*") "no plan: the window follows to op 7 ('$t')"
+    $t = $xl.Run("Planner.PlanSelfTest", $ws.Range("G3"), 1, "30:00", $true, $false, "enter,revert")
+    Check ($t -like "* now (*|False|*") "Revert drops the plan ('$($t.Substring(0, [math]::Min(60, $t.Length)))...')"
     Check ($ws.Range("G3").Value2 -eq 0.01) "the window wrote nothing"
 
-    # ---- Even out flips: tool 1 inspects on ops 2 and 9 every 8:00 - 600 s and 900 s of cut, 1 + 1 flips.
-    $p = $xl.Run("Planner.PlanFlips", $ws.Range("A3,A5,A6"), "", "insp_time")
-    "        plan: $p"
-    Check ($p -like "1|2 cell(s) will change.*insp_time 8:00 -> 7:35*") "even out: same 2 flips, the shortest edge time 7:35 ('$p')"
-    Check ($ws.Range("Q3").Text -eq "8:00") "the plan wrote nothing yet"
-    [void] $xl.Run("Planner.ApplyPlan"); $xl.Calculate()
-    Check ($ws.Range("Q3").Text -eq "7:35" -and $ws.Range("Q5").Text -eq "7:35" -and $ws.Range("Q6").Text -eq "") "applied: 7:35 on both inspected ops, op 11 (no inspection) left blank"
+    # ---- Inspection & inserts: tool 1 inspects on ops 2 and 9 every 8:00 - 600 s and 900 s
+    # of cut, 1 + 1 flips; the shortest edge time that keeps 2 flips is 7:31 (to 5 s: 7:35).
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("G3"), $false, 0)
+    "        window: $t"
+    Check ($t -like "Apply sets the new edge time on every op of T1*flips per part 2 -> 2  (the whole part 2 -> 2).|True|T1;CNMG 432;2;8:00;82%;7:35;2;Same flips - each edge cuts 0:25 less.;ticked|*") "even: T1, its insert, 2 flips, 8:00 now, last edge 82% - 7:35 keeps 2 flips"
+    Check ($ws.Range("Q3").Text -eq "8:00") "the window wrote nothing yet"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("G3"), $false, 0, "", "apply")
+    $xl.Calculate()
+    Check ($t -like "*|Done: edge time set on ops 2, 9 (T1) - flips per part 2 -> 2. Ctrl+Z to undo.|*") "Apply says what it did, in the window ('$($t.Split('|')[3])')"
+    Check ($ws.Range("Q3").Text -eq "7:35" -and $ws.Range("Q5").Text -eq "7:35" -and $ws.Range("Q6").Text -eq "") "applied: 7:35 on every op of T1 that inspects; op 11 (no inspection) left blank"
     Check (($ws.Range("U3").Value2 + $ws.Range("U5").Value2) -eq 2) "still 2 flips"
+    Check ($t -like "*T1;CNMG 432;2;7:35;*;Already even - every edge cuts about the same.;*") "after Apply the window reads the sheet again: already even"
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($u -eq "2 0" -and $ws.Range("Q3").Text -eq "8:00" -and $ws.Range("Q5").Text -eq "8:00") "one Ctrl+Z puts both back ('$u')"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3"), $false, 0, "", "set Q5=6:00,apply")
+    Check ($t -like "*|The sheet changed since this was worked out - here it is again. Check it, then Apply.|*" -and $ws.Range("Q3").Text -eq "8:00" -and $ws.Range("Q5").Text -eq "6:00") "an edge time typed over after the list was made: Apply works it out again instead of writing"
     [void] $xl.Run("ParamTable.RevertCells", $all, $false)
-    $p = $xl.Run("Planner.PlanFlips", $ws.Range("A3,A5,A6"), "One flip fewer per tool", "insp_time")
-    Check ($p -like "1|*flips 2 -> 1,  insp_time 8:00 -> 10:05*") "one flip fewer: 10:05 ('$p')"
-    $p = $xl.Run("Planner.PlanFlips", $ws.Range("A3,A5,A6"), "", "feed")
-    "        plan: $p"
-    Check ($p -like "1|*feeds x0.9*") "even out by feed: slower feeds, same flips ('$p')"
-    [void] $xl.Run("Planner.ApplyPlan"); $xl.Calculate()
-    Check (($ws.Range("U3").Value2 + $ws.Range("U5").Value2) -eq 2 -and $ws.Range("G3").Value2 -lt 0.01) "applied: 2 flips at feed $($ws.Range('G3').Value2)"
-    [void] $xl.Run("ParamTable.RevertCells", $all, $false)
-    $p = $xl.Run("Planner.PlanFlips", $ws.Range("A4"), "", "insp_time")
-    Check ($p -like "0|*Tool 3: no insp_time to change*") "a tool that does not inspect: nothing to do ('$p')"
-    $t = $xl.Run("Planner.PlanSelfTest", "flips", $ws.Range("G3"), 1, "Even out - same flips, every edge cut the same time", 0, $false, $false)
-    Check ($t -like "*7:35*|True|op;tool;insp_time;*") "the flips window shows the plan, OK on ('$($t.Substring(0, [math]::Min(80, $t.Length)))...')"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3,A5"), $false, 1)
+    Check ($t -like "*2 -> 1  (the whole part 2 -> 1). / 1 of them would run each edge longer than now - check the insert can take it.|True|T1;CNMG 432;2;8:00;82%;10:05;1;Edge runs 2:05 longer than now - check the insert can take it.;ticked|*") "one flip fewer: 10:05, and the longer edge is warned about"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3"), $false, 2)
+    Check ($t -like "*|True|T1;CNMG 432;2;8:00;82%;5:05;3;Each edge cuts 2:55 less.;ticked|*") "one flip more: 5:05, 3 flips ('$($t.Split('|')[2])')"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3"), $true, 0)
+    Check ($t -like "*|T1;*;ticked // T3;CNMG 432;0;;;;;No flips - it does not stop to turn the insert.;||Every tool on the sheet") "every tool: T3 does not stop, nothing to tick ('$($t.Split('|')[2])')"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3"), $false, 0, "1")
+    Check ($t -like "Tick the tools to change.|False|*;8:00;82%;7:35;2;*;|*") "unticked: Apply off"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3"), $false, 1, "", "", $ws.Range("A4"))
+    Check ($t -like "*|Not applied yet - Apply, or Revert to follow the sheet again.|op 2  -  T1*") "a goal changed here: the window stays on op 2 when op 7 is clicked"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3"), $false, 0, "", "", $ws.Range("A4"))
+    Check ($t -like "*|T3;*||op 7  -  T3 FINISH  -  Finish OD") "nothing changed here: it follows to op 7's tool ('$t')"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3"), $false, 0, "", "", $ws.Range("A5"))
+    Check ($t -like "*|True|T1;CNMG 432;2;8:00;82%;7:35;2;*;ticked||op 9  -  T1 ROUGH  -  Rough face") "another op of the same tool: the heading follows, the list stays ('$($t.Split('|')[4])')"
+    # A tool whose flips the toolpath fixes - stops every 5 in of cut: no edge time moves them.
+    $u4 = $ws.Range("U4").Formula
+    $ws.Range("X2").Value2 = "insp_do_stop"; $ws.Range("Y2").Value2 = "insp_dist_on"; $ws.Range("Z2").Value2 = "insp_dist"
+    $ws.Range("X3").Value2 = 1; $ws.Range("X4").Value2 = 1; $ws.Range("X5").Value2 = 1; $ws.Range("X6").Value2 = 0
+    $ws.Range("Y4").Value2 = 1; $ws.Range("Z4").Value2 = 5
+    $ws.Range("U4").Formula = "=2"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A4"), $false, 0)
+    Check ($t -like "Nothing to change*|False|T3;CNMG 432;2;;;;;Flips come from stops in the toolpath (every 5 in of cut) - change them in Mastercam.;|*") "fixed by the toolpath: says so plainly, no suggestion ('$t')"
+    $t = $xl.Run("Planner.InspectSelfTest", $ws.Range("A3,A4"), $false, 0)
+    Check ($t -like "*|True|T1;CNMG 432;2;8:00;82%;7:35;2;*;ticked // T3;*;Flips come from stops in the toolpath*") "beside it, T1 still plans on its inspecting ops"
+    [void] $ws.Range("X2:Z6").ClearContents()
+    $ws.Range("U4").Formula = $u4
+    $xl.Calculate()
+    Check ($ws.Range("U4").Value2 -eq 0 -and $ws.Range("Q3").Text -eq "8:00" -and $ws.Range("G3").Value2 -eq 0.01) "the inspection window wrote nothing it was not asked to"
 
-    # ---- Apply to every op of the tool.
-    $t = $xl.Run("ParamTable.EditWindowSelfTest", "tool", $ws.Range("G3:I3"), "#0")
-    Check ($t -like "4 cell(s) will change,  2 already that.*Into ops 9, 11.|True|2") "to all ops of tool 1: 4 cells in ops 9 and 11 ('$t')"
-    $t = $xl.Run("ParamTable.EditListSelfTest", "tool", $ws.Range("G3:I3"), "")
+    # ---- Copy from op, into every other op of the tool.
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("G3:I3"), "#0")
+    Check ($t -like "4 cell(s) will change,  2 already that.*Into ops 9, 11.|True|2") "only op 2's row selected: copies into tool 1's other ops 9 and 11 ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("G3:I3"), "#0", 0)
+    Check ($t -like "Nothing to copy into*|False|2") "into the selected rows, with only op 2's row selected: nothing to do ('$t')"
+    $t = $xl.Run("ParamTable.EditListSelfTest", "copy", $ws.Range("G3:I3"), "#0", 1)
     Check ($t -like "4#op 9    feed    0.012  ->  0.01") "the window lists each cell old -> new ('$t')"
     $r = $xl.Run("Planner.ToolCopyCells", $ws.Range("G3:I3"), 2)
     Check ($r -eq "6 0" -and $ws.Range("G5").Value2 -eq 0.01 -and $ws.Range("I6").Value2 -eq 200 -and $ws.Range("G4").Value2 -eq 0.008) "copied into ops 9 and 11, not tool 3's op 7 ($r)"
     [void] $xl.Run("ParamTable.RevertCells", $all, $false)
+    # Units: a feed is not copied into a row whose feed is per min, unless per rev / per min goes too.
+    [void] $xl.Run("ParamTable.SetCells", $ws.Range("H4"), "per min")
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("G4"), "#0")
+    Check ($t -like "0 cell(s) will change,  1 not copied - the units differ*|False|2") "op 2's per rev feed into op 7's per min feed: refused ('$t')"
+    $t = $xl.Run("ParamTable.EditListSelfTest", "copy", $ws.Range("G4"), "#0")
+    Check ($t -eq "1#op 7    feed    not copied - op 2 is per rev, op 7 is per min - select the per rev / per min column too") "and listed with why ('$t')"
+    $t = $xl.Run("ParamTable.EditListSelfTest", "copy", $ws.Range("H4"), "#0")
+    Check ($t -eq "1#op 7    feed_mode    not copied - op 7's feed is a per min value - select the feed too") "per rev / per min alone, without the feed: refused too ('$t')"
+    $t = $xl.Run("ParamTable.EditWindowSelfTest", "copy", $ws.Range("G4:H4"), "#0")
+    Check ($t -like "2 cell(s) will change.*Into op 7.|True|2") "the feed with its per rev / per min: copied ('$t')"
+    $r = $xl.Run("ParamTable.CopyCells", $ws.Range("G4"), 2)
+    Check ($r -eq "0 1" -and $ws.Range("G4").Value2 -eq 0.008) "and the copy itself refuses it ($r)"
+    [void] $xl.Run("ParamTable.RevertCells", $all, $false)
+
+    # ---- The dumped values are found by column NAME: a column inserted on the sheet does not
+    # make every cell after it look edited.
+    [void] $xl.Run("ParamTable.SetCells", $ws.Range("G3"), "0.011")
+    [void] $ws.Columns.Item(4).Insert()
+    $n = $xl.Run("Planner.EditCount")
+    $c = $xl.Run("ParamTable.ListChanges")
+    $back = $xl.Run("ParamTable.RevertCells", $ws.Range("A3:X6"), $false)
+    Check ($n -eq 1 -and $c -eq 1 -and $back -eq 1 -and $ws.Range("H3").Value2 -eq 0.01) "a column inserted: 1 edit found, listed and reverted ($n, $c, $back)"
+    [void] $ws.Columns.Item(4).Delete()
+    [void] $ws.Activate()
+    Check ($ws.Range("G3").Value2 -eq 0.01 -and $ws.Range("D3").Text -eq "Rough OD") "the column taken out again"
 
     # ---- Filters (the sheet's own AutoFilter on row 2).
     $n = $xl.Run("Planner.FilterTool", "1")
@@ -306,6 +391,12 @@ try {
     Check ($t -like "Sets 1 cell(s) from 'fast'*the 2 edit(s) on the sheet now go back*not in any scenario*|True|fast") "restore window warns the edits now are not saved ('$t')"
     $r = $xl.Run("Planner.RestoreScenario", "fast")
     Check ($r -eq "1 0 2" -and $ws.Range("G3").Value2 -eq 0.011 -and $ws.Range("I3").Value2 -eq 200) "restore 'fast': feed 0.011, the other edit back to the dump ($r)"
+    $kept = $xl.Run("Planner.AutoSaved")
+    $d = @($xl.Run("Planner.ScenarioDetail", $kept))
+    Check ($kept -like "(before restore *)" -and $d.Count -eq 2 -and @($xl.Run("Planner.ScenarioNames")).Count -eq 3) "the edits the restore wiped are kept first, as '$kept' ($($d.Count) cells)"
+    $r = $xl.Run("Planner.RestoreScenario", "fast")
+    Check ($xl.Run("Planner.AutoSaved") -eq "" -and @($xl.Run("Planner.ScenarioNames")).Count -eq 3) "restoring again: the sheet's edits are in 'fast' already - nothing more kept"
+    [void] $xl.Run("Planner.DeleteScenario", $kept)
     $n = $xl.Run("Planner.CompareScenarios")
     $sc = $wb.Worksheets.Item("Scenarios")
     Check ($sc.Range("A3").Text -eq "As dumped" -and $sc.Range("C3").Text -eq "37:20" -and $sc.Range("A4").Text -eq "fast" -and $sc.Range("C4").Text -eq "36:25" -and $sc.Range("C5").Text -eq "38:27") "compare: dump 37:20, fast 36:25, slow 38:27 ($($sc.Range('C3').Text), $($sc.Range('C4').Text), $($sc.Range('C5').Text))"

@@ -62,14 +62,27 @@ try {
                                 @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"),
                                 @("Forms.CommandButton.1", "btnClear")) +
                               @(1..12 | ForEach-Object { , @("Forms.CheckBox.1", "chk$_") }))
-    Add-Form "EditBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblPrompt"), @("Forms.ComboBox.1", "cbo"),
+    Add-Form "EditBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblHint"), @("Forms.CommandButton.1", "btnHelp"),
+                         @("Forms.Label.1", "lblPrompt"), @("Forms.ComboBox.1", "cbo"),
+                         @("Forms.Label.1", "lblInto"), @("Forms.ComboBox.1", "cboInto"),
                          @("Forms.Label.1", "lblPreview"), @("Forms.ListBox.1", "lstDetail"),
                          @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
-    Add-Form "PlanBox" @(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblScope"), @("Forms.ComboBox.1", "cboScope"),
-                         @("Forms.Label.1", "lblTarget"), @("Forms.ComboBox.1", "cboTarget"), @("Forms.Label.1", "lblHow"),
-                         @("Forms.ComboBox.1", "cboHow"), @("Forms.CheckBox.1", "chk1"), @("Forms.CheckBox.1", "chk2"),
-                         @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblSummary"),
-                         @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
+    Add-Form "PlanBox" @(@("Forms.Label.1", "lblHead"), @("Forms.CommandButton.1", "btnHelp"),
+                         @("Forms.Label.1", "lblScope"), @("Forms.ComboBox.1", "cboScope"),
+                         @("Forms.Label.1", "lblTarget"), @("Forms.ComboBox.1", "cboTarget"), @("Forms.Label.1", "lblHint"),
+                         @("Forms.CheckBox.1", "chkMain"), @("Forms.CheckBox.1", "chkSpeeds"),
+                         @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblDetail"), @("Forms.Label.1", "lblNote"),
+                         @("Forms.Label.1", "lblSummary"), @("Forms.Label.1", "lblResult"),
+                         @("Forms.CommandButton.1", "btnRevert"), @("Forms.CommandButton.1", "btnPreview"),
+                         @("Forms.CommandButton.1", "btnApply"), @("Forms.CommandButton.1", "btnClose"))
+    Add-Form "InspectBox" (@(@("Forms.Label.1", "lblHead"), @("Forms.CommandButton.1", "btnHelp"),
+                             @("Forms.Label.1", "lblScope"), @("Forms.ComboBox.1", "cboScope"),
+                             @("Forms.Label.1", "lblGoal"), @("Forms.ComboBox.1", "cboGoal"),
+                             @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblDetail"),
+                             @("Forms.Label.1", "lblSummary"), @("Forms.Label.1", "lblResult"),
+                             @("Forms.CommandButton.1", "btnRevert"), @("Forms.CommandButton.1", "btnApply"),
+                             @("Forms.CommandButton.1", "btnClose")) +
+                           @(1..8 | ForEach-Object { , @("Forms.Label.1", "lblC$_") }))
     Add-Form "Calculator" (@(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblNote"), @("Forms.CheckBox.1", "chkMetric"),
                              @("Forms.CommandButton.1", "btnClose"), @("Forms.Label.1", "lblChip"), @("Forms.Label.1", "lblThin"),
                              @("Forms.CommandButton.1", "btnUseFeed"), @("Forms.CommandButton.1", "btnSetRow")) +
