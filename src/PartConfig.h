@@ -19,6 +19,14 @@
 // record (a workbook from before) is not taken: it cannot be told from a guess.
 // A dump of the WHOLE part drops tools and inserts it no longer uses.
 //
+// FOR THE PROGRAM CHECK (the macros' continuous-improvement tools): an insert's
+// usual edge time (the inserts table's "Usual edge time", m:ss, kept like its
+// cost) and the findings a person chose to IGNORE - [ignore], one "key = what it
+// said" per finding. A dump writes them back as the hidden "Ignored findings"
+// sheet; Harvest reads that sheet and, over it, the Program check sheet's own
+// Ignore column (yes = ignored, blank = not) - so a finding ignored once stays
+// ignored on later checks and later dumps, macros or not.
+//
 // The file is plain text, UTF-8, one "key = value" per line under [sections]:
 //   [batch]          qty
 //   [insert <name>]  edges, cost, parts_per_edge, edges_detected
@@ -37,6 +45,7 @@ namespace PartConfig
 		{
 		std::wstring edges, cost, partsPerEdge;		//!< as typed ("" = not set)
 		std::wstring edgesDetected;					//!< the edges the last dump filled in
+		std::wstring usualEdgeTime;					//!< m:ss as typed - how long an edge usually cuts
 		};
 	struct Tool
 		{
@@ -54,6 +63,7 @@ namespace PartConfig
 		std::wstring batchQty;
 		std::map<std::wstring, Insert> inserts;		//!< by insert name
 		std::map<std::wstring, Tool> tools;			//!< by tool number
+		std::map<std::wstring, std::wstring> ignore;	//!< ignored findings: the check's key -> what it said
 		};
 
 	/// "<folder>\<stem>.ptconfig" for a part file.
@@ -65,9 +75,11 @@ namespace PartConfig
 	bool Save (const std::filesystem::path &file, const Config &c);
 
 	/// What was typed into a dump workbook's Tools and Summary sheets, merged into
-	/// `c`: cost and parts per edge as they stand (a dump writes the kept ones
-	/// back, so blank = cleared); edges, edge life, insert names, insert size and
-	/// entering angle only where they differ from what that dump filled in.
+	/// `c`: cost, parts per edge and usual edge time as they stand (a dump writes
+	/// the kept ones back, so blank = cleared); edges, edge life, insert names,
+	/// insert size and entering angle only where they differ from what that dump
+	/// filled in. The ignored findings as the workbook has them (when it has the
+	/// hidden list or a Program check).
 	/// False (and `c` untouched) when the workbook cannot be read.
 	bool Harvest (const std::filesystem::path &workbook, Config &c, std::wstring &why);
 

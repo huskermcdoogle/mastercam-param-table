@@ -1,5 +1,7 @@
 // Writes macro_sample.xlsm - a small dumped-style sheet carrying the compiled
-// macros (res\vbaProject.bin) and the ribbon (vba\ribbon.xml) - for
+// macros (res\vbaProject.bin) and the ribbon (vba\ribbon.xml) - and ci_sample.xlsm,
+// a program laid out as a dump lays it out (Tools page, inserts table, Summary,
+// an ignored finding) for the continuous-improvement tools - for
 // tools\check_macros.ps1 to drive in real Excel.
 //
 // Usage: macro_test <out dir> <vbaProject.bin> <ribbon.xml>
@@ -9,6 +11,143 @@
 #include <cstdio>
 #include <fstream>
 #include <iterator>
+
+namespace
+	{
+	/// Eight ops in Operation Manager order, six tools, made so that every rule of the
+	/// Program check finds exactly one thing (tools\check_macros.ps1 knows the list):
+	///   op 3 needs regenerating, has no comment (ignored, from the "part's .ptconfig")
+	///   and cuts with the coolant Off; op 5 feeds 0.5 per MIN; op 2 runs CSS with
+	///   max_ss 0; op 4 cuts air 40% of 800 s; T1's ROUGH ops run 600 and 500 SFM;
+	///   T1 is put in three times; T5 (RPGV 1204) cuts 24:00 an edge, T6 (the same
+	///   insert) 10:00. est_seconds: 1:13:00 in all; ops 7, 4, 8 and 1 make 80% of it.
+	bool WriteCiSample (const std::string &dir, const std::string &vba, const std::string &ribbon)
+		{
+		Xlsx::Sheet s;
+		//            A          B       C       D           E          F               G             H
+		s.rows = { { L"op_idn", L"type", L"tool", L"comment", L"changes", L"needs_regen", L"group_name", L"units",
+					 //  I        J            K         L             M          N           O             P
+					 L"feed", L"feed_mode", L"speed", L"speed_mode", L"max_ss", L"coolant", L"insp_time", L"flip_longest",
+					 //  Q             R           S                  T
+					 L"flips_part", L"air_pct", L"cut_seconds_est", L"est_seconds" },
+				   { L"1", L"ROUGH", L"1", L"Rough OD", L"0", L"no", L"Main", L"in", L"0.012", L"per rev", L"600", L"CSS", L"3000",
+					 L"Flood", L"4:30", L"4:40", L"2", L"10", L"540", L"600" },
+				   { L"2", L"FINISH", L"2", L"Finish OD", L"0", L"no", L"Main", L"in", L"0.006", L"per rev", L"800", L"CSS", L"0",
+					 L"Flood", L"", L"", L"0", L"", L"240", L"300" },
+				   { L"3", L"GROOVE", L"3", L"", L"0", L"yes", L"Main", L"in", L"0.003", L"per rev", L"300", L"RPM", L"2000",
+					 L"Off", L"", L"", L"0", L"", L"100", L"120" },
+				   { L"4", L"ROUGH", L"1", L"Rough face", L"0", L"no", L"Main", L"in", L"0.012", L"per rev", L"500", L"CSS", L"3000",
+					 L"Flood", L"9:00", L"9:00", L"1", L"40", L"800", L"900" },
+				   { L"5", L"FINISH", L"4", L"Finish ID", L"0", L"no", L"Main", L"in", L"0.5", L"per min", L"400", L"CSS", L"2500",
+					 L"Flood", L"", L"", L"0", L"", L"150", L"200" },
+				   { L"6", L"FACE", L"1", L"Face", L"0", L"no", L"Main", L"in", L"0.01", L"per rev", L"600", L"CSS", L"3000",
+					 L"Flood", L"", L"", L"0", L"", L"80", L"100" },
+				   { L"7", L"ROUGH", L"5", L"Rough OD 2", L"0", L"no", L"Main", L"in", L"0.015", L"per rev", L"700", L"CSS", L"3000",
+					 L"Flood", L"24:00", L"24:00", L"1", L"5", L"1440", L"1500" },
+				   { L"8", L"ROUGH", L"6", L"Rough ID", L"0", L"no", L"Main", L"in", L"0.015", L"per rev", L"700", L"CSS", L"3000",
+					 L"Flood", L"10:00", L"10:00", L"1", L"", L"600", L"660" } };
+		const size_t nCols = s.rows[0].size ();
+		s.group.assign (nCols, 0);
+		s.groupNames = { L"Identity" };
+		s.readOnly.assign (nCols, 0);
+		s.text = { 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0 };
+		s.textFormat.assign (nCols, 0);
+		s.textFormat[14] = 1;				// insp_time: 9:00 stays 9:00
+		s.formula.assign (s.rows.size () - 1, std::vector<std::wstring> (nCols));
+		s.frozenCols = 5;
+		s.trackChanges = true;
+		s.changesCol = 4;
+		s.untracked.assign (nCols, 0);
+		for (int c : { 16, 18, 19 })		// flips_part, cut_seconds_est, est_seconds: live in a dump
+			s.untracked[static_cast<size_t> (c)] = 1;
+
+		// The Tools page as the dump lays it out: D insert, E flips (live), F cut time
+		// (live), G longest between flips, H inspection, I edge life; then the inserts
+		// table - B insert, C used by, D edges, E flips, F inserts, G cost, H cost / part,
+		// I parts per edge, J usual edge time - with the dump's own formulas.
+		const wchar_t *numbers[] = { L"1", L"2", L"3", L"4", L"5", L"6" };
+		const wchar_t *names[] = { L"OD ROUGH", L"OD FINISH", L"GROOVE", L"ID FINISH", L"OD ROUGH 2", L"ID ROUGH" };
+		const wchar_t *inserts[] = { L"CNMG 432", L"VNMG 331", L"Groove 3mm", L"VNMG 331", L"RPGV 1204", L"RPGV 1204" };
+		const wchar_t *longest[] = { L"9:00", L"", L"", L"", L"24:00", L"10:00" };
+		for (size_t k = 0; k < 6; ++k)
+			{
+			Xlsx::Sheet::ToolRow t;
+			t.number = numbers[k];
+			t.name = names[k];
+			const std::wstring row = std::to_wstring (k + 2);
+			Xlsx::Sheet::FreeCell ins, flips, cut, lng, insp, life;
+			ins.text = inserts[k];
+			ins.editable = true;
+			flips.formula = L"SUMIF('Lathe params'!$C$3:$C$10,$A" + row + L",'Lathe params'!$Q$3:$Q$10)";
+			cut.formula = L"TEXT(SUMIF('Lathe params'!$C$3:$C$10,$A" + row + L",'Lathe params'!$S$3:$S$10)/86400,\"[h]:mm:ss\")";
+			lng.text = longest[k];
+			life.editable = true;
+			life.textFormat = true;
+			t.extra = { ins, flips, cut, lng, insp, life };
+			s.tools.push_back (t);
+			}
+		s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips", L"Inspection",
+							 L"Edge life (fallback)" };
+		auto head = [] (const wchar_t *t)
+			{
+			Xlsx::Sheet::FreeCell h;
+			h.text = t;
+			h.head = true;
+			return h;
+			};
+		std::vector<Xlsx::Sheet::FreeCell> heads = { head (L"Inserts"), head (L"Insert"), head (L"Used by"),
+													 head (L"Edges per insert"), head (L"Flips / part"), head (L"Inserts / part") };
+		for (const std::wstring &h : Summary::CostHeads ())
+			heads.push_back (head (h.c_str ()));
+		heads.push_back (head (L"Parts per edge"));
+		heads.push_back (head (L"Usual edge time"));
+		s.toolsAfter.push_back (heads);
+		const wchar_t *tableNames[] = { L"CNMG 432", L"VNMG 331", L"Groove 3mm", L"RPGV 1204", L"" };
+		const wchar_t *usedBy[] = { L"T1", L"T2, T4", L"T3", L"T5, T6", L"" };
+		const wchar_t *edges[] = { L"4", L"2", L"2", L"8", L"" };
+		const wchar_t *costs[] = { L"12.5", L"8", L"15", L"20", L"" };
+		for (size_t i = 0; i < 5; ++i)
+			{
+			const std::wstring r = std::to_wstring (10 + i);		// 6 tools, a blank row, the heading on row 9
+			const std::wstring counted = L"SUMIF($D$2:$D$7,$B" + r + L",$E$2:$E$7)";
+			Xlsx::Sheet::FreeCell blank, name, used, e, flips, ins, parts, usual;
+			name.text = tableNames[i];
+			name.editable = true;
+			used.text = usedBy[i];
+			e.text = edges[i];
+			e.editable = true;
+			flips.formula = L"IF(AND(N($I" + r + L")>0," + counted + L"<1),1/$I" + r + L"," + counted + L")";
+			ins.formula = L"IF(N($D" + r + L")>0,IF(N($E" + r + L")<1,ROUND(N($E" + r + L")/$D" + r + L",4),ROUNDUP(ROUND($E" + r
+						  + L"/$D" + r + L",6),0)),\"\")";
+			std::vector<Xlsx::Sheet::FreeCell> row = { blank, name, used, e, flips, ins };
+			for (Xlsx::Sheet::FreeCell c : Summary::CostCells (10 + i))
+				{
+				if (c.editable)
+					c.text = costs[i];
+				row.push_back (c);
+				}
+			parts.editable = true;
+			usual.editable = true;
+			usual.textFormat = true;
+			row.push_back (parts);
+			row.push_back (usual);
+			s.toolsAfter.push_back (row);
+			}
+
+		// A finding ignored at an earlier check - what the part's .ptconfig hands a dump.
+		s.ignored = { { L"no-comment|op 3", L"op 3 has no comment." } };
+
+		Summary::Where w;
+		w.title = L"Summary - CIPART.mcam";
+		w.subtitle = L"Dumped 2026-10-09 12:00 - 8 operations";
+		w.batchQty = L"10";
+		Summary::Add (s, w);
+
+		s.vbaProject = vba;
+		s.ribbonXml = ribbon;
+		return Xlsx::Write (dir + "/ci_sample.xlsm", s);
+		}
+	}
 
 int main (int argc, char **argv)
 	{
@@ -173,6 +312,11 @@ int main (int argc, char **argv)
 		std::puts ("FAIL: write");
 		return 1;
 		}
-	std::puts ("macro_test: wrote macro_sample.xlsm");
+	if (!WriteCiSample (argv[1], s.vbaProject, s.ribbonXml))
+		{
+		std::puts ("FAIL: write ci_sample.xlsm");
+		return 1;
+		}
+	std::puts ("macro_test: wrote macro_sample.xlsm and ci_sample.xlsm");
 	return 0;
 	}
