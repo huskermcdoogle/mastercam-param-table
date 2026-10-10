@@ -1,7 +1,7 @@
 //
 // Ribbon.h - the add-in's own tab on Mastercam's ribbon, so a new install needs no
 // trip to Customize: when Mastercam says it is ready (m_notify, MCEVENT_READY), the
-// add-in hands it a tab - "Parameter Table" - with its four commands
+// add-in hands it a tab - "Parameter Table" - with its commands
 // (InsertThirdPartyRibbonTabs, Mastercam's own ribbon XML).
 //
 // NOT when the commands are on a ribbon already: someone who put them on a tab of

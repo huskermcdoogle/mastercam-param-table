@@ -29,6 +29,7 @@
 <h2>In Mastercam</h2>
 <ul>
 <li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="batch.html">Dump a folder of parts</a></li>
 <li><a href="load.html">Load the changes</a></li>
 <li><a href="undo-load.html">Undo a load</a></li>
 </ul>
@@ -94,6 +95,7 @@ Each topic starts on a new sheet of paper.</p>
 <li><a href="#page-start">Getting started</a></li>
 <li><a href="#page-install">Install the add-in</a></li>
 <li><a href="#page-dump">Dump to Excel</a></li>
+<li><a href="#page-batch">Dump a folder of parts</a></li>
 <li><a href="#page-load">Load the changes</a></li>
 <li><a href="#page-undo-load">Undo a load</a></li>
 <li><a href="#page-workbook">What is in the workbook</a></li>
@@ -168,6 +170,7 @@ and see what it does to the cycle time and your inserts before anything goes bac
 <h4>In Mastercam</h4>
 <ul>
 <li><a href="#page-dump">Dump to Excel</a> <span>&ndash; Write the part&#x27;s ops to a workbook: which ops, where, and what to call it.</span></li>
+<li><a href="#page-batch">Dump a folder of parts</a> <span>&ndash; Dump every part in a folder, then compare them all in one shop workbook: speeds, feeds, depths and edge times per insert.</span></li>
 <li><a href="#page-load">Load the changes</a> <span>&ndash; Put your edits back into the part: read the preview, untick what to leave out, Apply.</span></li>
 <li><a href="#page-undo-load">Undo a load</a> <span>&ndash; Put the old values of the last load back into the part.</span></li>
 </ul>
@@ -497,6 +500,171 @@ some mill ops (contour, drill, dynamic mill). Other kinds are listed as <span cl
 <li><a href="#page-workbook">What is in the workbook</a></li>
 <li><a href="#page-load">Load the changes</a></li>
 <li><a href="#words--w-ptconfig">The part's .ptconfig file</a> (what you typed, kept for the next dump)</li>
+<li><a href="#page-troubleshooting">Troubleshooting</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-batch">
+<h2 class="page-title">Dump a folder of parts</h2>
+<p class="where">Mastercam: <b>Parameter Table - dump a folder of parts</b></p>
+
+<section id="batch--what">
+<h3>What this is for</h3>
+<p>This <a href="#words--w-dump">dumps</a> every part in a folder, one after another. Each part gets its own
+workbook, the same as <a href="#page-dump">Dump to Excel</a> makes. Then one more workbook puts all the parts side by
+side: the <a href="#words--w-shop-workbook">shop workbook</a>.</p>
+<p>Use it to see how your shop runs each insert across many parts: the speeds, the feeds, the depths of cut and how
+long an edge lasts. That is where shop standards start - not one part at a time, but the whole shop.</p>
+</section>
+
+<section id="batch--when">
+<h3>When to use it</h3>
+<ul>
+<li>To find the parts that run an insert slower (or harder) than the rest of the shop.</li>
+<li>To start, or check, your shop's usual speed, feed and edge time for each insert.</li>
+<li>To compare the cycle times and insert costs of a family of parts.</li>
+<li>Not to edit a part. For that, use <a href="#page-dump">Dump to Excel</a> on the one part.</li>
+</ul>
+</section>
+
+<section id="batch--before">
+<h3>Before you start</h3>
+<ul>
+<li><strong>Save your part.</strong> Mastercam has only one part open at a time. The tool closes your part, opens each
+part of the folder in turn, and opens your part again at the end. If your part has changes that are not saved, the
+tool stops and tells you.</li>
+<li><strong>Nothing in the parts changes.</strong> Each part is opened, dumped and closed. It is not
+<a href="#words--w-regenerate">regenerated</a> and never saved.</li>
+<li>An op that needs regenerating is dumped with its old toolpath. The <span class="ui">Parts</span> sheet counts
+them (<code>ops_needing_regen</code>).</li>
+<li>Every op of every part is dumped. Op kinds the tool does not read yet are left out and named.</li>
+</ul>
+</section>
+
+<section id="batch--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Save your part. Then click <span class="ui">Parameter Table - dump a folder of parts</span>.</li>
+<li><strong>Read the note</strong> under the title (1). It names your part: it is closed now and opened again at the
+end.</li>
+<li><strong>Parts:</strong> type the folder, or click <span class="ui">Browse...</span> (2). Tick
+<span class="ui">Include subfolders</span> to take the folders inside it too. The green line (3) says how many parts
+it found.</li>
+<li><strong>Save the workbooks:</strong> leave <span class="ui">Beside each part, as a normal dump</span> (4). Or pick
+<span class="ui">All in one folder</span> and browse to it.</li>
+<li><strong>Options:</strong> leave them as they are. <span class="ui">Simulate the stock</span> (5) is off: it is slow,
+and with it off the tool uses Mastercam's own stock boundaries for the material removed.</li>
+<li>Click <span class="ui">Dump</span> (6) - it says how many parts, e.g. <span class="ui">Dump 6 parts</span>. A small
+window follows along: <span class="ui">Part 3 of 6</span>. To stop early, click
+<span class="ui">Stop after this part</span>. The parts done so far are kept.</li>
+<li>At the end a message says how many parts were dumped, and which were not and why. Click
+<span class="ui">Yes</span> to open the shop workbook in Excel.</li>
+</ol>
+<figure class="shot" data-img="mc-batch-window.png" data-kind="dialog" data-need="The batch window in Mastercam over a folder of parts: 1 the title and the note about the open part, 2 the folder, 3 how many parts it found, 4 Beside each part, 5 Simulate the stock (off), 6 the Dump button.">
+<!-- img --><a class="zoom" href="images/mc-batch-window.png" title="Open the picture full size"><img src="images/mc-batch-window.png" alt="The batch window in Mastercam over a folder of parts: 1 the title and the note about the open part, 2 the folder, 3 how many parts it found, 4 Beside each part, 5 Simulate the stock (off), 6 the Dump button." width="1004" height="760" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The note: your part is closed and opened again. (2) The folder. (3) Parts found. (4) Where the
+workbooks go. (5) Simulate the stock, off. (6) Dump.</figcaption>
+</figure>
+</section>
+
+<section id="batch--shop">
+<h3>What is in the shop workbook</h3>
+<p>It is called <code>Shop_compare_</code> and the date, e.g. <code>Shop_compare_20261010.xlsx</code>. It goes in the
+folder of parts (or in the one folder you picked). It never writes over a file: a second one on the same day gets
+<code>(2)</code> on the end. Every sheet has filter arrows on its headings.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Sheet</th><th>One row per</th><th>What you read there</th></tr></thead>
+<tbody>
+<tr><td><span class="ui">Parts</span></td><td>part</td><td>Dumped or not, and why. Ops, cycle time, cutting time,
+<a href="#words--w-flip">flips</a> per part, and insert cost per part when the costs are typed on its
+<a href="#page-tools-page">Tools page</a>.</td></tr>
+<tr><td><span class="ui">Inserts</span></td><td>insert, kind of op and material</td><td>The parts and tools that use
+it. The lowest, <a href="#words--w-median">median</a> and highest <a href="#words--w-sfm">SFM</a>, feed per rev,
+<a href="#words--w-depth-of-cut">depth of cut</a> and edge time.</td></tr>
+<tr><td><span class="ui">Ops</span></td><td>op of every part</td><td>Speed and feed as dumped, the same in inch units,
+depth, times, flips, edge time, <a href="#words--w-mrr">MRR</a> and <a href="#words--w-air-cutting">air</a>.</td></tr>
+<tr><td><span class="ui">About</span></td><td>column</td><td>What each column means, and its units.</td></tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>One set of units.</strong> So inch and metric parts can be compared, speeds are in SFM, feeds in inches
+per rev and depths in inches. A metric part's m/min, mm/rev and mm are changed over. The <span class="ui">Ops</span>
+sheet also keeps each op's own values.</li>
+<li><strong>Edge time</strong> is how long one <a href="#words--w-edge">edge</a> of a tool cuts before it is turned,
+in seconds: the tool's cutting time per part over its flips per part - the same way the
+<a href="#page-check">Program check</a> works it out.</li>
+<li><strong>A log</strong> goes beside it, with the same name and <code>.log</code>: one line for each thing done to
+each part. Read it when a part was not dumped.</li>
+</ul>
+</section>
+
+<section id="batch--example">
+<h3>Worked example</h3>
+<p>Your lathe cell has three parts in one folder: Bushing, Flange and Shaft. Each one finishes with a CNMG432 insert.
+You dump the folder. On the <span class="ui">Inserts</span> sheet, the CNMG432 FINISH row reads:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>insert</th><th>op_kind</th><th>n_ops</th><th>parts</th><th>sfm_min</th><th>sfm_median</th><th>sfm_max</th><th>feed_median</th><th>edge_time_median</th></tr></thead>
+<tbody>
+<tr><td>CNMG432</td><td>FINISH</td><td>3</td><td>3</td><td class="edited">450</td><td>600</td><td>650</td><td>0.006</td><td>150</td></tr>
+</tbody>
+</table></div>
+<p>450 is far below the median. Filter the <span class="ui">Ops</span> sheet to <code>CNMG432</code> to see which part:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>part</th><th>op</th><th>sfm</th><th>feed_ipr</th><th>edge_seconds</th></tr></thead>
+<tbody>
+<tr><td>Bushing</td><td>4</td><td class="edited">450</td><td>0.006</td><td>210</td></tr>
+<tr><td>Flange</td><td>7</td><td>600</td><td>0.005</td><td>150</td></tr>
+<tr><td>Shaft</td><td>3</td><td>650</td><td>0.007</td><td>120</td></tr>
+</tbody>
+</table></div>
+<ol>
+<li>Bushing runs the insert at 450 SFM - 150 under the rest of the shop. Its edge lasts longest (3:30), so there is
+room to speed it up.</li>
+<li>Open Bushing in Mastercam and <a href="#page-dump">dump</a> it. Use <a href="#page-calculator">Speed &amp; feed</a> to
+try 600 SFM on op 4, and watch the cycle time.</li>
+<li>Shaft's edge lasts least (2:00) at the highest speed. Check it with the <a href="#page-check">Program check</a>.</li>
+</ol>
+<p class="tip">The median is the middle value. One odd part does not pull it far, so it is a good starting point for a
+shop standard.</p>
+</section>
+
+<section id="batch--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>Save the part first ...</q></dt>
+<dd>Your part has changes that are not saved. Save it (or close it) and run the command again.</dd>
+<dt><span class="ui">6 parts found</span> (beside the folder)</dt>
+<dd>How many parts it will dump. <span class="ui">no .mcam parts there</span>: pick another folder, or tick
+<span class="ui">Include subfolders</span>. <span class="ui">more than 2000 parts - is this the right folder?</span>: you
+may have picked a whole drive.</dd>
+<dt><q>Dumped 5 of 6 parts. Not dumped: ...</q></dt>
+<dd>Each part that was not dumped is named, with why:
+<ul>
+<li><q>Mastercam could not open it</q> - the file is damaged, from a newer Mastercam, or open in another program.</li>
+<li><q>no operations of a kind this tool reads</q> - for example a mill-only part.</li>
+<li><q>could not write ... - check the folder can be written to</q> - the folder is read-only or full.</li>
+<li><q>the dump failed unexpectedly</q> - <code>ParamTable.log</code> beside that part says how far it got.</li>
+<li><q>not reached - stopped (Cancel)</q> - you clicked <span class="ui">Stop after this part</span>.</li>
+</ul></dd>
+<dt><q>Could not open ... again - open it with File &gt; Open.</q></dt>
+<dd>Your part was not opened again at the end. Open it yourself. It was saved before the batch started, so nothing is
+lost.</dd>
+<dt><q>The shop workbook could not be written ...</q></dt>
+<dd>The folder is read-only or full. Each part's own workbook is still there. Pick another folder and run it again.</dd>
+<dt>A message from Mastercam while a part opens</dt>
+<dd>For example, a part saved in an older version. Answer it as you would when you open the part by hand. The batch
+then goes on.</dd>
+</dl>
+</section>
+
+<section id="batch--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-dump">Dump to Excel</a> (one part, with a choice of ops)</li>
+<li><a href="#page-tools-page">Tools page</a> (insert costs and the usual edge time)</li>
+<li><a href="#page-flips">How insert flips are counted</a></li>
+<li><a href="#page-check">Program check</a></li>
+<li><a href="#words--w-ptconfig">The part's .ptconfig file</a> (where insert costs are kept)</li>
 <li><a href="#page-troubleshooting">Troubleshooting</a></li>
 </ul>
 </section>
@@ -2733,6 +2901,8 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dd>An op that puts your own text into the NC program, as a comment or as code. Its text is <code>manual_text</code>.</dd>
 <dt id="words--w-max-rpm">Max RPM (<code>max_ss</code>)</dt>
 <dd>The highest spindle speed the op may use. With <a href="#words--w-css">CSS</a>, the RPM climbs as the diameter shrinks; max RPM stops it there (G50 S on many lathes). Too high near the center is a safety risk; too low slows small diameters.</dd>
+<dt id="words--w-median">Median</dt>
+<dd>The middle value: put the values in order and take the one in the middle (with an even count, halfway between the two middle ones). Unlike the average, one odd part does not pull it far. The <a href="#batch--shop">shop workbook</a> gives the median speed, feed, depth and edge time of each insert.</dd>
 <dt id="words--w-mixed">Mixed</dt>
 <dd>In a window that works on several ops: the ops do not all have the same value. Whatever you apply replaces them all.</dd>
 <dt id="words--w-mrr">MRR, material removed</dt>
@@ -2774,6 +2944,8 @@ Always type the sign &ndash; a bare <code>10%</code> is refused, because it does
 <dd>A set of edits saved under a name inside the workbook, to restore or compare later. See <a href="#page-scenarios">Scenarios</a>.</dd>
 <dt id="words--w-sfm">SFM (surface speed, m/min)</dt>
 <dd>Surface feet per minute: how fast the material passes the cutting edge. RPM = SFM &times; 3.82 &divide; diameter in inches. Metric: m/min, and RPM = m/min &times; 318.3 &divide; diameter in mm. Insert boxes give a range of SFM for each material.</dd>
+<dt id="words--w-shop-workbook">Shop workbook</dt>
+<dd>The one workbook <a href="#page-batch">Dump a folder of parts</a> writes after it dumps every part: <code>Shop_compare_</code> and the date. It puts the parts side by side - per part, per insert and per op - so you can see how your shop runs each insert.</dd>
 <dt id="words--w-status-bar">Status bar</dt>
 <dd>The thin bar along the very bottom of the Excel window. The tool writes short messages there (&ldquo;3 cell(s) set ...&rdquo;).</dd>
 <dt id="words--w-stepover">Stepover</dt>

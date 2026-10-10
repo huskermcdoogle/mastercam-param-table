@@ -179,6 +179,29 @@ namespace Xlsx
 	/// Build and write to `file`. False when the file cannot be written.
 	bool Write (const std::filesystem::path &file, const Sheet &s);
 
+	// ---- A plain workbook of several sheets ----------------------------------
+	//
+	// For figures gathered from many dumps - the batch dump's shop workbook - that
+	// are read, sorted and filtered rather than edited and loaded back: per sheet
+	// a bold heading row, frozen, with filter dropdowns, then rows of values. A
+	// value is written as a number when its text is exactly that number (as the
+	// dump does), else as text. No formulas, no shading.
+
+	struct Table
+		{
+		std::wstring name;								//!< the tab: 31 characters at most, none of []:*?/\ (made so)
+		std::vector<std::vector<std::wstring>> rows;	//!< rows[0]: the headings
+		std::vector<double> widths;						//!< per column, in characters; missing or 0: from the text
+		std::vector<char> text;							//!< per column: always text, never a number
+		};
+
+	/// The bytes of a workbook of these sheets, in this order (the first is the
+	/// one it opens on).
+	std::string BuildBook (const std::vector<Table> &tables);
+
+	/// Build and write to `file`. False when the file cannot be written.
+	bool WriteBook (const std::filesystem::path &file, const std::vector<Table> &tables);
+
 	// ---- Reading back what Excel saved ---------------------------------------
 	//
 	// Excel COMPRESSES every part when it saves, so reading needs DEFLATE - done

@@ -159,6 +159,17 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+rem The batch dump's shop workbook: parts read from their dumps, grouped per insert, written
+rem and read back (writes shop_sample.xlsx).
+echo === shop_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\shop_test.exe" ^
+    "%~dp0shop_test.cpp" "%~dp0..\src\Shop.cpp" "%~dp0..\src\Inspect.cpp" "%~dp0..\src\Xlsx.cpp" ^
+    "%~dp0..\src\XlsxRead.cpp" "%~dp0..\src\Csv.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\shop_test.exe" "%OUT%"
+    if errorlevel 1 set FAILED=1
+)
+
 rem The manual's pictures of the add-in's own windows: built only (it needs a dump workbook -
 rem tools\make_help_images.ps1 runs it), so a change that ties the windows (src\Preview.cpp,
 rem src\DumpDialog.cpp) to the Mastercam SDK again shows here, not at picture time.

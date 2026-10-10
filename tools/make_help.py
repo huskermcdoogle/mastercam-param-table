@@ -37,7 +37,8 @@ IMAGES = HELP / "images"
 # The menu: (heading, [(page, title in the menu)]). Every page of the manual is here.
 NAV = [
     ("Start here", [("index", "Home and search"), ("start", "Getting started"), ("install", "Install the add-in")]),
-    ("In Mastercam", [("dump", "Dump to Excel"), ("load", "Load the changes"), ("undo-load", "Undo a load")]),
+    ("In Mastercam", [("dump", "Dump to Excel"), ("batch", "Dump a folder of parts"), ("load", "Load the changes"),
+                      ("undo-load", "Undo a load")]),
     ("The workbook", [("workbook", "What is in the workbook"), ("summary", "Summary page"),
                       ("sheet", "The main sheet"), ("tools-page", "Tools page")]),
     ("Ribbon: Find", [("find", "Find an op"), ("slowest", "Slowest ops")]),

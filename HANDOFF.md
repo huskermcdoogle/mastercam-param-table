@@ -66,6 +66,21 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
 - **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`); radial chip
   thinning for mill ops (the sheet carries no cutter diameter / flutes).
 - Real parts used for testing live in `tests\` locally and are NOT tracked (gitignored).
+- **Batch dump (2026-10-10, built and unit-tested, NOT yet run in Mastercam):** "Parameter Table -
+  dump a folder of parts" (`ParamTableBatchEntry`, TIP 7, ribbon key B). `src\Batch.cpp` (SDK, thin):
+  refuses while `IFileManager::IsFileDirty ()`; opens each part with `IFileManager::Open (false, path)`
+  (no save prompt; nothing regenerated) and checks `GetCurrentFileName ()`; `Dump::Quiet` dumps it -
+  `Dump::Run`'s body was MOVED (not rewritten) into `DumpPart` in Dump.cpp, which both call; reopens
+  the first part (`Open`, or `New (false)` when none was saved). Everything the SDK said goes to
+  `Shop_compare_<date>.log` beside `Shop_compare_<date>.xlsx`. `src\Shop.*` (SDK-free,
+  `tests\shop_test.cpp`) reads each dump's sheet as written into Parts / Inserts / Ops / About - the
+  Inserts sheet's names (insert, op_kind, material, sfm_median, feed_median, depth_median,
+  edge_time_median, n_ops, parts) are read by the standards library: do not rename them.
+  `src\BatchDialog.*` (Ui.h, no SDK): the window and a progress window; Mastercam's window is
+  disabled during the batch and only the progress window's messages and paints are pumped between
+  parts (no Mastercam timer - autosave - can fire mid-batch). A real run must confirm: Open/New
+  return values and dialogs; whether a dump leaves a part dirty (logged before/after); the material
+  (`op_group ogi.pg2.matl_name`, every group logged to each part's ParamTable.log).
 
 ## Layout of the code
 - Kinds/columns: `src\LatheFields.*` (one table per kind; `AllTables`). Mill kinds too.

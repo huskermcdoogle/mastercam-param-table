@@ -29,6 +29,7 @@
 <h2>In Mastercam</h2>
 <ul>
 <li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="batch.html">Dump a folder of parts</a></li>
 <li><a href="load.html">Load the changes</a></li>
 <li><a href="undo-load.html">Undo a load</a></li>
 </ul>
@@ -202,6 +203,8 @@ the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) f
 <dd>An op that puts your own text into the NC program, as a comment or as code. Its text is <code>manual_text</code>.</dd>
 <dt id="w-max-rpm">Max RPM (<code>max_ss</code>)</dt>
 <dd>The highest spindle speed the op may use. With <a href="#w-css">CSS</a>, the RPM climbs as the diameter shrinks; max RPM stops it there (G50 S on many lathes). Too high near the center is a safety risk; too low slows small diameters.</dd>
+<dt id="w-median">Median</dt>
+<dd>The middle value: put the values in order and take the one in the middle (with an even count, halfway between the two middle ones). Unlike the average, one odd part does not pull it far. The <a href="batch.html#shop">shop workbook</a> gives the median speed, feed, depth and edge time of each insert.</dd>
 <dt id="w-mixed">Mixed</dt>
 <dd>In a window that works on several ops: the ops do not all have the same value. Whatever you apply replaces them all.</dd>
 <dt id="w-mrr">MRR, material removed</dt>
@@ -243,6 +246,8 @@ Always type the sign &ndash; a bare <code>10%</code> is refused, because it does
 <dd>A set of edits saved under a name inside the workbook, to restore or compare later. See <a href="scenarios.html">Scenarios</a>.</dd>
 <dt id="w-sfm">SFM (surface speed, m/min)</dt>
 <dd>Surface feet per minute: how fast the material passes the cutting edge. RPM = SFM &times; 3.82 &divide; diameter in inches. Metric: m/min, and RPM = m/min &times; 318.3 &divide; diameter in mm. Insert boxes give a range of SFM for each material.</dd>
+<dt id="w-shop-workbook">Shop workbook</dt>
+<dd>The one workbook <a href="batch.html">Dump a folder of parts</a> writes after it dumps every part: <code>Shop_compare_</code> and the date. It puts the parts side by side - per part, per insert and per op - so you can see how your shop runs each insert.</dd>
 <dt id="w-status-bar">Status bar</dt>
 <dd>The thin bar along the very bottom of the Excel window. The tool writes short messages there (&ldquo;3 cell(s) set ...&rdquo;).</dd>
 <dt id="w-stepover">Stepover</dt>

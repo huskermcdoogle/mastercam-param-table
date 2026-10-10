@@ -1044,4 +1044,142 @@ namespace Xlsx
 		f.close ();
 		return !f.fail ();
 		}
+
+	std::string BuildBook (const std::vector<Table> &tables)
+		{
+		Styles st;
+		const int headStyle = st.Get (FNone, NBold, 0, BUnder);
+		const std::string decl = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+		const std::string sheetType = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+		const std::string sheetRel = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
+
+		std::vector<std::pair<std::string, std::string>> parts;
+		std::string types, sheets, rels, filters;
+		std::vector<std::wstring> names;
+		for (size_t i = 0; i < tables.size (); ++i)
+			{
+			const Table &t = tables[i];
+			// A tab name Excel takes: none of []:*?/\, 31 characters, not blank, not
+			// one already used (Excel refuses the whole file over a repeat).
+			std::wstring name;
+			for (wchar_t c : t.name)
+				name += std::wstring (L"[]:*?/\\").find (c) == std::wstring::npos ? c : L'_';
+			name = name.substr (0, 31);
+			if (name.empty ())
+				name = L"Sheet" + std::to_wstring (i + 1);
+			const std::wstring base = name.substr (0, 26);
+			for (int n = 2; std::find (names.begin (), names.end (), name) != names.end (); ++n)
+				name = base + L" (" + std::to_wstring (n) + L")";
+			names.push_back (name);
+
+			size_t nCols = 0;
+			for (const auto &row : t.rows)
+				nCols = (std::max) (nCols, row.size ());
+			const bool frozen = t.rows.size () > 1;
+			std::string x = decl + "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
+							"<sheetViews><sheetView" + std::string (i == 0 ? " tabSelected=\"1\"" : "") + " workbookViewId=\"0\">"
+							+ (frozen ? "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>"
+										"<selection pane=\"bottomLeft\" activeCell=\"A2\" sqref=\"A2\"/>"
+									  : "")
+							+ "</sheetView></sheetViews><sheetFormatPr defaultRowHeight=\"15\"/>";
+			if (nCols > 0)
+				{
+				x += "<cols>";
+				for (size_t c = 0; c < nCols; ++c)
+					{
+					double w = c < t.widths.size () ? t.widths[c] : 0;
+					if (!(w > 0))
+						{
+						// As wide as its text (the filter's arrow beside the heading), within reason.
+						size_t chars = 6;
+						for (size_t r = 0; r < t.rows.size (); ++r)
+							if (c < t.rows[r].size ())
+								chars = (std::max) (chars, t.rows[r][c].size () + (r == 0 ? 4 : 2));
+						w = static_cast<double> ((std::min) (chars, static_cast<size_t> (50)));
+						}
+					x += "<col min=\"" + std::to_string (c + 1) + "\" max=\"" + std::to_string (c + 1) + "\" width=\""
+						 + std::to_string (static_cast<int> (w + 0.5)) + "\" customWidth=\"1\"/>";
+					}
+				x += "</cols>";
+				}
+			x += "<sheetData>";
+			for (size_t r = 0; r < t.rows.size (); ++r)
+				{
+				x += "<row r=\"" + std::to_string (r + 1) + "\">";
+				for (size_t c = 0; c < t.rows[r].size (); ++c)
+					{
+					const std::wstring &v = t.rows[r][c];
+					if (v.empty ())
+						continue;
+					const std::string ref = ColName (c) + std::to_string (r + 1);
+					const std::string style = r == 0 ? " s=\"" + std::to_string (headStyle) + "\"" : std::string ();
+					const bool text = c < t.text.size () && t.text[c] != 0;
+					if (r > 0 && !text && IsPlainNumber (v))
+						x += "<c r=\"" + ref + "\"" + style + "><v>" + Esc (v) + "</v></c>";
+					else
+						x += "<c r=\"" + ref + "\"" + style + " t=\"inlineStr\"><is><t xml:space=\"preserve\">" + Esc (v)
+							 + "</t></is></c>";
+					}
+				x += "</row>";
+				}
+			x += "</sheetData>";
+			if (nCols > 0 && !t.rows.empty ())
+				{
+				const std::string ref = "A1:" + ColName (nCols - 1) + std::to_string (t.rows.size ());
+				x += "<autoFilter ref=\"" + ref + "\"/>";
+				std::wstring quoted;			// a ' in a sheet name is doubled inside '...'
+				for (wchar_t c : name)
+					quoted += c == L'\'' ? std::wstring (L"''") : std::wstring (1, c);
+				filters += "<definedName name=\"_xlnm._FilterDatabase\" localSheetId=\"" + std::to_string (i)
+						   + "\" hidden=\"1\">'" + Esc (quoted) + "'!" + AbsRef (ref) + "</definedName>";
+				}
+			x += "</worksheet>";
+
+			const std::string n = std::to_string (i + 1);
+			types += "<Override PartName=\"/xl/worksheets/sheet" + n + ".xml\" ContentType=\"" + sheetType + "\"/>";
+			sheets += "<sheet name=\"" + Esc (name) + "\" sheetId=\"" + n + "\" r:id=\"rId" + n + "\"/>";
+			rels += "<Relationship Id=\"rId" + n + "\" Type=\"" + sheetRel + "\" Target=\"worksheets/sheet" + n + ".xml\"/>";
+			parts.push_back ({ "xl/worksheets/sheet" + n + ".xml", x });
+			}
+		const std::string stylesId = "rId" + std::to_string (tables.size () + 1);
+
+		std::vector<std::pair<std::string, std::string>> book;
+		book.push_back ({ "[Content_Types].xml", decl +
+			"<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
+			"<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
+			"<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+			"<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
+			+ types +
+			"<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
+			"</Types>" });
+		book.push_back ({ "_rels/.rels", decl +
+			"<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+			"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"
+			"</Relationships>" });
+		book.push_back ({ "xl/workbook.xml", decl +
+			"<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
+			"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+			"<bookViews><workbookView activeTab=\"0\"/></bookViews><sheets>" + sheets + "</sheets>"
+			+ (filters.empty () ? std::string () : "<definedNames>" + filters + "</definedNames>")
+			+ "</workbook>" });
+		book.push_back ({ "xl/_rels/workbook.xml.rels", decl +
+			"<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" + rels
+			+ "<Relationship Id=\"" + stylesId + "\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
+			"</Relationships>" });
+		book.push_back ({ "xl/styles.xml", st.Xml () });
+		for (auto &p : parts)
+			book.push_back (std::move (p));
+		return Zip (book);
+		}
+
+	bool WriteBook (const std::filesystem::path &file, const std::vector<Table> &tables)
+		{
+		const std::string bytes = BuildBook (tables);
+		std::ofstream f (file, std::ios::binary | std::ios::trunc);
+		if (!f)
+			return false;
+		f.write (bytes.data (), static_cast<std::streamsize> (bytes.size ()));
+		f.close ();
+		return !f.fail ();
+		}
 	}
