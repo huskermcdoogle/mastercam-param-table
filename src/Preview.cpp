@@ -1,5 +1,6 @@
-#include "stdafx.h"
-#include "MastercamSdk.h"
+// The window itself - no Mastercam SDK (Ui.h), so it can be drawn outside
+// Mastercam for the manual's pictures (tests\dialog_shots.cpp).
+#include "Ui.h"
 #include "Preview.h"
 
 #include <algorithm>
@@ -562,8 +563,7 @@ namespace Preview
 	bool Show (const std::wstring &title, const std::wstring &summary,
 			   std::vector<Line> &lines, const Options &options)
 		{
-		PreviewDlg dlg (title, summary, lines, options,
-						CWnd::FromHandle (get_MainFrame ()->GetSafeHwnd ()));
+		PreviewDlg dlg (title, summary, lines, options, Ui::Host ());
 		return dlg.Run () == IDOK && CountTicked (lines) > 0;
 		}
 	}

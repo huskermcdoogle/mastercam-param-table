@@ -7,6 +7,13 @@
     is captured, with the Win32 PrintWindow call on its handle - found by its class
     (ThunderDFrame, a VBA UserForm) AND by belonging to our Excel's process. Nothing else
     on the screen is ever read.
+    Mastercam's windows (dump, load preview, undo last load) are the add-in's own code:
+    tests\dialog_shots.cpp (built by tests\build_dialog_shots.bat) shows them WITHOUT
+    Mastercam, off the screen, filled from the sample with the load's edits ($Load) made in
+    our hidden Excel and saved - and each window draws itself into a bitmap (PrintWindow).
+    The ribbon: a second Excel of our own, made visible OFF the screen, the Parameter Table
+    tab picked and T12 typed through UI Automation on our window's own elements (no keys,
+    no clicks), drawn with PrintWindow on our window and cut to the ribbon.
 
     Then tools\make_help.py puts each picture into its page (a page names the picture it
     wants; while the file is missing the page shows a marked placeholder instead).
@@ -17,7 +24,9 @@
       - else macro_sample.xlsm from tests\run_tests.bat (%PT_TEST_OUT%, else
         %TEMP%\ParamTableTests).
     The copy gets the CURRENT macros (res\vbaProject.bin) so the windows are the ones in
-    this tree. Any cell holding a folder path is cut to the file name before a picture.
+    this tree - and the ribbon's copy the current ribbon (vba\ribbon.xml) too. Any cell
+    holding a folder path is cut to the file name before a picture; the dump window's
+    folder is a made-up one ($Load.Part).
 
     Run it from a PowerShell prompt in the repo (PowerShell -File may be blocked):
         & .\tools\make_help_images.ps1                 # every picture
@@ -29,6 +38,8 @@
     NOTE: Range.CopyPicture goes through the Windows clipboard. The clipboard's text is
     put back at the end; anything else on it (a picture) is lost.
     A window may show on the screen for a moment while it is captured.
+    The dump window checks its Save to folder exists: $Load.Part's folder is made for the
+    moment of the picture if it is not there, and taken away again (only if still empty).
     Never commit the workbooks themselves - only the PNGs in help\images.
 #>
 [CmdletBinding()]
@@ -71,6 +82,14 @@ if (-not $Out) { $Out = Join-Path $Root "help\images" }
 #   Callouts  @( @(number, control name, l / r) ) - only for "vba:" windows; a control
 #             that is not there is skipped.
 #   Pending   the window is being rebuilt: the picture is made - check it before use.
+#
+# MASTERCAM WINDOW pictures: Dialog = dump / load / undo - the add-in's window of that name,
+# drawn by tests\dialog_shots.cpp (which also says where its callouts go).
+#
+# The RIBBON picture: Ribbon = the group the callouts are on (an id in vba\ribbon.xml); the
+# picture is the whole Parameter Table tab.
+#   Callouts  @( @(number, control id, where) ) - where: r (right of it), in (inside, at its
+#             right end), b (below it).
 
 $Shots = @(
     @{ Name = "sheet-summary-top"; Sheet = "Summary"; Range = "A1:F{Insert cost per batch (whole inserts)}+1"; Edits = $true
@@ -126,8 +145,36 @@ $Shots = @(
     # Sheets the new commands make (Macro "ribbon:<id>" runs the button's macro first, watched).
     @{ Name = "sheet-check"; Sheet = "Program check"; Range = "used:14"; Macro = "ribbon:ptCheck" },
     @{ Name = "sheet-report"; Sheet = "Change report"; Range = "used:30"; Edits = $true; Macro = "ribbon:ptReport" },
-    @{ Name = "sheet-slowest"; Sheet = "Slowest ops"; Range = "used:10"; Macro = "ribbon:ptSlowest" }
+    @{ Name = "sheet-slowest"; Sheet = "Slowest ops"; Range = "used:10"; Macro = "ribbon:ptSlowest" },
+
+    # Mastercam's windows - the add-in's own, drawn without Mastercam ($Load is their story).
+    @{ Name = "mc-dump-window"; Dialog = "dump" },
+    @{ Name = "mc-load-preview"; Dialog = "load" },
+    @{ Name = "mc-undo-load"; Dialog = "undo" },
+
+    # Excel's ribbon, the Parameter Table tab, T12 in Find op.
+    @{ Name = "ribbon-find"; Ribbon = "ptFindGroup"; Type = "T12"
+       Callouts = @(@(1, "ptGoTo", "b"), @(2, "ptFind", "in"), @(3, "ptFindNext", "r"), @(4, "ptShowChanged", "r")) }
 )
+
+# The load Mastercam's windows show: the Oil Spool Head's real last load (op 8's tool inspection
+# comment switched on, ROTATE INSERT; op 9 thru-tool coolant) with the bore feeds of the manual's
+# running example. Typed on the sheet and saved, then loaded by tests\dialog_shots.cpp the way the
+# add-in loads; the undo picture takes that load back after op 8's feed was changed by hand (the
+# undo page's example). The dump window: the dump page's worked example.
+$Load = @{
+    Edits = @(
+        @{ Op = 7; Col = "feed"; Value = 0.012 },
+        @{ Op = 8; Col = "feed"; Value = 0.012 },
+        @{ Op = 8; Col = "insp_comment_on"; Value = 1 },
+        @{ Op = 8; Col = "insp_comment"; Value = "ROTATE INSERT" },
+        @{ Op = 9; Col = "coolant"; Value = "Thru-tool" })
+    Stamp = "2026-10-10 02:03:31"                                 # when that load ran (its log)
+    Since = "8:feed=0.011"
+    Part = "C:\Parts\Oil Spool\Oil Spool Head_2026.mcam"          # made up: no real folder in a picture
+    Find = "bore"
+    Saved = "Bore ops"
+}
 
 # The edits the pictures show, typed as a person would (through the sheet's own events):
 # the bore feeds (the manual's running example) and - in a scenario only - the facing
@@ -139,7 +186,7 @@ $Edits = @(
 )
 
 if ($List) {
-    $Shots | ForEach-Object { "{0,-22} {1}{2}" -f $_.Name, $(if ($_.Window) { $_.Window } else { "sheet '" + $_.Sheet + "'" }), $(if ($_.Pending) { "   (window being rebuilt)" } else { "" }) }
+    $Shots | ForEach-Object { "{0,-22} {1}{2}" -f $_.Name, $(if ($_.Window) { $_.Window } elseif ($_.Dialog) { "the add-in's " + $_.Dialog + " window" } elseif ($_.Ribbon) { "the ribbon tab" } else { "sheet '" + $_.Sheet + "'" }), $(if ($_.Pending) { "   (window being rebuilt)" } else { "" }) }
     return
 }
 if ($Only.Count -gt 0) { $Shots = @($Shots | Where-Object { $Only -contains $_.Name }) }
@@ -174,8 +221,21 @@ public static class PtWin
     [DllImport ("user32.dll")] static extern bool PrintWindow (IntPtr h, IntPtr hdc, uint flags);
     [DllImport ("user32.dll")] static extern bool PostMessage (IntPtr h, uint m, IntPtr w, IntPtr l);
     [DllImport ("user32.dll")] static extern bool SetProcessDPIAware ();
+    [DllImport ("user32.dll")] static extern int GetSystemMetrics (int i);
 
     public static void DpiAware () { try { SetProcessDPIAware (); } catch { } }
+
+    /// The left edge of the leftmost monitor (SM_XVIRTUALSCREEN) - a window left of it is on none.
+    public static int ScreensLeft () { return GetSystemMetrics (76); }
+
+    /// The visible frame Capture cuts to, on the screen: left, top, right, bottom.
+    public static int[] Frame (IntPtr h)
+    {
+        RECT w, f;
+        GetWindowRect (h, out w);
+        if (DwmGetWindowAttribute (h, 9, out f, Marshal.SizeOf (typeof (RECT))) != 0) f = w;
+        return new int[] { f.L, f.T, f.R, f.B };
+    }
 
     public static uint ProcessOf (IntPtr h) { uint pid; GetWindowThreadProcessId (h, out pid); return pid; }
     public static string ClassOf (IntPtr h) { var s = new StringBuilder (256); GetClassName (h, s, 256); return s.ToString (); }
@@ -867,13 +927,220 @@ function Shoot-Window($shot) {
     }
 }
 
+# ============================================================ Mastercam's windows
+
+# A native program's output, read without PowerShell turning its error stream into a stop.
+function Run-Native([string] $exe, [string[]] $argv) {
+    $eap = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try { $said = @(& $exe @argv 2>&1 | ForEach-Object { "$_" }) } finally { $ErrorActionPreference = $eap }
+    return $said
+}
+
+# The add-in's dump, load preview and undo windows: the sample with the load's edits typed in (as a
+# person would, the sheet's own events on) and saved as a copy under its own name - the name the
+# windows show - then tests\dialog_shots.cpp loads it the way the add-in does, shows each window off
+# the screen and has it draw itself. Its callouts' places come with it; they are drawn here.
+function Shoot-Dialogs($shots) {
+    $bin = if ($env:PT_TEST_OUT) { $env:PT_TEST_OUT } else { Join-Path $env:TEMP "ParamTableTests" }
+    $exe = Join-Path $bin "dialog_shots.exe"
+    $said = Run-Native (Join-Path $Root "tests\build_dialog_shots.bat") @()
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $exe)) {
+        "  FAIL  Mastercam's windows: tests\build_dialog_shots.bat did not build`n{0}" -f ($said -join "`n")
+        $script:failed += $shots.Count; return
+    }
+
+    $ws = Main-Sheet
+    $ev = $script:xl.EnableEvents
+    $script:xl.EnableEvents = $true
+    $typed = @()
+    foreach ($e in $Load.Edits) {
+        $r = Row-Of $e.Op; $c = Col-Of $e.Col
+        if (-not $r -or -not $c) { "        op {0} {1} is not on this sample's sheet - left out" -f $e.Op, $e.Col; continue }
+        $cell = $ws.Cells($r, $c)
+        $typed += @{ Cell = $cell; Old = $cell.Value2 }
+        Set-Value $cell $e.Value
+    }
+    $script:xl.CalculateFull()
+    $dir = Join-Path $tmp "dialogs"
+    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    $book = Join-Path $dir (Split-Path -Leaf $source)
+    $script:wb.SaveCopyAs($book)
+    # The sheet as it was, for any picture after.
+    [array]::Reverse($typed)
+    foreach ($t in $typed) { Set-Value $t.Cell $t.Old }
+    $script:xl.EnableEvents = $ev
+
+    # (No empty argument: PowerShell 5 drops one on its way to a program.)
+    $argv = @($book, $dir, "--part", $Load.Part, "--stamp", $Load.Stamp, "--since", $Load.Since,
+              "--find", $Load.Find, "--saved", $Load.Saved)
+    foreach ($e in $Load.Edits) { $argv += @("--edit", ("{0}:{1}" -f $e.Op, $e.Col)) }
+    foreach ($s in $shots) { $argv += @("--only", $s.Dialog) }
+    $said = Run-Native $exe $argv
+    foreach ($line in $said) { if ($line -match '^\s+note') { "      " + $line.Trim() } }
+
+    foreach ($s in $shots) {
+        $bmpFile = Join-Path $dir ($s.Dialog + ".bmp")
+        if (-not (Test-Path -LiteralPath $bmpFile)) {
+            "  FAIL  {0}: no picture of the {1} window - {2}" -f $s.Name, $s.Dialog, ($said -join " / ")
+            $script:failed++; continue
+        }
+        $loaded = New-Object Drawing.Bitmap $bmpFile
+        $bmp = New-Object Drawing.Bitmap $loaded
+        $loaded.Dispose()
+        $dpi = 96
+        foreach ($line in Get-Content -LiteralPath (Join-Path $dir ($s.Dialog + ".txt"))) {
+            if ($line -match '^dpi (\d+)$') { $dpi = [int] $Matches[1] }
+            elseif ($line -match '^(\d+) (-?\d+) (-?\d+)$') {
+                [PtWin]::Callout($bmp, [int] $Matches[1], [float] $Matches[2], [float] $Matches[3], [float] [math]::Round(17 * $dpi / 72))
+            }
+        }
+        Save-Bitmap $bmp (Join-Path $Out ($s.Name + ".png"))
+        "  ok    {0}.png  (the add-in's {1} window, by tests\dialog_shots.cpp)" -f $s.Name, $s.Dialog
+    }
+}
+
+# ============================================================ the ribbon
+
+# A part of a workbook (a zip) replaced by a file's bytes.
+function Put-Part([string] $book, [string] $entry, [string] $file) {
+    Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+    $zip = [IO.Compression.ZipFile]::Open($book, [IO.Compression.ZipArchiveMode]::Update)
+    try {
+        $e = $zip.GetEntry($entry)
+        if (-not $e) { return $false }
+        $e.Delete()
+        [void] [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $entry)
+        return $true
+    } finally { $zip.Dispose() }
+}
+
+# Excel's ribbon is drawn only for a visible Excel: a second Excel of our own, made visible OFF the
+# screen (left of every monitor), on its own copy of the sample with this tree's macros and ribbon.
+# The tab is picked and the text typed through UI Automation on OUR window's elements - no keys,
+# no clicks reach anything else. Drawn by PrintWindow on our window, cut to the ribbon: the tab
+# names and the tab's groups, not the title bar (the signed-in user's initials are there).
+# Put back as it was found (its place on the screen is remembered by Excel), and quit.
+function Shoot-Ribbon($shot) {
+    Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+    $A = [System.Windows.Automation.AutomationElement]
+    $rib = Join-Path $tmp "ribbon.xlsm"
+    Copy-Item -LiteralPath $source -Destination $rib -Force
+    $vba = Join-Path $Root "res\vbaProject.bin"
+    if (Test-Path -LiteralPath $vba) { [void] (Put-Part $rib "xl/vbaProject.bin" $vba) }
+    if (-not (Put-Part $rib "customUI/customUI14.xml" (Join-Path $Root "vba\ribbon.xml"))) {
+        "  skip  {0}: the sample has no ribbon (an .xlsx?)" -f $shot.Name; $script:failed++; return
+    }
+    $labels = [xml] (Get-Content -LiteralPath (Join-Path $Root "vba\ribbon.xml") -Raw)
+    $label = { param($id) $n = $labels.SelectSingleNode("//*[@id='$id']"); if ($n) { [string] $n.label } else { "" } }
+
+    $rx = $null; $rpid = 0; $place = $null
+    try {
+        $rx = New-Object -ComObject Excel.Application               # always a NEW instance of our own
+        $rpid = [PtWin]::ProcessOf([IntPtr] [long] $rx.Hwnd)
+        if ($rpid -eq 0) { throw "could not tell which process our Excel is" }
+        Start-Watchdog $rpid
+        $rx.DisplayAlerts = $false
+        $rx.AutomationSecurity = 1
+        $place = @{ State = $rx.WindowState; Left = $rx.Left; Top = $rx.Top; Width = $rx.Width; Height = $rx.Height }
+        [void] $rx.Workbooks.Open($rib)
+        $dpi = [Drawing.Graphics]::FromHwnd([IntPtr]::Zero).DpiY
+        $rx.WindowState = -4143                                     # xlNormal
+        $rx.Width = 1100; $rx.Height = 500                          # points: wide enough for every group
+        $rx.Left = ([PtWin]::ScreensLeft() - 3000) * 72 / $dpi - $rx.Width
+        $rx.Top = 0
+        $rx.Visible = $true
+        $h = [IntPtr] [long] $rx.Hwnd
+        $root = $A::FromHandle($h)
+        $named = { param($from, $n) $from.FindFirst([System.Windows.Automation.TreeScope]::Descendants, (New-Object System.Windows.Automation.PropertyCondition($A::NameProperty, $n))) }
+        $tab = $null
+        for ($i = 0; $i -lt 40 -and -not $tab; $i++) { Start-Sleep -Milliseconds 250; $tab = & $named $root "Parameter Table" }
+        if (-not $tab) { "  skip  {0}: no Parameter Table tab came up" -f $shot.Name; $script:failed++; return }
+        $tab.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+        $group = $null
+        for ($i = 0; $i -lt 40 -and -not $group; $i++) { Start-Sleep -Milliseconds 250; $group = & $named $root (& $label $shot.Ribbon) }
+        if (-not $group) { "  skip  {0}: the tab's group '{1}' did not come up" -f $shot.Name, (& $label $shot.Ribbon); $script:failed++; return }
+        if ($shot.Type) {
+            $box = & $named $group (& $label "ptFind")
+            if ($box) {
+                $box.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($shot.Type)
+                # The caret after the text, as typing leaves it - not the text shown selected.
+                try {
+                    $all = $box.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern).DocumentRange
+                    $all.MoveEndpointByRange([System.Windows.Automation.Text.TextPatternRangeEndpoint]::Start, $all,
+                                             [System.Windows.Automation.Text.TextPatternRangeEndpoint]::End)
+                    $all.Select()
+                } catch { }
+            }
+        }
+        Start-Sleep -Milliseconds 1200                              # let it finish drawing
+
+        # The ribbon's place: from the tab names' row to the bottom of the groups, out to the tab's
+        # last group (not the title bar above, nor the buttons at the far right of the tab names).
+        $lower = & $named $root "Lower Ribbon"
+        if (-not $lower) { "  skip  {0}: no ribbon found in the window" -f $shot.Name; $script:failed++; return }
+        $low = $lower.Current.BoundingRectangle
+        $right = $low.Left
+        foreach ($g in $labels.SelectNodes("//*[local-name()='group']")) {
+            $e = & $named $lower ([string] $g.label)
+            if ($e) { $right = [math]::Max($right, $e.Current.BoundingRectangle.Right) }
+        }
+        $tabTop = $tab.Current.BoundingRectangle.Top
+        $f = [PtWin]::Frame($h)                                     # the picture's top left, on the screen
+        $wr = @{ Left = $f[0]; Top = $f[1] }
+        $pad = [math]::Round(8 * $dpi / 96)
+        $cut = New-Object Drawing.Rectangle ([int] ($low.Left - $wr.Left - $pad)), ([int] ($tabTop - $wr.Top)),
+            ([int] ($right - $low.Left + 2 * $pad)), ([int] ($low.Bottom - $tabTop + $pad))
+
+        $full = [PtWin]::Capture($h)
+        $cut = [Drawing.Rectangle]::Intersect($cut, (New-Object Drawing.Rectangle 0, 0, $full.Width, $full.Height))
+        $bmp = $full.Clone($cut, [Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        $full.Dispose()
+        $d = [math]::Round(17 * $dpi / 72)
+        foreach ($c in $shot.Callouts) {
+            $e = & $named $group (& $label $c[1])
+            if (-not $e) { "        callout {0}: no '{1}' on the ribbon - left out" -f $c[0], $c[1]; continue }
+            $r = $e.Current.BoundingRectangle
+            $x0 = $r.Left - $wr.Left - $cut.X; $y0 = $r.Top - $wr.Top - $cut.Y
+            switch ($c[2]) {
+                "b"  { $x = $x0 + $r.Width / 2; $y = $y0 + $r.Height + $d / 2 - $d / 8 }
+                "in" { $x = $x0 + $r.Width - $d / 4 - $d / 2; $y = $y0 + $r.Height / 2 }
+                default { $x = $x0 + $r.Width + $d / 4 + $d / 2; $y = $y0 + $r.Height / 2 }
+            }
+            [PtWin]::Callout($bmp, [int] $c[0], [float] $x, [float] $y, [float] $d)
+        }
+        Save-Bitmap $bmp (Join-Path $Out ($shot.Name + ".png"))
+        "  ok    {0}.png  (the ribbon of an Excel of our own, off the screen)" -f $shot.Name
+    } finally {
+        if ($rx) {
+            # Where Excel was, so the next Excel opens where the user left it.
+            try {
+                $rx.Visible = $false
+                $rx.WindowState = -4143
+                $rx.Left = $place.Left; $rx.Top = $place.Top; $rx.Width = $place.Width; $rx.Height = $place.Height
+                $rx.WindowState = $place.State
+            } catch { }
+            try { $rx.ActiveWorkbook.Close($false) } catch { }
+            try { $rx.Quit() } catch { }
+            try { [void] [Runtime.InteropServices.Marshal]::ReleaseComObject($rx) } catch { }
+        }
+        if ($rpid) {
+            # Only OUR Excel - the process this function started.
+            $p = Get-Process -Id $rpid -ErrorAction SilentlyContinue
+            if ($p -and $p.ProcessName -eq "EXCEL") { [void] $p.WaitForExit(15000); if (-not $p.HasExited) { Stop-Process -Id $rpid -Force } }
+        }
+        Stop-Watchdog
+    }
+}
+
 # ============================================================ run
 
-$script:failed = 0
-try {
+# Every picture made in our hidden Excel: sheets, macro windows, Mastercam's windows.
+function Shoot-Hidden {
+    if (@($Shots | Where-Object { -not $_.Ribbon }).Count -eq 0) { return }
     Start-Excel
     "excel  : our own, hidden (process $script:xlPid)"
-    $sheets = @($Shots | Where-Object { -not $_.Window })
+    $sheets = @($Shots | Where-Object { -not $_.Window -and -not $_.Dialog -and -not $_.Ribbon })
     # Pictures of the sheet as dumped first; the scenarios (which make the edits); the rest
     # with the edits; last the sheets the ribbon's commands make.
     $order = @($sheets | Where-Object { -not $_.Edits -and -not $_.Macro }) +
@@ -899,8 +1166,21 @@ try {
         Ensure-Excel
         try { Shoot-Window $shot } catch { "  skip  {0}: {1} ({2})" -f $shot.Name, $_.Exception.Message, ($_.ScriptStackTrace -split "`n")[0]; $script:failed++ }
     }
+    $dialogs = @($Shots | Where-Object { $_.Dialog })
+    if ($dialogs.Count -gt 0) {
+        Ensure-Excel
+        try { Shoot-Dialogs $dialogs } catch { "  skip  Mastercam's windows: {0} ({1})" -f $_.Exception.Message, ($_.ScriptStackTrace -split "`n")[0]; $script:failed += $dialogs.Count }
+    }
+}
+
+$script:failed = 0
+try {
+    try { Shoot-Hidden } finally { Stop-Excel }
+    # The ribbon's Excel after the hidden one is gone: one Excel of ours at a time, one watchdog.
+    foreach ($shot in @($Shots | Where-Object { $_.Ribbon })) {
+        try { Shoot-Ribbon $shot } catch { "  skip  {0}: {1} ({2})" -f $shot.Name, $_.Exception.Message, ($_.ScriptStackTrace -split "`n")[0]; $script:failed++ }
+    }
 } finally {
-    Stop-Excel
     if ($null -ne $clipText) { try { Set-Clipboard -Value $clipText } catch { } }
     if (-not $KeepTemp) { Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue } else { "temp   : $tmp" }
 }

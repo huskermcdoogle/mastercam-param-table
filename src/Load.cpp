@@ -429,6 +429,8 @@ namespace Load
 								 + L" row " + std::to_wstring (r.line) + L": " + r.why);
 
 		// ---- SHOW EXACTLY WHAT WOULD HAPPEN, and let the person decide there.
+		// (tests\dialog_shots.cpp puts the lines together the same way, for the
+		// manual's picture of this window: a change here wants one there.)
 		std::vector<Preview::Line> lines;
 		auto add = [&lines] (Preview::Line::Kind k, const std::wstring &text,
 							 const std::wstring &detail = std::wstring (),
@@ -683,6 +685,7 @@ namespace Load
 			}
 		const Undo::Result r = Undo::Make (last, kinds);
 
+		// The window's lines (tests\dialog_shots.cpp makes them the same way for the manual).
 		std::vector<Preview::Line> lines;
 		if (!r.skipped.empty ())
 			{

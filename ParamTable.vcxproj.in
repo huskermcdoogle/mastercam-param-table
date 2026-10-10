@@ -118,11 +118,9 @@
     <ClCompile Include="src\Util.cpp" />
     <ClCompile Include="src\LatheFields.cpp" />
     <ClCompile Include="src\Coolant.cpp" />
-    <ClCompile Include="src\Preview.cpp" />
     <ClCompile Include="src\Paths.cpp" />
     <ClCompile Include="src\StockSim.cpp" />
     <ClCompile Include="src\Settings.cpp" />
-    <ClCompile Include="src\DumpDialog.cpp" />
     <ClCompile Include="src\ToolPictures.cpp" />
     <ClCompile Include="src\FileRules.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -173,6 +171,13 @@
     <ClCompile Include="src\Pick.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <!-- The windows: MFC without the SDK (Ui.h), so tests\dialog_shots.cpp can draw them. -->
+    <ClCompile Include="src\Preview.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\DumpDialog.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h" />
@@ -182,6 +187,7 @@
     <ClInclude Include="src\Dump.h" />
     <ClInclude Include="src\Coolant.h" />
     <ClInclude Include="src\Preview.h" />
+    <ClInclude Include="src\Ui.h" />
     <ClInclude Include="src\Paths.h" />
     <ClInclude Include="src\StockSim.h" />
     <ClInclude Include="src\Settings.h" />

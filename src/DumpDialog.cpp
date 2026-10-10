@@ -1,5 +1,6 @@
-#include "stdafx.h"
-#include "MastercamSdk.h"
+// The window itself - no Mastercam SDK (Ui.h), so it can be drawn outside
+// Mastercam for the manual's pictures (tests\dialog_shots.cpp).
+#include "Ui.h"
 #include "DumpDialog.h"
 #include "FileRules.h"
 #include "Pick.h"
@@ -826,7 +827,7 @@ namespace DumpDialog
 	bool Show (const std::wstring &partFile, std::vector<Op> &ops, const std::wstring &skipped,
 			   Settings::Dump &settings)
 		{
-		Dlg dlg (partFile, ops, skipped, settings, CWnd::FromHandle (get_MainFrame ()->GetSafeHwnd ()));
+		Dlg dlg (partFile, ops, skipped, settings, Ui::Host ());
 		return dlg.Run () == IDOK;
 		}
 	}

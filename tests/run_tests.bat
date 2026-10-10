@@ -151,6 +151,12 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+rem The manual's pictures of the add-in's own windows: built only (it needs a dump workbook -
+rem tools\make_help_images.ps1 runs it), so a change that ties the windows (src\Preview.cpp,
+rem src\DumpDialog.cpp) to the Mastercam SDK again shows here, not at picture time.
+call "%~dp0build_dialog_shots.bat"
+if errorlevel 1 set FAILED=1
+
 if %FAILED%==1 (
     echo.
     echo TESTS FAILED

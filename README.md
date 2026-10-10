@@ -157,8 +157,10 @@ that opens in any browser with no internet. Open it from:
 `python tools\make_help.py` rebuilds its generated parts - the menu, the search index, the
 word list's columns (from `src\ColumnHelp.cpp`, so they match the sheet's own tooltips) and the
 print page - and checks every link, anchor and picture. `tools\make_help_images.ps1` makes the
-pictures from a sample workbook in a hidden Excel (no screenshots); `help\images\NEEDED.txt`
-lists the pictures still to make.
+pictures without screenshots: the sheets and macro windows from a sample workbook in a hidden
+Excel, Mastercam's dump, load and undo windows with `tests\dialog_shots.cpp` (the add-in's own
+window code, run without Mastercam), and the ribbon in an Excel of its own kept off the screen;
+`help\images\NEEDED.txt` lists the pictures still to make.
 
 ## Use
 
@@ -191,7 +193,8 @@ tests\run_tests.bat
 ```
 
 `tests\run_tests.bat` builds and runs the SDK-free tests (CSV, load rules, workbook writer and
-reader - including its own DEFLATE - file naming, and the estimate formula);
+reader - including its own DEFLATE - file naming, and the estimate formula) and builds the
+manual's window-picture program;
 `tools\check_estimate.ps1` checks the estimate formula in real Excel, `tools\check_summary.ps1`
 the Summary page.
 

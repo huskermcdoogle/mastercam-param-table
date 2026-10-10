@@ -219,6 +219,8 @@ def figures(text, page, missing):
             kind = a.get("data-kind", "")
             how = {"mastercam": "a screenshot from Mastercam - to be added",
                    "screen": "a screenshot - to be added",
+                   "dialog": "made by tools/make_help_images.ps1 - the add-in's own window, drawn without Mastercam",
+                   "ribbon": "made by tools/make_help_images.ps1",
                    "window": "made by tools/make_help_images.ps1 once this part of the macros is finished",
                    "sheet": "made by tools/make_help_images.ps1"}.get(kind, "to be added")
             inner = (f'<div class="todo-box" role="img" aria-label="Picture not ready yet: {html.escape(need)}">'
@@ -238,7 +240,10 @@ def needed_txt(missing):
              "help/images under this name, run  python tools/make_help.py  and it is put in.", ""]
     groups = [("mastercam", "MASTERCAM SCREENS - capture by hand (crop to the window; no other windows; number",
                "callouts 1, 2, 3 as the page's steps say; no part paths or user names in the picture)"),
-              ("screen", "OTHER SCREENS - capture by hand (Excel's ribbon tab: crop to the group; callouts as above)", ""),
+              ("screen", "OTHER SCREENS - capture by hand (crop to the window; callouts as above)", ""),
+              ("dialog", "THE ADD-IN'S OWN WINDOWS - run tools/make_help_images.ps1 (tests/dialog_shots.cpp draws them,",
+               "no Mastercam needed)"),
+              ("ribbon", "EXCEL'S RIBBON - run tools/make_help_images.ps1 (an Excel of its own, off the screen)", ""),
               ("window", "EXCEL MACRO WINDOWS AND SHEETS OF THE NEW COMMANDS - run tools/make_help_images.ps1 after",
                "they are merged (it captures only that window / range; check its shot list fits the new layout)"),
               ("sheet", "SHEET PICTURES - run tools/make_help_images.ps1", ""),
