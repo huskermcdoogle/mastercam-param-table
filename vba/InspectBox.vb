@@ -16,7 +16,7 @@
 Option Explicit
 
 Private Const PAD As Single = 8
-Private Const WIDTHS As String = "34;84;50;52;50;66;48;380"     ' the columns shown, in points
+Private Const WIDTHS As String = "34;112;50;52;50;66;48;445"     ' the columns shown, in points
 Private Const HINT As String = "Edge time: how long each edge cuts between flips (insp_time).  Last edge: how much of " & _
                                "that the last edge in a part gets to cut.  Click a tool for its note."
 
@@ -32,7 +32,7 @@ Private Sub UserForm_Initialize()
     Dim heads As Variant, tips As Variant
     busy = True
     Me.Caption = "Parameter Table - inspection and inserts"
-    Me.Width = 820
+    Me.Width = 910
     lblHead.Font.Size = 10
     lblHead.Font.Bold = True
     btnHelp.Caption = "?"

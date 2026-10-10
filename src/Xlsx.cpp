@@ -838,9 +838,22 @@ namespace Xlsx
 					   "<col min=\"1\" max=\"1\" width=\"8\" customWidth=\"1\"/>"
 					   "<col min=\"2\" max=\"2\" width=\"40\" customWidth=\"1\"/>"
 					   "<col min=\"3\" max=\"3\" width=\"30\" customWidth=\"1\"/>";
-			if (nExtra > 0)
-				toolsXml += "<col min=\"4\" max=\"" + std::to_string (3 + nExtra)
-							+ "\" width=\"16\" customWidth=\"1\"/>";
+			// Each column after "Used by" as wide as what it holds - an insert name such as
+			// "PrimeTurning B r0.032", the inspection's "every 5 in of cut, at end" - between
+			// 12 and 40, counting the inserts table under the tools (same columns).
+			for (size_t e = 0; e < nExtra; ++e)
+				{
+				size_t w = s.toolExtraHeads[e].size ();
+				for (const Sheet::ToolRow &t : s.tools)
+					if (e < t.extra.size ())
+						w = (std::max) (w, t.extra[e].text.size ());
+				for (const std::vector<Sheet::FreeCell> &row : s.toolsAfter)
+					if (3 + e < row.size ())
+						w = (std::max) (w, row[3 + e].text.size ());
+				w = (std::min) ((std::max) (w + 2, static_cast<size_t> (12)), static_cast<size_t> (40));
+				toolsXml += "<col min=\"" + std::to_string (4 + e) + "\" max=\"" + std::to_string (4 + e)
+							+ "\" width=\"" + std::to_string (w) + "\" customWidth=\"1\"/>";
+				}
 			toolsXml += "<col min=\"" + std::to_string (picCol + 1) + "\" max=\"" + std::to_string (picCol + 1)
 						+ "\" width=\"33\" customWidth=\"1\"/></cols><sheetData>";
 			const int head = st.Get (FGroup0, 1);

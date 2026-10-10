@@ -778,9 +778,9 @@ Private Function StopsText(ByVal k As Long) As String
                 If Num(ParamTable.MainSheet.Cells(r, cDist).Value, x) Then AddWords s, "every " & NumText(x) & IIf(u = "", "", " " & u) & " of cut"
             End If
             If Flag(r, cNon) = 1 And cNcut > 0 Then
-                If Num(ParamTable.MainSheet.Cells(r, cNcut).Value, x) Then AddWords s, "every " & NumText(x) & " cuts"
+                If Num(ParamTable.MainSheet.Cells(r, cNcut).Value, x) Then AddWords s, IIf(x = 1, "every cut", "every " & NumText(x) & " cuts")
             End If
-            If Flag(r, cEnd) = 1 Then AddWords s, "at the end of the op"
+            If Flag(r, cEnd) = 1 Then AddWords s, "at the end"
         End If
     Next
     If s = "" Then s = ToolsText(iT(k).tool, "Inspection")

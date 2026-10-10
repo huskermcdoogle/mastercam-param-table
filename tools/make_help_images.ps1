@@ -83,7 +83,7 @@ $Shots = @(
     @{ Name = "sheet-estimate"; Sheet = "Lathe params"; Range = "A1:A8"; Edits = $true
        Show = @("op_idn", "comment", "feed", "speed", "cycle_time", "est_cycle_time", "time_change")
        Callouts = @(@(1, "op7:feed", "l"), @(2, "op7:cycle_time", "r"), @(3, "op7:est_cycle_time", "r")) },
-    @{ Name = "sheet-tools"; Sheet = "Tools"; Range = "A1:A3"
+    @{ Name = "sheet-tools"; Sheet = "Tools"; Range = "A1:A3"; FitText = $true
        Show = @("Tool", "Name", "Used by", "Insert", "Flips / part", "Cut time / part", "Inspection", "Edge life (fallback)", "Insert size (IC)", "Entering angle", "Picture")
        Callouts = @(@(1, "row2:Insert", "rb"), @(2, "row2:Flips / part", "lb"), @(3, "row2:Edge life (fallback)", "rb")) },
     @{ Name = "sheet-inserts"; Sheet = "Tools"; Range = "inserts"
@@ -573,6 +573,17 @@ function Shoot-Range($shot) {
     }
     if ($shot.Folded) { try { [void] $ws.Outline.ShowLevels(0, 1) } catch { } }
     $r = $ws.Range($rangeText)
+    # "As on screen" copies the selection's shading too: put the cursor below the range first.
+    try { [void] $ws.Activate(); [void] $ws.Cells($r.Row + $r.Rows.Count + 3, 1).Select() } catch { }
+    # FitText: each text column as wide as what it holds (as a dump now sizes the Tools page;
+    # a workbook dumped before that has them all at 16). Not the picture column.
+    if ($shot.FitText) {
+        foreach ($col in $r.Columns) {
+            if ($col.Hidden -or $ws.Cells(1, $col.Column).Text -eq "Picture" -or $col.Column -le 3) { continue }
+            [void] $col.EntireColumn.AutoFit()
+            if ($col.ColumnWidth -lt 12) { $col.ColumnWidth = 12 } elseif ($col.ColumnWidth -gt 40) { $col.ColumnWidth = 40 }
+        }
+    }
     # Widen: a few characters more in each column (a sheet the macros autofit tightly).
     if ($shot.Widen) { foreach ($col in $r.Columns) { $col.ColumnWidth = $col.ColumnWidth + $shot.Widen } }
     $file = Join-Path $Out ($shot.Name + ".png")
