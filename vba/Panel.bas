@@ -309,8 +309,24 @@ Public Function ShowColumns(ByVal names As String, Optional ByVal rows As Collec
         sel.Select
         On Error GoTo 0
         Following = False
+        ' A window moved the sheet: the other open windows follow it too, and a later click
+        ' on these same ops is not taken for a move.
+        TellWindows rows
     End If
 End Function
+
+' The open windows follow these rows (each ignores rows it already shows).
+Private Sub TellWindows(ByVal rows As Collection)
+    Dim f As Variant, k As String
+    k = RowsKey(rows)
+    If k = "" Or k = lastKey Then Exit Sub
+    lastKey = k
+    If wins Is Nothing Then Exit Sub
+    On Error Resume Next
+    For Each f In wins
+        f.FollowRows rows
+    Next
+End Sub
 
 ' Scroll so a column (and the first of the rows) is in view.
 Private Sub BringInView(ByVal col As Long, ByVal rows As Collection)
