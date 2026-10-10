@@ -155,6 +155,12 @@ namespace Xlsx
 		/// Main-sheet cells that link to a Tools row: (A1 cell, index into tools).
 		std::vector<std::pair<std::string, size_t>> toolLinks;
 
+		/// IGNORED FINDINGS: the Program check's findings a person chose to ignore -
+		/// (the macros' key, what the finding said) - written as the hidden sheet
+		/// "Ignored findings" (key in A, what in B, from row 2), which the macros
+		/// keep, so the choice outlives this workbook. Empty = no such sheet.
+		std::vector<std::pair<std::wstring, std::wstring>> ignored;
+
 		/// A MACRO WORKBOOK (.xlsm): the compiled VBA project (vbaProject.bin) and
 		/// the ribbon tab's XML. Empty = a plain .xlsx. The compiled code expects
 		/// the code names ThisWorkbook and Sheet1 (the main sheet); they are written.

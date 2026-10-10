@@ -1647,6 +1647,9 @@ namespace
 				for (const std::wstring &h : Summary::CostHeads ())
 					heads.push_back (head (h.c_str ()));
 				heads.push_back (head (L"Parts per edge"));
+				// Then (J) how long an edge of it usually cuts, typed - what the
+				// Program check holds each tool's edge time against.
+				heads.push_back (head (L"Usual edge time"));
 				s.toolsAfter.push_back (heads);
 				// An insert that outlasts a part: "parts per edge" typed in (column I)
 				// replaces the flips the stops give - 1 / parts per edge - and inserts
@@ -1672,6 +1675,15 @@ namespace
 					Xlsx::Sheet::FreeCell c;
 					c.text = v;
 					c.editable = true;
+					return c;
+					};
+				// Formatted as Text, as edge life is: a typed 12:00 stays 12:00.
+				auto usualCell = [] (const std::wstring &v)
+					{
+					Xlsx::Sheet::FreeCell c;
+					c.text = v;
+					c.editable = true;
+					c.textFormat = true;
 					return c;
 					};
 				auto remembered = [&] (const std::wstring &name) -> PartConfig::Insert *
@@ -1730,6 +1742,7 @@ namespace
 						row.push_back (c);
 						}
 					row.push_back (partsCell (outlasts ? had->partsPerEdge : std::wstring ()));
+					row.push_back (usualCell (had->usualEdgeTime));
 					s.toolsAfter.push_back (row);
 					++i;
 					}
@@ -1751,11 +1764,13 @@ namespace
 						row.push_back (c);
 						}
 					row.push_back (partsCell (had != nullptr ? had->partsPerEdge : std::wstring ()));
+					row.push_back (usualCell (std::wstring ()));
 					s.toolsAfter.push_back (row);
 					}
 				// WHAT THE TYPED CELLS ACCEPT - the figures feed the flips, inserts and
 				// cost: a tool's insert (a name) and edge life (m:ss); per insert its
-				// name, edges (whole, 1 or more), cost (0 or more), parts per edge (>0).
+				// name, edges (whole, 1 or more), cost (0 or more), parts per edge (>0),
+				// usual edge time (m:ss).
 				{
 				const std::wstring t0 = L"2", t1 = std::to_wstring (tools.size () + 1);
 				const std::wstring i0 = std::to_wstring (tools.size () + 4), i1 = std::to_wstring (tools.size () + 3 + i);
@@ -1800,6 +1815,13 @@ namespace
 						  L"For an insert that outlasts a part: how many parts one edge makes. Greyed out where the toolpath already flips an edge every part. Leave blank to count the stops.",
 						  L"A number of parts, more than 0 - and only for an insert whose edge is not already flipped every part (greyed out).");
 					s.toolsGreyed.push_back ({ range ("I", i0, i1), L"AND($B" + i0 + L"<>\"\"," + flipsHere + L">=1)" });
+					// Usual edge time: a time, as edge life takes it.
+					rule (range ("J", i0, i1), "custom", "",
+						  L"OR(J" + i0 + L"=\"\",AND(ISNUMBER(J" + i0 + L"),J" + i0 + L">0),ISNUMBER(TIMEVALUE(\"0:\"&J" + i0
+							  + L")),ISNUMBER(TIMEVALUE(J" + i0 + L")))", L"",
+						  L"Usual edge time",
+						  L"How long one edge of this insert usually cuts before it is turned - minutes:seconds (12:00) or seconds. The Program check flags a tool whose edge runs more than 25% longer. Blank: it compares the tools in this program.",
+						  L"Type a time: minutes:seconds (12:00) or seconds (720).");
 					}
 				}
 
@@ -1973,6 +1995,11 @@ namespace
 			where.manual = s.helpFolder + L"\\index.html";
 			}
 		Summary::Add (s, where);
+
+		// ---- The Program check's ignored findings, kept in the part's .ptconfig:
+		// the hidden list the macros go on from.
+		for (const auto &kv : cfg.ignore)
+			s.ignored.push_back (kv);
 
 		return Xlsx::Write (file, s);
 		}

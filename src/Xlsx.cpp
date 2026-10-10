@@ -910,6 +910,23 @@ namespace Xlsx
 			toolsXml += "</worksheet>";
 			}
 
+		// ---- "Ignored findings": the Program check's ignored keys, hidden - the
+		// macros read and keep it; the part's .ptconfig reads it back.
+		const bool ignoredPage = !s.ignored.empty ();
+		std::string ignoredXml;
+		if (ignoredPage)
+			{
+			ignoredXml = decl + "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>"
+						 "<row r=\"1\">" + cell (1, 0, L"key", 0) + cell (1, 1, L"finding", 0) + "</row>";
+			for (size_t k = 0; k < s.ignored.size (); ++k)
+				{
+				const size_t r = k + 2;
+				ignoredXml += "<row r=\"" + std::to_string (r) + "\">" + cell (r, 0, s.ignored[k].first, 0)
+							  + cell (r, 1, s.ignored[k].second, 0) + "</row>";
+				}
+			ignoredXml += "</sheetData></worksheet>";
+			}
+
 		std::vector<std::pair<std::string, std::string>> parts;
 		parts.push_back ({ "[Content_Types].xml", decl +
 			"<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
@@ -924,6 +941,7 @@ namespace Xlsx
 			+ std::string (track ? "<Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (toolsPage ? "<Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (summaryPage ? "<Override PartName=\"/xl/worksheets/sheet4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
+			+ std::string (ignoredPage ? "<Override PartName=\"/xl/worksheets/sheet5.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" : "")
 			+ std::string (!drawingXml.empty () ? "<Override PartName=\"/xl/drawings/drawing1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\"/>" : "") +
 			"<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
 			"</Types>" });
@@ -945,6 +963,7 @@ namespace Xlsx
 			+ "<sheet name=\"Lathe params\" sheetId=\"1\" r:id=\"rId1\"/>"
 			+ std::string (toolsPage ? "<sheet name=\"Tools\" sheetId=\"3\" r:id=\"rId4\"/>" : "")
 			+ std::string (track ? "<sheet name=\"Dumped\" sheetId=\"2\" state=\"hidden\" r:id=\"rId3\"/>" : "")
+			+ std::string (ignoredPage ? "<sheet name=\"Ignored findings\" sheetId=\"5\" state=\"hidden\" r:id=\"rId7\"/>" : "")
 			+ "</sheets>"
 			// localSheetId is the main sheet's POSITION, which the Summary moves.
 			+ (filter || !s.helpFolder.empty () ? std::string ("<definedNames>") : std::string ())
@@ -967,6 +986,7 @@ namespace Xlsx
 			+ std::string (track ? "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet2.xml\"/>" : "")
 			+ std::string (toolsPage ? "<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet3.xml\"/>" : "")
 			+ std::string (summaryPage ? "<Relationship Id=\"rId6\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet4.xml\"/>" : "")
+			+ std::string (ignoredPage ? "<Relationship Id=\"rId7\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet5.xml\"/>" : "")
 			+ std::string (macros ? "<Relationship Id=\"rId5\" Type=\"http://schemas.microsoft.com/office/2006/relationships/vbaProject\" Target=\"vbaProject.bin\"/>" : "")
 			+ "</Relationships>" });
 		parts.push_back ({ "xl/styles.xml", st.Xml () });
@@ -981,6 +1001,8 @@ namespace Xlsx
 			}
 		if (summaryPage)
 			parts.push_back ({ "xl/worksheets/sheet4.xml", summaryXml });
+		if (ignoredPage)
+			parts.push_back ({ "xl/worksheets/sheet5.xml", ignoredXml });
 		if (toolsPage)
 			{
 			parts.push_back ({ "xl/worksheets/sheet3.xml", toolsXml });

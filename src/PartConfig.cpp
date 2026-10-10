@@ -78,6 +78,8 @@ namespace PartConfig
 			const std::wstring key = Lower (Trim (line.substr (0, eq))), value = Trim (line.substr (eq + 1));
 			if (section == L"batch" && key == L"qty")
 				c.batchQty = value;
+			else if (section == L"ignore")
+				c.ignore[Trim (line.substr (0, eq))] = value;	// the key as written: the macros match it exactly
 			else if (section.rfind (L"insert ", 0) == 0)
 				{
 				Insert &i = c.inserts[Trim (section.substr (7))];
@@ -85,6 +87,7 @@ namespace PartConfig
 				else if (key == L"cost") i.cost = value;
 				else if (key == L"parts_per_edge") i.partsPerEdge = value;
 				else if (key == L"edges_detected") i.edgesDetected = value;
+				else if (key == L"usual_edge_time") i.usualEdgeTime = value;
 				}
 			else if (section.rfind (L"tool ", 0) == 0)
 				{
@@ -107,13 +110,33 @@ namespace PartConfig
 		for (const auto &kv : c.inserts)
 			{
 			const Insert &i = kv.second;
-			if (i.edges.empty () && i.cost.empty () && i.partsPerEdge.empty () && i.edgesDetected.empty ())
+			if (i.edges.empty () && i.cost.empty () && i.partsPerEdge.empty () && i.edgesDetected.empty ()
+				&& i.usualEdgeTime.empty ())
 				continue;
 			t += L"\r\n[insert " + kv.first + L"]\r\n";
 			if (!i.edges.empty ()) t += L"edges = " + i.edges + L"\r\n";
 			if (!i.cost.empty ()) t += L"cost = " + i.cost + L"\r\n";
 			if (!i.partsPerEdge.empty ()) t += L"parts_per_edge = " + i.partsPerEdge + L"\r\n";
 			if (!i.edgesDetected.empty ()) t += L"edges_detected = " + i.edgesDetected + L"\r\n";
+			if (!i.usualEdgeTime.empty ()) t += L"usual_edge_time = " + i.usualEdgeTime + L"\r\n";
+			}
+		// The Program check's ignored findings. The macros never put "=" in a key; a
+		// key that could not be read back (typed into the hidden sheet by hand) is
+		// left out, and a note is kept to one line.
+		if (!c.ignore.empty ())
+			{
+			t += L"\r\n[ignore]\r\n";
+			for (const auto &kv : c.ignore)
+				{
+				if (kv.first.empty () || kv.first.find_first_of (L"=\r\n") != std::wstring::npos
+					|| kv.first[0] == L'#' || kv.first[0] == L';' || kv.first[0] == L'[')
+					continue;
+				std::wstring note = kv.second;
+				for (wchar_t &ch : note)
+					if (ch == L'\r' || ch == L'\n')
+						ch = L' ';
+				t += kv.first + L" = " + Trim (note) + L"\r\n";
+				}
 			}
 		for (const auto &kv : c.tools)
 			{
@@ -174,12 +197,14 @@ namespace PartConfig
 			if (At (tools, row.first, 0) != L"Inserts")
 				continue;
 			size_t edgesCol = 3, costCol = 6, partsCol = 8;
+			size_t usualCol = 0;		// 0 = a workbook from before the column
 			for (const auto &h : row.second)
 				{
 				const std::wstring head = Lower (Trim (h.second));
 				if (head.rfind (L"edges", 0) == 0) edgesCol = h.first;
 				else if (head == L"cost per insert") costCol = h.first;
 				else if (head.rfind (L"parts per edge", 0) == 0) partsCol = h.first;
+				else if (head.rfind (L"usual edge time", 0) == 0) usualCol = h.first;
 				}
 			for (size_t r = row.first + 1; tools.count (r); ++r)
 				{
@@ -194,9 +219,64 @@ namespace PartConfig
 				// cells, so a blank one here was cleared on purpose.
 				i.cost = At (tools, r, costCol);
 				i.partsPerEdge = At (tools, r, partsCol);
+				if (usualCol > 0)
+					i.usualEdgeTime = At (tools, r, usualCol);
 				}
 			break;
 			}
+		// The Program check's ignored findings: the hidden list as the macros (or
+		// the dump) left it, then the Program check sheet's Ignore column over it -
+		// a yes or a blank set there since the last check is the newer word. A
+		// workbook with neither leaves the kept list as it is.
+		{
+		Xlsx::Grid list, check;
+		std::wstring w;
+		if (Xlsx::ReadGrid (workbook, L"Ignored findings", list, w))
+			{
+			n.ignore.clear ();
+			for (const auto &row : list)
+				if (row.first >= 2 && !At (list, row.first, 0).empty ())
+					n.ignore[At (list, row.first, 0)] = At (list, row.first, 1);
+			}
+		if (Xlsx::ReadGrid (workbook, L"Program check", check, w))
+			{
+			// The heading row has "Ignore" and "key" (the finding's key, a hidden
+			// column); the findings run under it.
+			size_t head = 0, ignoreCol = 0, keyCol = 0, whatCol = 0;
+			for (const auto &row : check)
+				{
+				size_t ic = 0, kc = 0, wc = 0;
+				for (const auto &cell : row.second)
+					{
+					const std::wstring h = Lower (Trim (cell.second));
+					if (h == L"ignore") ic = cell.first + 1;
+					else if (h == L"key") kc = cell.first + 1;
+					else if (h == L"what was found") wc = cell.first + 1;
+					}
+				if (ic > 0 && kc > 0)
+					{
+					head = row.first;
+					ignoreCol = ic - 1;
+					keyCol = kc - 1;
+					whatCol = wc > 0 ? wc - 1 : kc - 1;
+					break;
+					}
+				}
+			for (const auto &row : check)
+				{
+				const std::wstring key = At (check, row.first, keyCol);
+				if (head == 0 || row.first <= head || key.empty ())
+					continue;
+				if (Lower (At (check, row.first, ignoreCol)) == L"yes")
+					{
+					if (!n.ignore.count (key))
+						n.ignore[key] = At (check, row.first, whatCol);
+					}
+				else
+					n.ignore.erase (key);
+				}
+			}
+		}
 		// The batch quantity, beside its label on the Summary.
 		std::wstring sumWhy;
 		if (Xlsx::ReadGrid (workbook, L"Summary", summary, sumWhy))

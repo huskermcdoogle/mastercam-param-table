@@ -337,6 +337,128 @@ try {
     Check ($t -like "Type or pick*|False|") "set window on mixed columns, nothing typed: OK off ('$t')"
 
     $wb.Close($false)
+
+    # ================================================= the continuous-improvement tools (Checks.bas)
+    # ci_sample.xlsm (tests\macro_test.exe): eight ops laid out as a dump lays them out, each
+    # Program check rule finding one thing, and "no-comment|op 3" ignored already (the hidden
+    # list a dump writes from the part's .ptconfig).
+    $cf = Join-Path $Dir "ci_check.xlsm"
+    Copy-Item -LiteralPath (Join-Path $Dir "ci_sample.xlsm") -Destination $cf -Force
+    $wb = $xl.Workbooks.Open($cf)
+    $ws = $wb.Worksheets.Item("Lathe params")
+    $tl = $wb.Worksheets.Item("Tools")
+    $sm = $wb.Worksheets.Item("Summary")
+    # The findings' keys (the hidden column I), top to bottom.
+    function Keys ($sh) { $k = @(); for ($r = 6; $r -le 60; $r++) { $v = $sh.Cells.Item($r, 9).Text; if ($v -eq "") { break }; $k += $v }; , $k }
+    function RowOfKey ($sh, $key) { for ($r = 6; $r -le 60; $r++) { if ($sh.Cells.Item($r, 9).Text -eq $key) { return $r } }; 0 }
+    # A row of a sheet whose column A reads $text.
+    function RowOfA ($sh, $text) { for ($r = 1; $r -le 200; $r++) { if ($sh.Cells.Item($r, 1).Text -eq $text) { return $r } }; 0 }
+    function RowOfB ($sh, $text) { for ($r = 1; $r -le 200; $r++) { if ($sh.Cells.Item($r, 2).Text -eq $text) { return $r } }; 0 }
+
+    # ---- Program check.
+    $n = $xl.Run("Checks.ProgramCheck")
+    $e = $xl.Run("Checks.LastError")
+    $pc = $wb.Worksheets.Item("Program check")
+    Check ($n -eq 9 -and $e -eq "") "program check: 9 findings ($n) '$e'"
+    Check ($pc.Range("A2").Text -eq "9 findings - 1 ignored (shown greyed at the bottom)") "the count line ('$($pc.Range('A2').Text)')"
+    $k = Keys $pc
+    $want = @("needs-regen|op 3", "feed-unit|op 5", "css-no-max|op 2", "edge-time|T5|RPGV 1204", "air|op 4",
+              "mixed-speeds|T1|ROUGH", "tool-changes|T1|Main", "coolant-off|op 3", "no-comment|op 3")
+    Check (($k -join ",") -eq ($want -join ",")) "most useful first, the ignored one last: $($k -join ', ')"
+    Check ($pc.Range("B6").Text -eq "Look at" -and $pc.Range("B11").Text -eq "FYI" -and $pc.Range("H14").Text -eq "yes" -and $pc.Range("H13").Text -eq "") "severity, and the ignored one marked yes"
+    $bad = @()
+    for ($r = 6; $r -le 14; $r++) { if ($pc.Cells.Item($r, 5).Text -eq "" -or $pc.Cells.Item($r, 6).Text -eq "" -or $pc.Cells.Item($r, 7).Text -eq "") { $bad += $r } }
+    Check ($bad.Count -eq 0) "every finding says what, why and how to fix ($($bad -join ', '))"
+    $h = $pc.Range("C6").Hyperlinks.Item(1).SubAddress
+    Check ($h -eq "'Lathe params'!F5" -and $pc.Range("C6").Text -eq "op 3") "the op links to its cell: needs_regen of op 3 ($h)"
+    $h = $pc.Range("D9").Hyperlinks.Item(1).SubAddress
+    Check ($h -eq "'Tools'!A6" -and $pc.Range("D9").Text -eq "T5  RPGV 1204") "the tool links to its Tools row ($h, '$($pc.Range('D9').Text)')"
+    Check ($pc.Range("E9").Text -like "T5 cuts about 24:00 on each edge - T6, the other RPGV 1204 tool in this program, runs 10:00.*") "edge time against the insert's other tool: '$($pc.Range('E9').Text)'"
+    Check ($pc.Range("E10").Text -eq "op 4 cuts air 40% of its cutting time - 5:20 per part, 53:20 per batch of 10.") "air, per part and per batch: '$($pc.Range('E10').Text)'"
+    Check ($pc.Range("E11").Text -like "T1 runs its ROUGH ops at different speeds: speed 500 - 600 SFM (op 1 600, op 4 500).") "mixed speeds: '$($pc.Range('E11').Text)'"
+    Check ($pc.Range("E12").Text -eq "T1 is put in 3 times in 'Main' (op 1;  op 4;  op 6) - 2 tool changes per part could be saved.") "tool changes: '$($pc.Range('E12').Text)'"
+    Check ($pc.Range("E8").Text -like "op 2 runs CSS*max_ss is 0." -and $pc.Range("E7").Text -like "op 5's feed is 0.5 per min*") "CSS with no cap; a per-minute feed that looks per rev"
+    Check ($pc.Range("H6").Validation.Formula1 -eq "yes" -and $pc.Columns.Item(9).Hidden) "Ignore is a yes dropdown; the key column is hidden"
+    Check ($pc.Range("G1").Text -like "?*") "a ? link to the manual ('$($pc.Range('G1').Text)')"
+
+    # Ignore one (css), un-ignore the other (no-comment) - taken in at the next check.
+    $pc.Range("H8").Value2 = "yes"
+    $pc.Range("H14").Value2 = ""
+    Check ($pc.Range("E8").DisplayFormat.Font.Color -eq 10526880) "a finding set to yes greys at once"
+    $n = $xl.Run("Checks.ProgramCheck")
+    $pc = $wb.Worksheets.Item("Program check")
+    $k = Keys $pc
+    Check ($n -eq 9 -and $k[8] -eq "css-no-max|op 2" -and $pc.Range("H14").Text -eq "yes" -and $k[7] -eq "no-comment|op 3" -and $pc.Range("H13").Text -eq "") "ignored css goes to the bottom, no-comment comes back ($($k -join ', '))"
+    $ik = $xl.Run("Checks.IgnoredKeys")
+    Check ($ik -eq "css-no-max|op 2" -and $wb.Worksheets.Item("Ignored findings").Visible -eq 0) "the hidden list holds just css ('$ik')"
+    Check ($pc.Range("E14").DisplayFormat.Font.Color -eq 10526880 -and $pc.Range("E6").DisplayFormat.Font.Color -ne 10526880) "the ignored line is grey, the others not"
+
+    # Fixed: the finding goes; its ignore stays (it would stay ignored if it came back).
+    $ws.Range("M4").Value2 = 3000
+    $n = $xl.Run("Checks.ProgramCheck")
+    $pc = $wb.Worksheets.Item("Program check")
+    $k = Keys $pc
+    Check ($n -eq 8 -and -not ($k -contains "css-no-max|op 2") -and $pc.Range("A2").Text -eq "8 findings") "max_ss typed on op 2: 8 findings, no CSS one ('$($pc.Range('A2').Text)')"
+    Check ($xl.Run("Checks.IgnoredKeys") -eq "css-no-max|op 2") "its ignore is kept"
+
+    # A usual edge time typed on Tools: T1's CNMG 432 edge (9:00, its longest) against 6:00.
+    $tl.Range("J10").Value2 = "6:00"
+    $n = $xl.Run("Checks.ProgramCheck")
+    $pc = $wb.Worksheets.Item("Program check")
+    $r = RowOfKey $pc "edge-time|T1|CNMG 432"
+    Check ($n -eq 9 -and $r -gt 0 -and $pc.Cells.Item($r, 5).Text -like "T1 cuts about 9:00 on each edge - the usual for CNMG 432 is 6:00 (Tools page), so 50% longer.*") "usual edge time 6:00: T1 flagged ('$(if ($r) { $pc.Cells.Item($r, 5).Text })')"
+
+    # The part's .ptconfig: what a dump keeps from this workbook, saved - the hidden list and
+    # an Ignore set on the sheet since the last check, and the usual edge time.
+    $r = RowOfKey $pc "no-comment|op 3"
+    $pc.Cells.Item($r, 8).Value2 = "yes"
+    $saved = Join-Path $Dir "CIPART_lathe_params_saved.xlsm"
+    if (Test-Path -LiteralPath $saved) { Remove-Item -LiteralPath $saved -Force }
+    $wb.SaveCopyAs($saved)
+    $harvest = @(& (Join-Path $Dir "partconfig_test.exe") --harvest $saved)
+    Check (($harvest -contains "ignore: css-no-max|op 2") -and ($harvest -contains "ignore: no-comment|op 3") -and ($harvest -contains "usual: CNMG 432 = 6:00")) "a dump keeps the ignores and the usual edge time ($($harvest -join '; '))"
+    $pc.Cells.Item($r, 8).Value2 = ""
+
+    # ---- Slowest ops: 1:13:00 in all; ops 7, 4, 8 and 1 make 80% of it.
+    $s = $xl.Run("Checks.SlowestOps")
+    Check ($s -like "4 of 8 ops make 80% of the cycle time (1:01:00 of 1:13:00) - longest first: op 7 25:00, op 4 15:00, op 8 11:00, op 1 10:00.*" -and $xl.Run("Checks.LastError") -eq "") "slowest ops: '$s'"
+    Check ($xl.Run("Planner.VisibleOps") -eq 4 -and $ws.Rows.Item(4).Hidden -and -not $ws.Rows.Item(9).Hidden -and $ws.Range("A3").Value2 -eq 1) "the sheet shows those 4, in their own order"
+    $sl = $wb.Worksheets.Item("Slowest ops")
+    Check ($sl.Range("B5").Text -eq "op 7" -and $sl.Range("F5").Text -eq "25:00" -and $sl.Range("H8").Text -eq "83.6%" -and $sl.Range("B5").Hyperlinks.Count -eq 1) "ranked on the Slowest ops sheet, with links ($($sl.Range('H8').Text))"
+    Check ($xl.Run("Planner.ShowAllOps") -eq 8) "Show all brings every op back"
+
+    # ---- Change report: op 1 faster (feed up, its time 10:00 -> 9:00), op 4 one flip fewer.
+    $ws.Range("I3").Value2 = 0.014
+    $ws.Range("T3").Value2 = 540
+    $ws.Range("S3").Value2 = 480
+    $ws.Range("Q6").Value2 = 0
+    $xl.Calculate()
+    $n = $xl.Run("Checks.ChangeReport")
+    $rp = $wb.Worksheets.Item("Change report")
+    Check ($n -eq 2 -and $xl.Run("Checks.LastError") -eq "") "change report: 2 changed cells (op 1 feed, op 2 max_ss) ($n)"
+    Check ($rp.Range("A1").Text -eq "Change report - CIPART.mcam") "its heading names the part ('$($rp.Range('A1').Text)')"
+    $r = RowOfA $rp "Cycle time per part"
+    Check ($r -gt 0 -and $rp.Cells.Item($r, 5).Text -eq "1:13:00" -and $rp.Cells.Item($r, 6).Text -eq "1:12:00" -and $rp.Cells.Item($r, 7).Text -eq "-1:00  (-1.4%)") "cycle time 1:13:00 -> 1:12:00 ('$(if ($r) { $rp.Cells.Item($r, 7).Text })')"
+    $r = RowOfA $rp "Cycle time per batch of 10"
+    Check ($r -gt 0 -and $rp.Cells.Item($r, 5).Text -eq "12:10:00" -and $rp.Cells.Item($r, 6).Text -eq "12:00:00") "per batch of 10: 12:10:00 -> 12:00:00"
+    $r = RowOfA $rp "Insert flips per part"
+    Check ($r -gt 0 -and $rp.Cells.Item($r, 5).Text -eq "5" -and $rp.Cells.Item($r, 6).Text -eq "4") "insert flips 5 -> 4"
+    $r = RowOfA $rp "Insert cost per part (average)"
+    $sr = RowOfB $sm "Insert cost per part (average)"
+    Check ($r -gt 0 -and $rp.Cells.Item($r, 5).Text -match "14[.,]38" -and $rp.Cells.Item($r, 6).Text -match "11[.,]25" -and [math]::Abs($sm.Cells.Item($sr, 3).Value2 - 11.25) -lt 1e-9) "insert cost per part 14.38 -> 11.25, as the Summary says ($(if ($r) { $rp.Cells.Item($r, 6).Text }) / $($sm.Cells.Item($sr, 3).Value2))"
+    $r = RowOfA $rp "Insert cost per batch of 10 (whole inserts)"
+    $sr = RowOfB $sm "Insert cost per batch (whole inserts)"
+    Check ($r -gt 0 -and $rp.Cells.Item($r, 5).Text -match "160[.,]00" -and $rp.Cells.Item($r, 6).Text -match "122[.,]50" -and [math]::Abs($sm.Cells.Item($sr, 3).Value2 - 122.5) -lt 1e-9) "per batch 160.00 -> 122.50, as the Summary says"
+    $fr = 0; for ($q = 1; $q -le 80; $q++) { if ($rp.Cells.Item($q, 4).Text -eq "feed") { $fr = $q; break } }
+    Check ($fr -gt 0 -and $rp.Cells.Item($fr, 3).Text -eq "Feed" -and $rp.Cells.Item($fr, 5).Text -eq "0.012" -and $rp.Cells.Item($fr, 6).Text -eq "0.014" -and $rp.Cells.Item($fr - 1, 1).Text -eq "op 1" -and $rp.Cells.Item($fr - 1, 7).Text -eq "10:00 -> 9:00  (-1:00)") "the change under its op: Feed 0.012 -> 0.014, op 1 10:00 -> 9:00"
+    $rp.Cells.Item($fr, 8).Value2 = "tested on the floor"
+    [void] $xl.Run("Checks.ChangeReport")
+    $rp = $wb.Worksheets.Item("Change report")
+    Check ($rp.Cells.Item($fr, 8).Text -eq "tested on the floor") "a Why typed in stays when the report is made again"
+    Check ($rp.PageSetup.Orientation -eq 2 -and $rp.PageSetup.FitToPagesWide -eq 1 -and $rp.PageSetup.PrintTitleRows -ne "") "printable: landscape, one page wide, the heading on every page ($($rp.PageSetup.Orientation), $($rp.PageSetup.FitToPagesWide), $($rp.PageSetup.PrintTitleRows))"
+    Check ($ws.Range("I3").Value2 -eq 0.014 -and $ws.Range("E3").Value2 -eq 1) "the tools wrote nothing on the sheet"
+
+    $wb.Close($false)
 } finally {
     $xl.Quit()
     [void] [Runtime.InteropServices.Marshal]::ReleaseComObject($xl)
