@@ -46,7 +46,25 @@ workbook back into the operations (CSV still accepted). Its own git repo (this f
   sheet recalculated, est_seconds / flips_part / mrr_avg read, old values back (events off,
   calculation manual) - then OK writes through TryWrite. `tools\check_macros.ps1`: 94 checks.
   Bulk-edit results go to the status bar (the window already previewed them), not a box.
-- **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`).
+- **Macro rework (2026-10-09, not yet run by hand in Excel - only through the self-tests):**
+  `vba\Panel.bas` is what every command and window shares: an undo journal (every write goes
+  through `ParamTable.TryWrite` / `Panel.Journal`; `BeginEdit` ... `EndEdit` around a command
+  or a window's Apply; Ctrl+Z via `Application.OnUndo`; 20 deep; a cell typed over since is
+  left alone), op rows (`OpRows` - one cell is itself, hidden rows skipped), `ShowColumns`
+  (open the columns' groups, select those rows' cells), a registry of modeless windows that
+  follow the selection (`Opened` / `Closed`; `FollowRows` / `Refresh` on each window;
+  `Following` while a window moves the sheet itself), Go to / Find op, the row mark (a
+  conditional format on the hidden name `PT_Row`), `ShowHelp` (help\<topic>.html via the
+  name `PT_Help` the dump writes, else Mastercam's UserDir). Op windows: `TextEditor.vb`
+  (Comments & text, tabs on a MultiPage), `CoolantPicker.vb` (V9 + X-style), `Calculator.vb`
+  (Speed & feed + chip thinning; Tools columns "Insert size (IC)" / "Entering angle" from the
+  holder ISO style letter, kept typed-over in .ptconfig), `InspectBox.vb` (replaces Even out
+  flips). `vba\Checks.bas`: Program check (ignore keys in a hidden sheet + .ptconfig
+  `[ignore]`), Slowest ops, Change report. Copy from op absorbed To all ops of tool; percent
+  is signed everywhere (+10% more, -10% less). `tools\check_macros.ps1` draws every ribbon
+  icon (Office's orange "no picture" dot fails) - GoalSeek has none.
+- **Not implemented:** mill tool pictures (mill tools need `WriteMillToolImage`); radial chip
+  thinning for mill ops (the sheet carries no cutter diameter / flutes).
 - Real parts used for testing live in `tests\` locally and are NOT tracked (gitignored).
 
 ## Layout of the code
