@@ -84,4 +84,4 @@ if ($built.Length -ne $deployed.Length) {
 Write-Host ("deployed {0:N0} bytes -> {1}" -f $deployed.Length, $sub)
 Write-Host ("function table       -> {0}" -f (Join-Path $addins "ParamTable.ft"))
 Write-Host ""
-Write-Host "Start Mastercam. The Parameter Table tab is on the ribbon (ParamTableParamTable-ribbon.log says how the start went)."
+Write-Host "Start Mastercam. The Parameter Table tab is on the ribbon (ParamTable\ParamTable-ribbon.log says how the start went)."
