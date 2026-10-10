@@ -178,6 +178,15 @@ try {
     Check ($c -eq 9) "a column in a folded group is still found by name ($c)"
     $xl.Run("Panel.GoToGroup", "")
     Check (-not $ws.Columns.Item(8).Hidden) "Go to All columns opens them again"
+    # The Go to menu as the ribbon gets it: Office drops the WHOLE menu (a blank dropdown)
+    # for one bad attribute - an empty one (tag="") is enough.
+    $gm = $wb.VBProject.VBComponents.Add(1)
+    $gm.CodeModule.AddFromString("Public Function GoToXml() As String`r`n    Dim c As Variant`r`n    Panel.RbGoToMenu Nothing, c`r`n    GoToXml = c`r`nEnd Function")
+    $menu = $xl.Run("'" + $wb.Name + "'!GoToXml")
+    $wb.VBProject.VBComponents.Remove($gm)
+    $parsed = $null; try { $parsed = [xml] $menu } catch { }
+    $items = if ($parsed) { @($parsed.menu.button).Count } else { 0 }
+    Check ($parsed -and $menu -notmatch '=""' -and $items -ge 6) "the Go to menu: All columns and every group, no empty attribute ($items items)"
     $ws.Range("C4").Select()
     $mark = $wb.Names.Item("PT_Row").RefersTo
     $blue = $ws.Range("G4").DisplayFormat.Borders.Item(8).Color      # xlEdgeTop

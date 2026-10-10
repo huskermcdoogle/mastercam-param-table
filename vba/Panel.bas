@@ -610,7 +610,7 @@ Public Sub RbInspect(control As IRibbonControl): Planner.ShowInspectWindow: End 
 Public Sub RbGoToMenu(control As IRibbonControl, ByRef content)
     Dim s As String, g As Variant, i As Long
     s = "<menu xmlns=""http://schemas.microsoft.com/office/2009/07/customui"">"
-    s = s & "<button id=""ptGoAll"" label=""All columns (open every group)"" tag="""" onAction=""RbGoToItem""/>"
+    s = s & "<button id=""ptGoAll"" label=""All columns (open every group)"" onAction=""RbGoToItem""/>"
     s = s & "<menuSeparator id=""ptGoSep""/>"
     On Error Resume Next
     For Each g In GroupNames()
