@@ -2,61 +2,72 @@
   <ribbon>
     <tabs>
       <tab id="ptTab" label="Parameter Table">
-        <group id="ptEdit" label="Bulk edit">
-          <button id="ptSet" label="Set selected" size="large" imageMso="FillDown" onAction="RbSet"
-                  screentip="Set selected" supertip="Put one value into every selected cell - a window shows how many will change and how many are refused before anything is written. On coolant cells: tick boxes for the coolants."/>
+        <group id="ptFindGroup" label="Find">
+          <dynamicMenu id="ptGoTo" label="Go to" size="large" imageMso="GoTo" getContent="RbGoToMenu" invalidateContentOnDrop="true"
+                       screentip="Go to a column group" supertip="Jump to a group of columns (Feeds and speeds, Coolant, Tool inspection ...) on the ops you are on. The other groups fold away so the sheet is easier to read. All columns opens them again."/>
+          <editBox id="ptFind" label="Find op" sizeString="WWWWWWWW" onChange="RbFindOp"
+                   screentip="Find an operation" supertip="Type an op number (12), a tool (T12) or words from the comment, then press Enter. The sheet jumps to the next op that matches."/>
+          <button id="ptFindNext" label="Next match" size="normal" imageMso="FindNext" onAction="RbFindNext"
+                  screentip="Next match" supertip="Jump to the next op that matches what you typed in Find op."/>
+          <button id="ptShowChanged" label="Changed ops" size="normal" imageMso="Filter" onAction="RbShowChanged"
+                  screentip="Show only changed ops" supertip="Show only the ops you have changed. Show all brings the rest back."/>
+          <button id="ptShowTool" label="This tool's ops" size="normal" imageMso="FilterBySelection" onAction="RbShowTool"
+                  screentip="Show the ops of this tool" supertip="Show only the ops that use the same tool as the row you are on."/>
+          <button id="ptSlowest" label="Slowest ops" size="normal" imageMso="SortDescendingExcel" onAction="RbSlowest"
+                  screentip="Show the slowest ops" supertip="Show only the ops that take most of the cycle time, longest first. The place to start saving time."/>
+          <button id="ptShowAll" label="Show all" size="normal" imageMso="FilterClearAllFilters" onAction="RbShowAll"
+                  screentip="Show all ops" supertip="Show every op again."/>
+        </group>
+        <group id="ptEdit" label="Edit cells">
+          <button id="ptSet" label="Set" size="large" imageMso="FillDown" onAction="RbSet"
+                  screentip="Set selected cells" supertip="Put one value into every selected cell. The window shows how many cells will change, and which are refused, before anything is written."/>
           <button id="ptScale" label="Scale %" size="large" imageMso="PercentStyle" onAction="RbScale"
-                  screentip="Scale selected" supertip="Multiply the selected numbers by a percentage (110 = 10% more), with a preview of the new values."/>
+                  screentip="Scale selected cells" supertip="Make the selected numbers bigger or smaller by a percentage, with a preview of the new values."/>
           <button id="ptCopy" label="Copy from op" size="normal" imageMso="Copy" onAction="RbCopy"
-                  screentip="Copy from an operation" supertip="Copy one operation's values into the selected rows, for the selected columns - pick the operation from a list."/>
+                  screentip="Copy from an operation" supertip="Copy one op's values into the selected rows, for the selected columns. Pick the op to copy from in the window."/>
           <button id="ptToTool" label="To all ops of tool" size="normal" imageMso="Paste" onAction="RbToTool"
-                  screentip="Apply to every op of this tool" supertip="Select cells in one op's row (feed, speed ...): their values go into every other op of the same tool number - each cell old -> new in the window first."/>
+                  screentip="Copy to every op of this tool" supertip="Select cells in one op's row (feed, speed ...). Their values go into every other op that uses the same tool."/>
+        </group>
+        <group id="ptOps" label="Selected ops">
+          <button id="ptText" label="Comments &amp; text" size="large" imageMso="EditDocument" onAction="RbText"
+                  screentip="Comments and text" supertip="Edit the op comment, the tool inspection comment or a manual entry's text for the ops you have selected. Double-click one of those cells to open it too."/>
+          <button id="ptCoolant" label="Coolant" size="large" imageMso="SmartArtAddShape" onAction="RbCoolant"
+                  screentip="Coolant" supertip="See and set the coolant for the ops you have selected - all of them at once. Works for both kinds of machine coolant setup."/>
+          <button id="ptSpeed" label="Speed &amp; feed" size="large" imageMso="Calculator" onAction="RbSpeed"
+                  screentip="Speed, feed and chip thinning" supertip="A calculator filled in from the op you are on: SFM and RPM, feed per rev and per minute, and the real chip thickness for round and lead-angle inserts. Can write the new feed back to the op."/>
+          <button id="ptInspect" label="Inspection &amp; inserts" size="large" imageMso="RecurrenceEdit" onAction="RbInspect"
+                  screentip="Tool inspection and insert use" supertip="How often each tool stops to turn its insert, and how much of each edge gets used. Suggests the edge time that uses every edge evenly."/>
         </group>
         <group id="ptImprove" label="Improve">
           <button id="ptTarget" label="Hit a target time" size="large" imageMso="GoalSeek" onAction="RbTarget"
-                  screentip="Hit a target time" supertip="Pick ops (or a tool), type the time you want for them (12:30) or a cut (10%): the feeds - and speeds if ticked - scale by one factor, each inside its own limits. Before / after time, flips and MRR per op, and which cells hit a limit, before anything is written."/>
-          <button id="ptFlips" label="Even out flips" size="large" imageMso="RecurrenceEdit" onAction="RbFlips"
-                  screentip="Even out insert flips" supertip="Suggests insp_time (or feeds) for a tool so its flips per part use every edge evenly - or come to a flip count you choose. Per-op before / after first; OK applies."/>
+                  screentip="Hit a target time" supertip="Pick ops or a tool, type the time you want (12:30) or how much faster (10%). The feeds change by one amount, each inside its own limits. See before and after for every op before anything is written."/>
+          <button id="ptCheck" label="Program check" size="large" imageMso="TraceError" onAction="RbCheck"
+                  screentip="Program check" supertip="Looks over the whole program for things worth a second look before it goes to the floor - each one with why it matters and a link to the op."/>
+          <menu id="ptScen" label="Scenarios" size="large" imageMso="ReviewCompareTwoVersions"
+                screentip="What-if scenarios" supertip="Save the changes on the sheet under a name, bring them back later, or compare saved ideas side by side.">
+            <button id="ptScenSave" label="Save the changes as a scenario" imageMso="FileSave" onAction="RbScenSave"/>
+            <button id="ptScenLoad" label="Restore a scenario" imageMso="FileOpen" onAction="RbScenLoad"/>
+            <button id="ptScenCompare" label="Compare scenarios" imageMso="ReviewCompareTwoVersions" onAction="RbScenCompare"/>
+            <button id="ptScenDel" label="Delete a scenario" imageMso="Delete" onAction="RbScenDel"/>
+          </menu>
         </group>
-        <group id="ptScen" label="What-if scenarios">
-          <button id="ptScenSave" label="Save" size="large" imageMso="FileSave" onAction="RbScenSave"
-                  screentip="Save scenario" supertip="Keep every edit now on the sheet under a name (in this workbook) - to restore or compare later."/>
-          <button id="ptScenLoad" label="Restore" size="normal" imageMso="FileOpen" onAction="RbScenLoad"
-                  screentip="Restore scenario" supertip="Put the sheet back to the dump, then set a saved scenario's values - each through its cell's rule. Says first if your current edits are not saved."/>
-          <button id="ptScenCompare" label="Compare" size="normal" imageMso="ReviewCompareTwoVersions" onAction="RbScenCompare"
-                  screentip="Compare scenarios" supertip="A Scenarios sheet: cycle time, cutting time, flips per part and MRR for the dump, each scenario and the sheet now - then every changed parameter side by side."/>
-          <button id="ptScenDel" label="Delete" size="normal" imageMso="Delete" onAction="RbScenDel"
-                  screentip="Delete scenario" supertip="Delete a saved scenario. The sheet is not changed."/>
+        <group id="ptUndoGroup" label="Undo and review">
+          <button id="ptUndo" label="Undo" size="large" imageMso="Undo" onAction="RbUndo"
+                  screentip="Undo the last command" supertip="Take back the last Parameter Table command (Ctrl+Z works too). Press again to go further back. A cell you have typed over since is left alone."/>
+          <menu id="ptRevert" label="Back to the dump" size="large" imageMso="Undo"
+                screentip="Put cells back as dumped" supertip="Put cells back to the values they had when the sheet was dumped.">
+            <button id="ptRevSel" label="Selected cells" imageMso="Undo" onAction="RbRevertSel"/>
+            <button id="ptRevRows" label="Selected ops (whole rows)" imageMso="Undo" onAction="RbRevertRows"/>
+            <button id="ptRevAll" label="Everything" imageMso="Undo" onAction="RbRevertAll"/>
+          </menu>
+          <button id="ptChanges" label="List changes" size="normal" imageMso="ReviewTrackChanges" onAction="RbChanges"
+                  screentip="List changes" supertip="A Changes sheet listing every cell that differs from the dump, old and new. Click a parameter to go to its cell."/>
+          <button id="ptReport" label="Change report" size="normal" imageMso="FilePrintPreview" onAction="RbReport"
+                  screentip="Change report" supertip="A one-page report of what changed and what it saves - cycle time, insert flips and insert cost, per part and per batch. Ready to print."/>
         </group>
-        <group id="ptShow" label="Show">
-          <button id="ptShowChanged" label="Changed rows" size="normal" imageMso="Filter" onAction="RbShowChanged"
-                  screentip="Show only changed rows" supertip="Filter the sheet to the operations with edits (changes above 0). Your other column filters stay."/>
-          <button id="ptShowTool" label="This tool's ops" size="normal" imageMso="FilterBySelection" onAction="RbShowTool"
-                  screentip="Show the ops of this tool" supertip="Filter the sheet to the operations using the tool of the row you are on."/>
-          <button id="ptShowAll" label="Show all" size="normal" imageMso="FilterClearAllFilters" onAction="RbShowAll"
-                  screentip="Show all" supertip="Clear the filters - every operation shows. The filter dropdowns stay."/>
-        </group>
-        <group id="ptRevert" label="Revert">
-          <button id="ptRevSel" label="Selected cells" size="large" imageMso="Undo" onAction="RbRevertSel"
-                  supertip="Put the selected cells back to their dumped values."/>
-          <button id="ptRevRows" label="Selected rows" size="normal" imageMso="Undo" onAction="RbRevertRows"
-                  supertip="Put every cell of the selected rows back to its dumped value."/>
-          <button id="ptRevAll" label="Everything" size="normal" imageMso="Undo" onAction="RbRevertAll"
-                  supertip="Put the whole sheet back to the dump - rows hidden by a filter too. Says how many cells first."/>
-        </group>
-        <group id="ptReview" label="Review">
-          <button id="ptChanges" label="List changes" size="large" imageMso="ReviewTrackChanges" onAction="RbChanges"
-                  supertip="A Changes sheet listing every cell that differs from the dump, old and new - each parameter links to its cell."/>
-        </group>
-        <group id="ptCalc" label="Calculators">
-          <button id="ptSpeed" label="Speed / feed / chip" size="large" imageMso="Calculator" onAction="RbSpeed"
-                  supertip="A live calculator: diameter and SFM to RPM and back, feed per rev to per minute, and round-insert chip thinning (chip thickness to the feed to program at a depth). Filled from the row you are on; warns past max_ss; can set the row's feed."/>
-        </group>
-        <group id="ptPick" label="Pick">
-          <button id="ptCoolant" label="Coolants" size="large" imageMso="SmartArtAddShape" onAction="RbCoolant"
-                  supertip="Tick boxes for the coolants at one timing - click a coolant_before / with / after cell first (or select several and use Set selected)."/>
-          <button id="ptText" label="Edit text" size="large" imageMso="EditDocument" onAction="RbText"
-                  supertip="An editor for an operation comment, a tool inspection comment or a manual entry's text, with a live character count against its limit - click the cell first (or double-click it)."/>
+        <group id="ptHelpGroup" label="Help">
+          <button id="ptHelp" label="User manual" size="large" imageMso="Help" onAction="RbHelp"
+                  screentip="User manual" supertip="Open the user manual: how each tool works, with examples."/>
         </group>
       </tab>
     </tabs>

@@ -1966,6 +1966,12 @@ namespace
 		where.title = title;
 		where.subtitle = subtitle;
 		where.batchQty = cfg.batchQty;
+		// The user manual sits beside the add-in (Add-Ins\ParamTable\help).
+		if (!Settings::AddinFolder ().empty ())
+			{
+			s.helpFolder = Settings::AddinFolder () + L"help";
+			where.manual = s.helpFolder + L"\\index.html";
+			}
 		Summary::Add (s, where);
 
 		return Xlsx::Write (file, s);

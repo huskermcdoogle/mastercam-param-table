@@ -94,6 +94,52 @@ try {
     Check ($ws.Range("G3").Value2 -eq 0.01 -and $ws.Range("I4").Value2 -eq 300) "revert puts values back ($back cells)"
     Check ($ws.Range("E3").Value2 -eq 0 -and $ws.Range("E4").Value2 -eq 0) "and the change counts return to 0"
 
+    # Undo (Panel): a command's cells come back - its linked cells too; a cell typed over
+    # since is left alone.
+    $g4 = $ws.Range("G4").Value2
+    $xl.Run("Panel.BeginEdit", "test set")
+    $xl.Run("ParamTable.SetCells", $ws.Range("G3:G4"), "0.015") | Out-Null
+    $n = $xl.Run("Panel.EndEdit")
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($n -eq 2 -and $u -eq "2 0" -and $ws.Range("G3").Value2 -eq 0.01 -and $ws.Range("G4").Value2 -eq $g4) "undo puts a command's 2 cells back ($n, '$u')"
+    $xl.Run("Panel.BeginEdit", "test set")
+    $xl.Run("ParamTable.SetCells", $ws.Range("G3:G4"), "0.015") | Out-Null
+    $xl.Run("Panel.EndEdit") | Out-Null
+    $ws.Range("G3").Value2 = 0.02
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($u -eq "1 1" -and $ws.Range("G3").Value2 -eq 0.02 -and $ws.Range("G4").Value2 -eq $g4) "undo leaves a cell typed over since ('$u')"
+    $ws.Range("G3").Value2 = 0.01
+    $l3 = $ws.Range("L3").Value2; $m3 = $ws.Range("M3").Value2
+    $xl.Run("Panel.BeginEdit", "test link")
+    $xl.Run("ParamTable.SetCells", $ws.Range("L3"), "0.2") | Out-Null
+    $n = $xl.Run("Panel.EndEdit")
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($n -eq 2 -and $ws.Range("L3").Value2 -eq $l3 -and $ws.Range("M3").Value2 -eq $m3) "undo takes back the stepover and the percent that followed it ($n, '$u')"
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($u -eq "0 0") "nothing left to undo ('$u')"
+
+    # Op rows, focus, Find op, Go to, the row mark.
+    $t = $xl.Run("Panel.OpRowsSelfTest", $ws.Range("C3,G5,B3"))
+    Check ($t -eq "ops 2, 9||3|5") "the ops of a selection, each once, in order ('$t')"
+    $ws.Activate()
+    $t = $xl.Run("Panel.ShowColumnsSelfTest", "feed|speed", $ws.Range("A3,A5"))
+    Check ($t -eq "True|G3,I3,G5,I5") "a window's columns: those rows' cells selected ('$t')"
+    $ws.Range("B3").Select()
+    $found = $xl.Run("Panel.FindOp", "T3", $true)
+    Check ($found -and $xl.ActiveCell.Row -eq 4) "Find op: T3 goes to op 7 (row $($xl.ActiveCell.Row))"
+    $found = $xl.Run("Panel.FindOp", "face", $true)
+    Check ($found -and $xl.ActiveCell.Row -eq 5) "Find op: words from the comment go to 'Rough face' (row $($xl.ActiveCell.Row))"
+    $found = $xl.Run("Panel.FindOp", "11", $true)
+    Check ($found -and $xl.ActiveCell.Row -eq 6) "Find op: an op number (row $($xl.ActiveCell.Row))"
+    $xl.Run("Panel.GoToGroup", "Depth")
+    Check ($ws.Columns.Item(8).Hidden -and -not $ws.Columns.Item(13).Hidden -and $xl.ActiveCell.Column -eq 12) "Go to Depth: Feeds folds, Depth opens, cursor in it"
+    $xl.Run("Panel.GoToGroup", "")
+    Check (-not $ws.Columns.Item(8).Hidden) "Go to All columns opens them again"
+    $ws.Range("C4").Select()
+    $mark = $wb.Names.Item("PT_Row").RefersTo
+    $blue = $ws.Range("G4").DisplayFormat.Borders.Item(8).Color      # xlEdgeTop
+    Check ($mark -eq "=4" -and $blue -eq 15426341) "the row mark follows the cursor ($mark, top border $blue)"
+
     # Coolant: Set selected on coolant cells - several at once, each row's own machine.
     $r = $xl.Run("ParamTable.SetCoolantCells", $ws.Range("O3:O4"), "Flood + Mist")
     Check ($r -eq "2 0" -and $ws.Range("O3").Text -eq "Flood + Mist" -and $ws.Range("O4").Text -eq "Flood + Mist") "coolant 'Flood + Mist' set on both rows ($r)"

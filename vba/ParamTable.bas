@@ -114,6 +114,7 @@ Public Function TryWrite(ByVal c As Range, ByVal v As Variant) As Boolean
     Dim had As Boolean, f As String, old As Variant
     had = c.HasFormula
     If had Then f = c.Formula Else old = c.Value
+    Panel.Journal c                         ' for undo
     If VarType(v) = vbString Then
         If IsNumeric(v) And Trim$(v) <> "" Then v = CDbl(v)
     End If
@@ -605,17 +606,20 @@ Public Function RevertCells(ByVal cells As Range, ByVal tell As Boolean) As Long
     If cells Is Nothing Then Exit Function
     Set ws = ThisWorkbook.Worksheets(DUMPED_SHEET)
     Application.EnableEvents = False
+    On Error GoTo Done                      ' events always come back on
     For Each c In cells.Cells
         If Not Untracked(CStr(MainSheet.Cells(HEADER_ROW, c.Column).Value)) And Not c.HasFormula Then
             dr = DumpedRow(MainSheet.Cells(c.Row, 1).Value)
             If dr > 0 Then
                 If Not SameValue(c.Value, ws.Cells(dr, c.Column).Value) Then
+                    Panel.Journal c
                     c.Value = ws.Cells(dr, c.Column).Value
                     n = n + 1
                 End If
             End If
         End If
     Next
+Done:
     Application.EnableEvents = True
     RevertCells = n
     If tell Then Application.StatusBar = TITLE & ":  " & n & " cell(s) put back to their dumped value."
@@ -885,6 +889,7 @@ Public Function SetCoolantCells(ByVal cells As Range, ByVal names As String) As 
             If Not found Then good = False
         Next
         If good Then
+            Panel.Journal c
             c.Value = names
             ok = ok + 1
         Else
@@ -969,6 +974,7 @@ Public Function EditText(ByVal c As Range) As Boolean
     f.Show
     If f.Accepted Then
         If f.EditedText() <> CStr(c.Value) Then
+            Panel.Journal c
             c.Value = f.EditedText()
             EditText = True
         End If
@@ -1018,6 +1024,7 @@ Private Sub LinkAmount(ByVal c As Range, ByVal percentName As String)
     If pc = 0 Or IsEmpty(r) Or Not IsNumeric(r) Then Exit Sub
     If CDbl(r) = 0 Or MainSheet.Cells(c.Row, pc).HasFormula Then Exit Sub
     If Not IsEmpty(c.Value) And IsNumeric(c.Value) Then
+        Panel.Journal MainSheet.Cells(c.Row, pc)
         MainSheet.Cells(c.Row, pc).Value = Round(CDbl(c.Value) / CDbl(r) * 100, 6)
     End If
 End Sub
@@ -1029,6 +1036,7 @@ Private Sub LinkPercent(ByVal c As Range, ByVal amountName As String)
     r = ValueAt(c.Row, "tool_radius")
     If ac = 0 Or IsEmpty(r) Or Not IsNumeric(r) Then Exit Sub
     If Not IsEmpty(c.Value) And IsNumeric(c.Value) And Not c.HasFormula Then
+        Panel.Journal MainSheet.Cells(c.Row, ac)
         MainSheet.Cells(c.Row, ac).Value = Round(CDbl(c.Value) * CDbl(r) / 100, 10)
     End If
 End Sub
@@ -1052,14 +1060,5 @@ End Function
 
 ' ============================================================ ribbon
 
-Public Sub RbSet(control As IRibbonControl): SetSelected: End Sub
-Public Sub RbScale(control As IRibbonControl): ScaleSelected: End Sub
-Public Sub RbCopy(control As IRibbonControl): CopyFromOp: End Sub
-Public Sub RbRevertSel(control As IRibbonControl): RevertSelected: End Sub
-Public Sub RbRevertRows(control As IRibbonControl): RevertRows: End Sub
-Public Sub RbRevertAll(control As IRibbonControl): RevertAll: End Sub
+' The edit commands' ribbon buttons are in Panel.bas, with undo around each.
 Public Sub RbChanges(control As IRibbonControl): ShowChanges: End Sub
-Public Sub RbSpeed(control As IRibbonControl): CalcSpeed: End Sub
-Public Sub RbFeed(control As IRibbonControl): CalcFeed: End Sub
-Public Sub RbCoolant(control As IRibbonControl): PickCoolant: End Sub
-Public Sub RbText(control As IRibbonControl): EditManualText: End Sub

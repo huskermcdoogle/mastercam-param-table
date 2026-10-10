@@ -71,18 +71,28 @@ namespace Settings
 		SetText (L"LastDumpPart", part);
 		}
 
+	std::wstring AddinFolder ()
+		{
+		HMODULE self = nullptr;
+		wchar_t path[MAX_PATH] = {};
+		if (GetModuleHandleExW (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+								reinterpret_cast<LPCWSTR> (&AddinFolder), &self)
+			&& GetModuleFileNameW (self, path, MAX_PATH) > 0)
+			{
+			const std::wstring file (path);
+			return file.substr (0, file.find_last_of (L"\\/") + 1);
+			}
+		return std::wstring ();
+		}
+
 	unsigned long Diag ()
 		{
 		// A file beside the DLL first (Add-Ins\ParamTable\diag.txt holding a number) -
 		// for machines where the registry cannot be edited by hand.
-		HMODULE self = nullptr;
-		wchar_t path[MAX_PATH] = {};
-		if (GetModuleHandleExW (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-								reinterpret_cast<LPCWSTR> (&Diag), &self)
-			&& GetModuleFileNameW (self, path, MAX_PATH) > 0)
+		const std::wstring folder = AddinFolder ();
+		if (!folder.empty ())
 			{
-			std::wstring file (path);
-			file = file.substr (0, file.find_last_of (L"\\/") + 1) + L"diag.txt";
+			const std::wstring file = folder + L"diag.txt";
 			FILE *f = nullptr;
 			if (_wfopen_s (&f, file.c_str (), L"r") == 0 && f != nullptr)
 				{

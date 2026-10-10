@@ -1275,11 +1275,9 @@ End Function
 
 ' ============================================================ ribbon
 
-Public Sub RbTarget(control As IRibbonControl): ShowPlanWindow "time": End Sub
-Public Sub RbFlips(control As IRibbonControl): ShowPlanWindow "flips": End Sub
-Public Sub RbToTool(control As IRibbonControl): ParamTable.ApplyToTool: End Sub
+' Hit a target time, the inspection window, To all ops of tool and Restore scenario are
+' in Panel.bas (undo around each).
 Public Sub RbScenSave(control As IRibbonControl): ParamTable.ScenarioWindow "scensave": End Sub
-Public Sub RbScenLoad(control As IRibbonControl): ParamTable.ScenarioWindow "scenload": End Sub
 Public Sub RbScenDel(control As IRibbonControl): ParamTable.ScenarioWindow "scendel": End Sub
 Public Sub RbScenCompare(control As IRibbonControl)
     CompareScenarios

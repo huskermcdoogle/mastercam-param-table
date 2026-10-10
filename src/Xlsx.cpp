@@ -947,10 +947,16 @@ namespace Xlsx
 			+ std::string (track ? "<sheet name=\"Dumped\" sheetId=\"2\" state=\"hidden\" r:id=\"rId3\"/>" : "")
 			+ "</sheets>"
 			// localSheetId is the main sheet's POSITION, which the Summary moves.
-			+ (filter ? "<definedNames><definedName name=\"_xlnm._FilterDatabase\" localSheetId=\""
+			+ (filter || !s.helpFolder.empty () ? std::string ("<definedNames>") : std::string ())
+			+ (filter ? "<definedName name=\"_xlnm._FilterDatabase\" localSheetId=\""
 						+ std::string (summaryPage ? "1" : "0") + "\" "
-						"hidden=\"1\">'Lathe params'!" + AbsRef (filterRef) + "</definedName></definedNames>"
+						"hidden=\"1\">'Lathe params'!" + AbsRef (filterRef) + "</definedName>"
 					  : std::string ())
+			// Where the user manual is: the macros' help buttons open its pages.
+			+ (!s.helpFolder.empty ()
+				   ? "<definedName name=\"PT_Help\" hidden=\"1\">&quot;" + Esc (s.helpFolder) + "&quot;</definedName>"
+				   : std::string ())
+			+ (filter || !s.helpFolder.empty () ? std::string ("</definedNames>") : std::string ())
 			// Recalculate on open: the counts and highlights are formulas.
 			+ "<calcPr calcId=\"191029\" fullCalcOnLoad=\"1\"/>"
 			+ "</workbook>" });

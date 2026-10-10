@@ -68,6 +68,7 @@ int main (int argc, char **argv)
 		}
 	}
 	s.frozenCols = 5;
+	s.outlineGroup = { 0, 1, 1, 0, 0 };		// Feeds and Depth fold (Go to)
 	s.trackChanges = true;
 	s.changesCol = 4;
 

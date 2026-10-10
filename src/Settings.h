@@ -42,4 +42,7 @@ namespace Settings
 	/// 2 = no NCI walk (no path stats or estimate), 4 = stock sim probe (removed
 	/// volume per op from a 2D stock simulation, logged only - StockSim.h).
 	unsigned long Diag ();
+
+	/// The add-in's own folder (where ParamTable.dll is), with a trailing "\\".
+	std::wstring AddinFolder ();
 	}

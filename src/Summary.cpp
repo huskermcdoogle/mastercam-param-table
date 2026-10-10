@@ -167,6 +167,15 @@ namespace Summary
 				 L"3. On 'Tools', type the edges and cost per insert; type the batch quantity below for the cost of a batch.",
 				 L"4. Save, then run \"Lathe params - load\" in Mastercam: it shows every change before writing any." })
 			p.Add ({ Text (line, Cell::Note) });
+		// The user manual: a link that works with or without macros.
+		if (!w.manual.empty ())
+			{
+			std::wstring path;
+			for (wchar_t ch : w.manual)
+				path += ch == L'"' ? std::wstring (L"\"\"") : std::wstring (1, ch);
+			p.Add ({ Fx (L"HYPERLINK(\"" + path + L"\",\"Open the user manual - how every tool works, with examples\")",
+						 L"Open the user manual - how every tool works, with examples", L"", Cell::Link) });
+			}
 		p.Add ();
 
 		// ---- PART TOTALS, as dumped and now: the effect of the edits on the whole

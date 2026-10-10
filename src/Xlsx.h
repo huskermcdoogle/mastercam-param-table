@@ -49,6 +49,10 @@ namespace Xlsx
 		/// drawn grey - it is derived, not typed.
 		std::vector<std::vector<std::wstring>> formula;
 
+		/// The user manual's folder (the add-in's help\ folder): recorded in the
+		/// workbook as the name PT_Help, for the macros' help buttons. "" = none.
+		std::wstring helpFolder;
+
 		/// Columns [0, frozenCols) stay in view when scrolling right.
 		size_t frozenCols = 0;
 

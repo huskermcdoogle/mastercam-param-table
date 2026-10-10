@@ -145,6 +145,8 @@ int main (int argc, char **argv)
 	Summary::Where w;
 	w.title = L"Summary - SAMPLE.mcam";
 	w.subtitle = L"Dumped 2026-10-09 12:00 - 4 operations";
+	w.manual = L"C:\\ParamTable\\help\\index.html";		// the manual link (and the name the macros read)
+	s.helpFolder = L"C:\\ParamTable\\help";
 	Summary::Add (s, w);
 
 	Check (!s.summary.empty (), "a Summary page");

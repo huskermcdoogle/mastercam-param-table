@@ -42,6 +42,9 @@ try {
     $errors = @()
     foreach ($c in $sm.UsedRange.Cells) { if ("$($c.Text)" -like "#*" -and "$($c.Text)" -ne "#") { $errors += $c.Address(0, 0) + "=" + $c.Text } }
     Check ($errors.Count -eq 0) "no error values on the Summary ($($errors -join ' '))"
+    $man = RowOf $sm "Open the user manual - how every tool works, with examples"
+    Check ($man -gt 0 -and $sm.Cells.Item($man, 1).Formula -like '=HYPERLINK("C:\ParamTable\help\index.html",*') "a link to the user manual ($man)"
+    Check ($wb.Names.Item("PT_Help").RefersTo -eq '="C:\ParamTable\help"') "the manual's folder recorded for the macros ($($wb.Names.Item('PT_Help').RefersTo))"
 
     $lg = RowOf $sm "Longest operations (estimated time, now)"
     Check ($lg -gt 0 -and $sm.Cells.Item($lg + 2, 2).Text -eq "Rough OD" -and $sm.Cells.Item($lg + 3, 2).Text -eq "Groove") "longest: Rough OD, Groove (a tie, sheet order) - '$($sm.Cells.Item($lg + 2, 2).Text)', '$($sm.Cells.Item($lg + 3, 2).Text)'"

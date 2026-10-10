@@ -1,5 +1,5 @@
 <#
-    Compile the workbook macros: vba\ParamTable.bas and vba\Planner.bas (modules), the forms
+    Compile the workbook macros: every vba\*.bas (modules), the forms
     (vba\*.vb) and vba\Sheet1.cls (the main sheet's events) into res\vbaProject.bin - the compiled block an .xlsm carries. The add-in
     embeds that file, and writes it into a dump when macros are switched on.
 
@@ -19,7 +19,7 @@ $tmp = Join-Path $(if ($env:PT_TEST_OUT) { $env:PT_TEST_OUT } else { $env:TEMP }
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 
 # The VBA editor imports ANSI text with CRLF line ends.
-$modules = foreach ($m in "ParamTable", "Planner") {
+$modules = foreach ($m in (Get-ChildItem -LiteralPath (Join-Path $Root "vba") -Filter *.bas | ForEach-Object BaseName)) {
     $bas = Join-Path $tmp "$m.bas"
     $text = (Get-Content -LiteralPath (Join-Path $Root "vba\$m.bas") -Raw) -replace "`r?`n", "`r`n"
     [IO.File]::WriteAllText($bas, $text, [Text.Encoding]::GetEncoding(1252))
