@@ -45,6 +45,8 @@ Private manRows As Collection, manNow() As String, manText() As String, manMax()
     #End If
     Private Declare PtrSafe Function FindWindowA Lib "user32" (ByVal lpClassName As String, ByVal lpWindowName As String) As LongPtr
     Private Declare PtrSafe Function DrawMenuBar Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetWindowThreadProcessId Lib "user32" (ByVal hWnd As LongPtr, ByRef lpdwProcessId As Long) As Long
+    Private Declare PtrSafe Function GetCurrentProcessId Lib "kernel32" () As Long
 #End If
 
 Private Sub UserForm_Initialize()
@@ -134,9 +136,10 @@ End Sub
 ' Typing goes straight into the tab's text.
 Private Sub UserForm_Activate()
     #If VBA7 Then
-        Dim h As LongPtr
+        Dim h As LongPtr, pid As Long
         h = FindWindowA("ThunderDFrame", Me.Caption)
-        If h <> 0 Then
+        If h <> 0 Then GetWindowThreadProcessId h, pid        ' only this Excel's window, not another's of the same name
+        If h <> 0 And pid = GetCurrentProcessId() Then
             SetWindowLongPtrA h, -16, GetWindowLongPtrA(h, -16) Or &H40000 Or &H10000   ' WS_THICKFRAME, WS_MAXIMIZEBOX
             DrawMenuBar h
         End If

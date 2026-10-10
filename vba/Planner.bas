@@ -756,7 +756,7 @@ Private Function ToolsText(ByVal tool As String, ByVal head As String) As String
     Set ws = ThisWorkbook.Worksheets("Tools")
     On Error GoTo 0
     If ws Is Nothing Then Exit Function
-    Set f = ws.Rows(1).Find(What:=head, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False)
+    Set f = ws.Rows(1).Find(What:=head, LookIn:=xlFormulas, LookAt:=xlWhole, MatchCase:=False)
     If f Is Nothing Then Exit Function
     r = 2
     Do While Trim$(CStr(ws.Cells(r, 1).Text)) <> "" And r < 2000
@@ -1235,7 +1235,7 @@ Private Function TotalsNow(ByVal ws As Worksheet) As Variant
     names = Array("est_seconds", "cut_seconds_est", "flips_part", "removed")
     last = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
     For i = 0 To 3
-        Set f = ws.Rows(HEADER_ROW).Find(What:=CStr(names(i)), LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=True)
+        Set f = ws.Rows(HEADER_ROW).Find(What:=CStr(names(i)), LookIn:=xlFormulas, LookAt:=xlWhole, MatchCase:=True)
         c = 0
         If Not f Is Nothing Then c = f.Column
         If c > 0 Then

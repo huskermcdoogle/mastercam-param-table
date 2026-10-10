@@ -153,6 +153,10 @@ try {
     $t = $xl.Run("Panel.OpRowsSelfTest", $ws.Range("D3"))
     $ws.Rows.Item(4).Hidden = $false
     Check ($t -eq "op 2||3") "one cell with a row hidden is still one op ('$t')"
+    $ws.Rows.Item(6).Hidden = $true
+    $lr = $xl.Run("ParamTable.LastRow")
+    $ws.Rows.Item(6).Hidden = $false
+    Check ($lr -eq 6) "the last op row counts when it is hidden ($lr)"
     $before = $ws.Range("D3").Value2
     $xl.Run("ParamTable.SetCells", $ws.Range("D3"), "123") | Out-Null
     $kind = $ws.Range("D3").Value2.GetType().Name
@@ -170,6 +174,8 @@ try {
     Check ($found -and $xl.ActiveCell.Row -eq 6) "Find op: an op number (row $($xl.ActiveCell.Row))"
     $xl.Run("Panel.GoToGroup", "Depth")
     Check ($ws.Columns.Item(8).Hidden -and -not $ws.Columns.Item(13).Hidden -and $xl.ActiveCell.Column -eq 12) "Go to Depth: Feeds folds, Depth opens, cursor in it"
+    $c = $xl.Run("ParamTable.ColOf", "speed")
+    Check ($c -eq 9) "a column in a folded group is still found by name ($c)"
     $xl.Run("Panel.GoToGroup", "")
     Check (-not $ws.Columns.Item(8).Hidden) "Go to All columns opens them again"
     $ws.Range("C4").Select()

@@ -32,16 +32,22 @@ End Function
 ' A column by its name in the column-name row, or 0.
 Public Function ColOf(ByVal name As String) As Long
     Dim f As Range
-    Set f = MainSheet.Rows(HEADER_ROW).Find(What:=name, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=True)
+    Set f = MainSheet.Rows(HEADER_ROW).Find(What:=name, LookIn:=xlFormulas, LookAt:=xlWhole, MatchCase:=True)
     If f Is Nothing Then ColOf = 0 Else ColOf = f.Column
 End Function
 
+' The last op row and the last named column - hidden ones too (a filter, a folded group):
+' Find with xlFormulas looks in hidden cells, where End(xlUp) and xlValues do not.
 Public Function LastRow() As Long
-    LastRow = MainSheet.Cells(MainSheet.Rows.Count, 1).End(xlUp).Row
+    Dim f As Range
+    Set f = MainSheet.Columns(1).Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByRows, SearchDirection:=xlPrevious)
+    If f Is Nothing Then LastRow = HEADER_ROW Else LastRow = f.Row
 End Function
 
 Public Function LastCol() As Long
-    LastCol = MainSheet.Cells(HEADER_ROW, MainSheet.Columns.Count).End(xlToLeft).Column
+    Dim f As Range
+    Set f = MainSheet.Rows(HEADER_ROW).Find(What:="*", LookIn:=xlFormulas, SearchOrder:=xlByColumns, SearchDirection:=xlPrevious)
+    If f Is Nothing Then LastCol = 1 Else LastCol = f.Column
 End Function
 
 ' A cell of one row by column name, or Empty.
@@ -58,7 +64,7 @@ Public Function DumpedRow(ByVal opId As Variant) As Long
     Set ws = ThisWorkbook.Worksheets(DUMPED_SHEET)
     On Error GoTo 0
     If ws Is Nothing Or IsEmpty(opId) Then Exit Function
-    Set f = ws.Columns(1).Find(What:=opId, LookIn:=xlValues, LookAt:=xlWhole)
+    Set f = ws.Columns(1).Find(What:=opId, LookIn:=xlFormulas, LookAt:=xlWhole)
     If Not f Is Nothing Then
         If f.Row >= FIRST_ROW Then DumpedRow = f.Row
     End If
@@ -289,7 +295,7 @@ Public Function OpCell(ByVal op As Variant) As Range
     If Trim$(CStr(op)) = "" Then Exit Function
     If IsNumeric(op) Then op = CDbl(op)
     Set OpCell = MainSheet.Range(MainSheet.Cells(FIRST_ROW, 1), MainSheet.Cells(LastRow, 1)).Find( _
-                     What:=op, LookIn:=xlValues, LookAt:=xlWhole)
+                     What:=op, LookIn:=xlFormulas, LookAt:=xlWhole)
 End Function
 
 ' ---------------------------------------------------------------- units go with the value
@@ -807,7 +813,7 @@ Public Function DumpedColumns() As Long()
             If CStr(ws.Cells(HEADER_ROW, c).Value) = hdr Then
                 out(c) = c                                  ' where it was dumped - the usual case
             Else
-                Set f = ws.Rows(HEADER_ROW).Find(What:=hdr, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=True)
+                Set f = ws.Rows(HEADER_ROW).Find(What:=hdr, LookIn:=xlFormulas, LookAt:=xlWhole, MatchCase:=True)
                 If Not f Is Nothing Then out(c) = f.Column
             End If
         End If
@@ -954,7 +960,7 @@ Public Function ToolValue(ByVal r As Long, ByVal head As String) As Variant
     If ws Is Nothing Then Exit Function
     t = ValueAt(r, "tool")
     If IsEmpty(t) Then Exit Function
-    Set h = ws.Rows(1).Find(What:=head, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False)
+    Set h = ws.Rows(1).Find(What:=head, LookIn:=xlFormulas, LookAt:=xlWhole, MatchCase:=False)
     If h Is Nothing Then Exit Function
     rr = 2
     Do While Trim$(CStr(ws.Cells(rr, 1).Value)) <> ""

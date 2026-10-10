@@ -581,7 +581,7 @@ Private Sub MixedSpeeds()
                     "T" & tool & " runs its " & kindName & " ops at different " & IIf(sTxt <> "" And fTxt <> "", "speeds and feeds", IIf(sTxt <> "", "speeds", "feeds")) & ": " & _
                     sTxt & IIf(sTxt <> "" And fTxt <> "", ";  ", "") & fTxt & ".", _
                     "The same insert doing the same kind of cut usually wants the same speed and feed. The slower op may be leaving time on the table - or the faster one wearing the insert early.", _
-                    "Pick the speed and feed that work and use them on every " & kindName & " op of T" & tool & ": select those cells in the good op's row, then To all ops of tool on the ribbon. Ignore this if the difference is on purpose (another diameter, an interrupted cut).", _
+                    "Pick the speed and feed that work and use them on every " & kindName & " op of T" & tool & ": click a cell in the good op's row, select those columns, then Copy from op on the ribbon, Into: every other op of its tool. Ignore this if the difference is on purpose (another diameter, an interrupted cut).", _
                     "mixed-speeds|T" & tool & "|" & kindName
             End If
         End If
