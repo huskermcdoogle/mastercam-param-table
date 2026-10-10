@@ -41,16 +41,20 @@ int main (int argc, char **argv)
 	s.trackChanges = true;					// a real dump always has its hidden Dumped sheet
 	s.untracked.assign (5, 0);
 
-	// Tools: D insert (T1 corrected by hand, T3 as the dump labelled it), H edge life.
+	// Tools: D insert (T1 corrected by hand, T3 as the dump labelled it), H edge life,
+	// then the insert size and entering angle: T1's angle typed over the dump's 95,
+	// T3's size as Excel saves 9.525 (the same figure) and its angle left blank.
 	Xlsx::Sheet::ToolRow t1, t3;
 	t1.number = L"1";
 	t1.name = L"OD ROUGH";
 	t3.number = L"3";
 	t3.name = L"OD FINISH";
-	t1.extra = { Cell (L"CNMG 432 typed"), Cell (L"2"), Cell (L"0:05:00"), Cell (L""), Cell (L"6:30") };
-	t3.extra = { Cell (L"C 80° r0.031"), Cell (L"0"), Cell (L"0:02:00"), Cell (L""), Cell (L"") };
+	t1.extra = { Cell (L"CNMG 432 typed"), Cell (L"2"), Cell (L"0:05:00"), Cell (L""), Cell (L"6:30"), Cell (L"0.5"), Cell (L"45") };
+	t3.extra = { Cell (L"C 80° r0.031"), Cell (L"0"), Cell (L"0:02:00"), Cell (L""), Cell (L""), Cell (L"9.5250000000000004"),
+				 Cell (L"") };
 	s.tools = { t1, t3 };
-	s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips", L"Edge life (fallback)" };
+	s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips", L"Edge life (fallback)",
+						 L"Insert size (IC)", L"Entering angle" };
 	// Inserts table: name, used by, edges, flips, inserts, cost, cost / part, parts per edge.
 	s.toolsAfter.push_back ({ Cell (L"Inserts", true), Cell (L"Insert", true), Cell (L"Used by", true),
 							  Cell (L"Edges per insert", true), Cell (L"Flips / part", true), Cell (L"Inserts / part", true),
@@ -86,8 +90,17 @@ int main (int argc, char **argv)
 	c.inserts[L"C 80° r0.031"].edgesDetected = L"2";	// the dump filled in 2: not a typed value
 	c.tools[L"1"].lifeDetected = L"8:00";
 	c.tools[L"3"].lifeDetected = L"-";
+	c.tools[L"1"].icDetected = L"0.5";
+	c.tools[L"1"].angleDetected = L"95";
+	c.tools[L"3"].icDetected = L"9.525";
+	c.tools[L"3"].angleDetected = L"-";
+	c.tools[L"3"].angle = L"60";						// typed before, cleared in this workbook
 	std::wstring why;
 	Check (PartConfig::Harvest (wb, c, why), "harvest reads the workbook");
+	Check (c.tools[L"1"].angle == L"45", "an entering angle typed over the dump's 95 is kept");
+	Check (c.tools[L"1"].ic.empty (), "an insert size left as dumped is not kept");
+	Check (c.tools[L"3"].ic.empty (), "9.5250000000000004 (as Excel saves it) is the dumped 9.525 - not typed");
+	Check (c.tools[L"3"].angle.empty (), "an angle cleared back to blank is no longer kept");
 	Check (c.tools[L"1"].insert == L"CNMG 432 typed", "a name typed over the label is kept as the tool's insert");
 	Check (c.tools[L"3"].insert.empty (), "the label left as dumped is not a correction");
 	Check (c.tools[L"1"].edgeLife == L"6:30", "edge life typed for T1");
@@ -111,6 +124,37 @@ int main (int argc, char **argv)
 			   && back.inserts.at (L"C 80° r0.031").edgesDetected == L"2" && back.tools.at (L"3").detected == L"C 80° r0.031"
 			   && back.tools.at (L"1").lifeDetected == L"8:00",
 		   "read back the same (names with spaces and the degree sign)");
+	Check (back.tools.at (L"1").angle == L"45" && back.tools.at (L"1").angleDetected == L"95"
+			   && back.tools.at (L"1").icDetected == L"0.5" && back.tools.at (L"3").icDetected == L"9.525"
+			   && back.tools.at (L"3").angleDetected == L"-" && back.tools.at (L"3").angle.empty (),
+		   "insert size and entering angle read back the same");
+
+	// The next dump: a typed angle wins over its own; with nothing typed, its own
+	// (a better guess in a later version comes through); and it records its own.
+	{
+	PartConfig::Tool t = back.tools.at (L"1");
+	Check (PartConfig::TypedOr (L"95", t.angle, t.angleDetected) == L"45" && t.angleDetected == L"95",
+		   "next dump: the typed 45 goes in, the dump's 95 is recorded");
+	Check (PartConfig::TypedOr (L"0.5", t.ic, t.icDetected) == L"0.5", "next dump: nothing typed - its own 0.5");
+	PartConfig::Tool n;
+	Check (PartConfig::TypedOr (L"", n.angle, n.angleDetected) == L"" && n.angleDetected == L"-",
+		   "a tool with no angle: blank, recorded as '-'");
+	n.angle = L"72.5";
+	Check (PartConfig::TypedOr (L"93", n.angle, n.ic) == L"93", "a typed value with no record of the dump's own is not used");
+	}
+
+	// A workbook from before these columns: what was kept stays.
+	{
+	Xlsx::Sheet old = s;
+	old.toolExtraHeads.resize (5);
+	for (Xlsx::Sheet::ToolRow &t : old.tools)
+		t.extra.resize (5);
+	const std::filesystem::path owb = dir / L"OLDER_lathe_params_20261009-110000.xlsx";
+	Check (Xlsx::Write (owb.string (), old), "an older workbook written");
+	PartConfig::Config k = back;
+	PartConfig::Harvest (owb, k, why);
+	Check (k.tools.at (L"1").angle == L"45", "an older workbook (no angle column) leaves the kept angle alone");
+	}
 	Check (PartConfig::PathFor (L"C:\\parts\\Oil Spool.mcam") == std::filesystem::path (L"C:\\parts\\Oil Spool.ptconfig"),
 		   "the file sits beside the part");
 	Check (PartConfig::NewestDump (dir / L"SAMPLE.mcam", std::filesystem::path ()) == wb, "the newest dump of the part is found");

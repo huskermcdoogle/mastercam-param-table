@@ -70,10 +70,21 @@ try {
                          @("Forms.ComboBox.1", "cboHow"), @("Forms.CheckBox.1", "chk1"), @("Forms.CheckBox.1", "chk2"),
                          @("Forms.ListBox.1", "lst"), @("Forms.Label.1", "lblSummary"),
                          @("Forms.CommandButton.1", "btnOK"), @("Forms.CommandButton.1", "btnCancel"))
-    Add-Form "Calculator" (@(@("Forms.Label.1", "lblInfo"), @("Forms.Label.1", "lblNote"), @("Forms.CheckBox.1", "chkMetric"),
-                             @("Forms.CommandButton.1", "btnClose"), @("Forms.Label.1", "lblChip"), @("Forms.Label.1", "lblThin"),
-                             @("Forms.CommandButton.1", "btnUseFeed"), @("Forms.CommandButton.1", "btnSetRow")) +
-                           @("Dia", "Surf", "Rpm", "Rev", "Min", "IC", "Ap", "Hex", "Fn" | ForEach-Object { @("Forms.Label.1", "lbl$_"), @("Forms.TextBox.1", "txt$_") }))
+    # Speed & feed: a header over two tabs (a MultiPage). Each tab's controls are made ON
+    # its page - still the form's own controls, so the events in Calculator.vb find them.
+    Add-Form "Calculator" @(@("Forms.CommandButton.1", "btnPrev"), @("Forms.ComboBox.1", "cboOp"), @("Forms.CommandButton.1", "btnNext"),
+                            @("Forms.CommandButton.1", "btnHelp"), @("Forms.Label.1", "lblInfo"), @("Forms.MultiPage.1", "mpg"),
+                            @("Forms.Label.1", "lblResult"), @("Forms.CommandButton.1", "btnClose"))
+    $calcPages = $vbp.VBComponents.Item("Calculator").Designer.Controls.Item("mpg").Pages
+    $boxes = { param($names) $names | ForEach-Object { @("Forms.Label.1", "lbl$_"), @("Forms.TextBox.1", "txt$_"), @("Forms.Label.1", "hnt$_") } }
+    foreach ($c in (@(& $boxes @("Dia", "Surf", "Rpm", "Rev", "Min")) + @(@("Forms.Label.1", "lblNote"), @("Forms.CommandButton.1", "btnSetRow")))) {
+        [void] $calcPages.Item(0).Controls.Add($c[0], $c[1], $true)
+    }
+    foreach ($c in (@(@("Forms.Label.1", "lblInsert"), @("Forms.OptionButton.1", "optLead"), @("Forms.OptionButton.1", "optRound")) +
+                    @(& $boxes @("Kr", "Lead", "IC", "Ap", "Hex", "Fn")) +
+                    @(@("Forms.Label.1", "lblNow"), @("Forms.Label.1", "lblThin"), @("Forms.CommandButton.1", "btnSetChip")))) {
+        [void] $calcPages.Item(1).Controls.Add($c[0], $c[1], $true)
+    }
 
     $cm = $vbp.VBComponents.Item("Sheet1").CodeModule
     if ($cm.CountOfLines -gt 0) { $cm.DeleteLines(1, $cm.CountOfLines) }

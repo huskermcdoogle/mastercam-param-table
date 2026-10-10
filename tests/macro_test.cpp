@@ -125,16 +125,22 @@ int main (int argc, char **argv)
 	t3.number = L"3";
 	t3.name = L"OD FINISH";
 	t3.usedBy = L"op 7";
-	Xlsx::Sheet::FreeCell ins, flips;
+	Xlsx::Sheet::FreeCell ins, flips, ic, angle;
 	ins.text = L"CNMG 432";
 	flips.formula = L"SUMIF('Lathe params'!$C$3:$C$4,$A2,'Lathe params'!$I$3:$I$4)";
 	flips.text = L"200";
-	t1.extra = { ins, flips };
+	// The chip thinning's insert size and entering angle (found by heading): T1 no
+	// angle - its DYNAMIC op 2 cuts with a 1.0 round (tool radius 0.5); T3 a
+	// 95-degree holder (PCLNR / MCLNR).
+	ic.text = L"1";
+	t1.extra = { ins, flips, ic, angle };
 	flips.formula = L"SUMIF('Lathe params'!$C$3:$C$4,$A3,'Lathe params'!$I$3:$I$4)";
 	flips.text = L"300";
-	t3.extra = { ins, flips };
+	ic.text = L"0.5";
+	angle.text = L"95";
+	t3.extra = { ins, flips, ic, angle };
 	s.tools = { t1, t3 };
-	s.toolExtraHeads = { L"Insert", L"Flips / part" };
+	s.toolExtraHeads = { L"Insert", L"Flips / part", L"Insert size (IC)", L"Entering angle" };
 	Xlsx::Sheet::FreeCell h, name, edges, total, per;
 	h.head = true;
 	h.text = L"Insert";

@@ -719,6 +719,77 @@ namespace
 		return std::to_wstring (code[1] == L'N' ? corners * 2 : corners);
 		}
 
+	/// A lathe tool's insert size (IC) and its holder's entering angle for the Tools
+	/// page - what the Speed & feed window's chip thinning works from - each with
+	/// a value typed over it in an earlier dump kept (the part's .ptconfig). None
+	/// for a PrimeTurning or grooving insert (no code gives their angles), and no
+	/// angle for a round insert (its angle goes with the depth of cut).
+	///   IC     the tool's own insert, else a round cutting outline (a 3D tool),
+	///          else an ISO / ANSI insert code in its names.
+	///   angle  the code in the holder's name (MCLNR-164D: style L, 95), else the
+	///          holder's style letter (standard inserts only: a 3D or PrimeTurning
+	///          tool's holder can be a stand-in), else a holder code in its names.
+	/// Everything the holder holds is logged, so a real part shows what it gave.
+	void SizeAndAngle (const std::filesystem::path &part, const std::wstring &number, long slot, bool mm,
+					   const ToolPictures::InsertInfo &info, const StockSim::ToolShape &sim, const std::wstring &names,
+					   bool prime, bool groove, PartConfig::Tool &kept, Xlsx::Sheet::FreeCell &ic,
+					   Xlsx::Sheet::FreeCell &angle)
+		{
+		const ToolPictures::HolderInfo holder = ToolPictures::LatheHolderInfo (slot);
+		const std::wstring all = names + L" " + ToolPictures::LatheMfgCode (slot) + L" " + ToolPictures::LatheInsert (slot);
+		const std::wstring iso = IsoInsertCode (all);
+		const bool standard = info.ok && !info.custom && (info.shape == L'R' || ShapeName (info.shape).second > 0);
+		const bool round = (info.ok && info.shape == L'R') || (sim.ok && sim.round) || (!iso.empty () && iso[0] == L'R');
+		double size = 0, kr = 0;
+		std::wstring sizeFrom = L"none", angleFrom = round ? L"none (round)" : L"none";
+		if (!prime && !groove)
+			{
+			if (standard && info.ic > 0)
+				{
+				size = info.ic;
+				sizeFrom = L"the tool's insert";
+				}
+			else if (sim.ok && sim.round && sim.size > 0)
+				{
+				size = sim.size;
+				sizeFrom = L"its round cutting outline";
+				}
+			else if ((size = ToolPictures::InsertCodeIC (all, mm)) > 0)
+				sizeFrom = L"the insert code";
+			}
+		if (!prime && !groove && !round)
+			{
+			const std::wstring named = ToolPictures::HolderCode (holder.name);
+			if (!named.empty () && named[1] != L'R')
+				{
+				kr = ToolPictures::StyleAngle (named[2]);
+				angleFrom = L"the holder name " + named;
+				}
+			else if (holder.ok && (holder.type == 0 || holder.type == 3) && standard
+					 && ToolPictures::StyleAngle (holder.style) > 0)
+				{
+				kr = ToolPictures::StyleAngle (holder.style);
+				angleFrom = L"the holder's style " + std::wstring (1, holder.style);
+				}
+			else if ((kr = ToolPictures::HolderAngle (all)) > 0)
+				angleFrom = L"the holder code " + ToolPictures::HolderCode (all);
+			}
+		ic.text = PartConfig::TypedOr (size > 0 ? Csv::Tidy (std::round (size * 10000.0) / 10000.0) : std::wstring (),
+									   kept.ic, kept.icDetected);
+		angle.text = PartConfig::TypedOr (kr > 0 ? Csv::Tidy (kr) : std::wstring (), kept.angle, kept.angleDetected);
+		ic.editable = true;
+		angle.editable = true;
+		Util::Log (part, L"tool " + number + L" holder: "
+						 + (holder.ok ? L"'" + holder.name + L"' style " + (holder.style ? std::wstring (1, holder.style) : L"-")
+										+ L" type " + std::to_wstring (holder.type) + L" takes " + holder.insertShapes
+										+ L" | side " + Csv::Tidy (holder.sideAngle) + L" end " + Csv::Tidy (holder.endAngle)
+									  : std::wstring (L"(none)"))
+						 + L" | IC " + (size > 0 ? Csv::Tidy (size) : L"-") + L" from " + sizeFrom
+						 + L" | entering angle " + (kr > 0 ? Csv::Tidy (kr) : L"-") + L" from " + angleFrom
+						 + (kept.ic.empty () ? L"" : L" | IC typed " + kept.ic)
+						 + (kept.angle.empty () ? L"" : L" | angle typed " + kept.angle));
+		}
+
 	bool WriteXlsx (const std::filesystem::path &file, const std::vector<Csv::Row> &out,
 					const std::vector<Column> &columns, const std::vector<Found> &rows,
 					const std::vector<Stats> &stats, std::vector<Xlsx::Sheet::ToolRow> tools,
@@ -1519,8 +1590,11 @@ namespace
 				const std::wstring l = letters (static_cast<size_t> (c));
 				return L"'Lathe params'!$" + l + L"$3:$" + l + L"$" + last;
 				};
+			// Columns are only ever added at the end: other code finds them by
+			// heading or by place (the edge-life VLOOKUP reads A:I; Insert code is extra[6]).
 			s.toolExtraHeads = { L"Insert", L"Flips / part", L"Cut time / part", L"Longest between flips", L"Inspection",
-								 L"Edge life (fallback)", L"Insert code", L"Simulated shape", L"Shape check" };
+								 L"Edge life (fallback)", L"Insert code", L"Simulated shape", L"Shape check",
+								 L"Insert size (IC)", L"Entering angle" };
 			std::vector<double> flipsOf (tools.size (), 0), cutOf (tools.size (), 0), longOf (tools.size (), 0);
 			std::vector<char> inspects (tools.size (), 0);	// any of its ops has tool inspection on
 			std::vector<std::map<double, int>> lifeVotes (tools.size ());	// its inspected ops' insp_time
@@ -1554,7 +1628,7 @@ namespace
 				{
 				Xlsx::Sheet::ToolRow &tr = tools[k];
 				// extra[0] the insert (what tools group by), then code, simulated
-				// shape and check - kept for the end.
+				// shape, check, insert size and entering angle - kept for the end.
 				const std::vector<Xlsx::Sheet::FreeCell> tail (tr.extra.size () > 1 ? tr.extra.begin () + 1 : tr.extra.end (),
 															   tr.extra.end ());
 				tr.extra.resize (1);
@@ -1784,6 +1858,15 @@ namespace
 					  L"OR(I2=\"\",AND(ISNUMBER(I2),I2>0),ISNUMBER(TIMEVALUE(\"0:\"&I2)),ISNUMBER(TIMEVALUE(I2)))", L"",
 					  L"Edge life", L"Cut time before a stop with no comment counts as an insert flip - only for ops that set no insp_time of their own (blank and greyed where none does). Minutes:seconds (8:00) or seconds.",
 					  L"Type a time: minutes:seconds (8:00) or seconds (480).");
+				// M and N: the insert size and entering angle (extra[9] and [10]).
+				rule (range ("M", t0, t1), "custom", "", L"OR(M2=\"\",AND(ISNUMBER(M2),M2>0))", L"",
+					  L"Insert size (IC)",
+					  L"The insert's size across its inscribed circle - a round insert's diameter - in the part's units. From the tool's insert, else its code. Chip thinning (Speed & feed) uses it. Correct it if wrong - it is kept.",
+					  L"A size more than 0, in the part's units - or blank.");
+				rule (range ("N", t0, t1), "custom", "", L"OR(N2=\"\",AND(ISNUMBER(N2),N2>0,N2<180))", L"",
+					  L"Entering angle",
+					  L"Degrees from the cutting edge to the feed: 90 = square shoulder, no chip thinning; 45 = chip 0.71 x the feed. US lead angle = 90 minus this. From the holder (PCLNR: 95). Blank for round, grooving, PrimeTurning. Correct it if wrong - it is kept.",
+					  L"An angle in degrees, more than 0 and less than 180 - or blank.");
 				if (i > 0)
 					{
 					rule (range ("B", i0, i1), "", "", L"", L"", L"Insert",
@@ -2529,7 +2612,9 @@ namespace Dump
 					// its geometry from the tool manager is what groups tools; the names
 					// (Mastercam's, else an ISO code in the tool's name) are shown beside;
 					// and the shape the stock simulation sweeps is checked against it.
-					Xlsx::Sheet::FreeCell ins, code, simShape, check;
+					// Then the insert's size and the holder's entering angle - what
+					// the Speed & feed window's chip thinning works from.
+					Xlsx::Sheet::FreeCell ins, code, simShape, check, ic, angle;
 					if (latheKind)
 						{
 						// Often the insert's 3D file ("CNMG 432.stp"): shown without the extension.
@@ -2594,11 +2679,15 @@ namespace Dump
 										 + L" | code " + (code.text.empty () ? L"-" : code.text)
 										 + (info.grade.empty () ? L"" : L" | grade " + info.grade)
 										 + L" | simulated " + simShape.text + L" | " + check.text);
+						SizeAndAngle (part, tr.number, slot, o->tl.mm != 0, info, sim, tr.name + L" " + code.text,
+									  primeSlots.count (slot) > 0, grooveSlots.count (slot) > 0, remembered, ic, angle);
 						}
 					tr.extra.push_back (ins);
 					tr.extra.push_back (code);
 					tr.extra.push_back (simShape);
 					tr.extra.push_back (check);
+					tr.extra.push_back (ic);
+					tr.extra.push_back (angle);
 					k = tools.size ();
 					tools.push_back (tr);
 					bySlot[slot] = k;

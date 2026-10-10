@@ -5,6 +5,7 @@
 #include "TlMgr_CH.h"
 #include "ILTool_CH.h"
 #include "TlToolLathe_CH.h"
+#include "TlHolderLathe_CH.h"
 #include "TlInsert_CH.h"
 #include "TlToolGrade_CH.h"
 #include "SetupSheet_CH.h"
@@ -43,6 +44,37 @@ namespace ToolPictures
 		r.custom = ins->GetIsCustom ();
 		if (const auto g = ins->GetGrade ())
 			r.grade = g->GetName ().GetString ();
+		return r;
+		}
+
+	HolderInfo LatheHolderInfo (long slot)
+		{
+		HolderInfo r;
+		// Anything the tool manager throws is a tool with no holder data, never a
+		// dump that stops.
+		try
+			{
+			Cnc::Tool::TlMgr *mgr = Cnc::Tool::GetTlMgr ();
+			Cnc::Tool::TlToolLathePtr tool;
+			if (mgr == nullptr || !mgr->Find (slot, tool) || !tool)
+				return r;
+			Cnc::Tool::ILToolCPtr named;
+			if (mgr->Find (slot, named) && named)
+				r.name = named->GetHolderName ().GetString ();
+			const auto holder = tool->GetMainHolder ();
+			if (!holder)
+				return r;
+			r.ok = true;
+			r.style = static_cast<wchar_t> (holder->GetAnsiShapeCode ());
+			r.type = static_cast<int> (holder->GetType ());
+			r.insertShapes = holder->GetInsertShapes ().GetString ();
+			r.sideAngle = holder->GetSideCuttingEdgeAngle ();
+			r.endAngle = holder->GetEndCuttingEdgeAngle ();
+			}
+		catch (...)
+			{
+			r.ok = false;
+			}
 		return r;
 		}
 

@@ -2,6 +2,8 @@
 #include "Csv.h"
 #include "Xlsx.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cwctype>
 #include <fstream>
 #include <iterator>
@@ -38,6 +40,19 @@ namespace
 		{
 		if (!v.empty ())
 			to = v;
+		}
+
+	/// A tool's figure as it stands in the workbook against what the dump filled
+	/// in: the same (a number to a hair - Excel saves 9.525 as 9.5250000000000004),
+	/// or blank where the dump left it blank ("-").
+	bool SameFigure (const std::wstring &cell, const std::wstring &detected)
+		{
+		if (cell.empty ())
+			return detected.empty () || detected == L"-";
+		double a = 0, b = 0;
+		if (Csv::ParseDouble (cell, a) && Csv::ParseDouble (detected, b))
+			return std::fabs (a - b) <= 1e-9 * (std::max) (1.0, std::fabs (b));
+		return cell == detected;
 		}
 	}
 
@@ -93,6 +108,10 @@ namespace PartConfig
 				else if (key == L"insert") t.insert = value;
 				else if (key == L"detected") t.detected = value;
 				else if (key == L"life_detected") t.lifeDetected = value;
+				else if (key == L"ic") t.ic = value;
+				else if (key == L"ic_detected") t.icDetected = value;
+				else if (key == L"entering_angle") t.angle = value;
+				else if (key == L"angle_detected") t.angleDetected = value;
 				}
 			}
 		return c;
@@ -118,13 +137,18 @@ namespace PartConfig
 		for (const auto &kv : c.tools)
 			{
 			const Tool &tl = kv.second;
-			if (tl.edgeLife.empty () && tl.insert.empty () && tl.detected.empty () && tl.lifeDetected.empty ())
+			if (tl.edgeLife.empty () && tl.insert.empty () && tl.detected.empty () && tl.lifeDetected.empty ()
+				&& tl.ic.empty () && tl.icDetected.empty () && tl.angle.empty () && tl.angleDetected.empty ())
 				continue;
 			t += L"\r\n[tool " + kv.first + L"]\r\n";
 			if (!tl.edgeLife.empty ()) t += L"edge_life = " + tl.edgeLife + L"\r\n";
 			if (!tl.insert.empty ()) t += L"insert = " + tl.insert + L"\r\n";
 			if (!tl.detected.empty ()) t += L"detected = " + tl.detected + L"\r\n";
 			if (!tl.lifeDetected.empty ()) t += L"life_detected = " + tl.lifeDetected + L"\r\n";
+			if (!tl.ic.empty ()) t += L"ic = " + tl.ic + L"\r\n";
+			if (!tl.icDetected.empty ()) t += L"ic_detected = " + tl.icDetected + L"\r\n";
+			if (!tl.angle.empty ()) t += L"entering_angle = " + tl.angle + L"\r\n";
+			if (!tl.angleDetected.empty ()) t += L"angle_detected = " + tl.angleDetected + L"\r\n";
 			}
 		std::ofstream out (file, std::ios::binary | std::ios::trunc);
 		if (!out)
@@ -144,11 +168,14 @@ namespace PartConfig
 		// tools under it to the first row with no tool number. The columns are
 		// found by their headings, so a later layout still reads.
 		size_t insCol = 3, lifeCol = 7;
+		size_t icCol = 0, angleCol = 0;			// 0: an older workbook without them
 		for (const auto &h : tools[1])
 			{
 			const std::wstring head = Lower (Trim (h.second));
 			if (head == L"insert") insCol = h.first;
 			else if (head.rfind (L"edge life", 0) == 0) lifeCol = h.first;
+			else if (head.rfind (L"insert size", 0) == 0) icCol = h.first;
+			else if (head.rfind (L"entering angle", 0) == 0) angleCol = h.first;
 			}
 		for (size_t r = 2; !At (tools, r, 0).empty (); ++r)
 			{
@@ -166,6 +193,18 @@ namespace PartConfig
 			// name cannot be told from the dump's own label: left alone.
 			if (!t.detected.empty () && !typed.empty ())
 				t.insert = typed != t.detected ? typed : std::wstring ();
+			// Insert size and entering angle: like the edge life - kept only when they
+			// differ from what that dump filled in (blank: back to the dump's own).
+			if (icCol > 0 && !t.icDetected.empty ())
+				{
+				const std::wstring ic = At (tools, r, icCol);
+				t.ic = SameFigure (ic, t.icDetected) ? std::wstring () : ic;
+				}
+			if (angleCol > 0 && !t.angleDetected.empty ())
+				{
+				const std::wstring angle = At (tools, r, angleCol);
+				t.angle = SameFigure (angle, t.angleDetected) ? std::wstring () : angle;
+				}
 			}
 		// The inserts table: the row whose first cell says "Inserts", then a row
 		// per insert (name in B) to the first blank row; headings found by name.
@@ -206,6 +245,13 @@ namespace PartConfig
 						Keep (n.batchQty, At (summary, row.first, cell.first + 1));
 		c = n;
 		return true;
+		}
+
+	std::wstring TypedOr (const std::wstring &own, const std::wstring &typed, std::wstring &detected)
+		{
+		const std::wstring v = !detected.empty () && !typed.empty () ? typed : own;
+		detected = own.empty () ? std::wstring (L"-") : own;
+		return v;
 		}
 
 	std::filesystem::path NewestDump (const std::filesystem::path &part, const std::filesystem::path &folder)

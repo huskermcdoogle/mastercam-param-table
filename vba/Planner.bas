@@ -1249,10 +1249,13 @@ Public Function ToolOfRow(ByVal r As Long) As String
     ToolOfRow = ToolOf(r)
 End Function
 
-' ============================================================ round-insert chip thinning
+' ============================================================ chip thinning
 
-' A round insert's entering angle at a depth: the chip is thinner than the feed by sin of
-' it, so for a chip of h the feed per rev is h / sin.  sin = sqrt(1 - ((D - 2ap) / D)^2)
+' The chip is thinner than the feed by the sine of the ENTERING ANGLE - the angle between
+' the cutting edge and the feed direction (90 = a square shoulder, no thinning): for a
+' chip of h the feed per rev is h / sin.
+
+' A round insert's entering angle goes with the depth: sin = sqrt(1 - ((D - 2ap) / D)^2)
 ' while ap < D / 2; past half the insert it is a full-width chip (1).
 Public Function ChipFactor(ByVal dia As Double, ByVal depth As Double) As Double
     Dim c As Double
@@ -1260,6 +1263,13 @@ Public Function ChipFactor(ByVal dia As Double, ByVal depth As Double) As Double
     If depth >= dia / 2 Then ChipFactor = 1: Exit Function
     c = (dia - 2 * depth) / dia
     ChipFactor = Sqr(1 - c * c)
+End Function
+
+' A straight edge's is the holder's own (degrees, 0 - 180; a US lead angle is 90 - it):
+' 45 gives a chip 0.71 x the feed. 0 = no angle.
+Public Function AngleChipFactor(ByVal entering As Double) As Double
+    If entering <= 0 Or entering >= 180 Then Exit Function
+    AngleChipFactor = Sin(entering * Application.Pi() / 180)
 End Function
 
 ' The feed per rev that gives a chip of h - and back.

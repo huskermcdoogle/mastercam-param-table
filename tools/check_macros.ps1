@@ -190,13 +190,36 @@ try {
     Check ($t -like "Pick the operation*|False|*") "copy with nothing picked: OK off ('$t')"
     Check ($ws.Range("G3").Value2 -eq 0.01 -and $ws.Range("I3").Value2 -eq 200) "the windows wrote nothing"
 
-    # The calculator (not shown): filled from the row, the boxes follow each other.
+    # The Speed & feed window (not shown): filled from the row, the boxes follow each other.
     $t = $xl.Run("ParamTable.CalcSelfTest", $ws.Range("G3"), "txtDia=14")
-    Check ($t -like "55|200|0.01|0.55|max_ss on this row: 3500 RPM.") "calculator from op 2: 14 dia at 200 SFM = 55 RPM, 0.55 per min ('$t')"
+    Check ($t -like "55|200|0.01|0.55|This op's max spindle speed: 3500 RPM.") "speed & feed from op 2: 14 dia at 200 SFM = 55 RPM, 0.55 per min ('$t')"
     $t = $xl.Run("ParamTable.CalcSelfTest", $ws.Range("G3"), "txtDia=0.2")
-    Check ($t -like "3820|*Above this row's max_ss*") "a small diameter goes past max_ss and says so ('$t')"
+    Check ($t -like "3820|*|0.01|35.0|Above this op's max spindle speed of 3500 RPM*") "a small diameter goes past max_ss, says so, and the feed per minute is at 3500 ('$t')"
     $t = $xl.Run("ParamTable.CalcSelfTest", $ws.Range("G3"), "txtDia=14;txtRpm=100")
     Check ($t -like "100|366.5|0.01|1.0|*") "typing RPM gives the surface speed back ('$t')"
+    # The window's header and moves: no op, op 2, next / previous (hidden rows skipped),
+    # following the selection. Its own moves select the op's feed and speed on the sheet.
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("A1"), "", "lblInfo|cboOp")
+    Check ($t -like "Select an op (any cell in its row)*|") "not on an op: says to select one ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "", "cboOp|lblInfo")
+    Check ($t -like "op 2  -  T1 DYNAMIC  -  Rough OD|From op 2's row, in inches*CSS: type a diameter*") "the header names the op; units from its row ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "!btnNext", "cboOp|txtRev")
+    Check ($t -like "op 7  -  T3 FINISH*|0.008" -and $xl.Selection.Address($false, $false) -eq "G4:K4") "next: op 7, its feed and speed selected on the sheet ('$t', $($xl.Selection.Address($false, $false)))"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "!btnNext;!btnNext;!btnPrev", "cboOp")
+    Check ($t -like "op 7  *") "next, next, previous: op 7 ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "!btnPrev", "cboOp|lblResult")
+    Check ($t -like "op 2  *|This is the first op.") "previous from the first op stays and says so ('$t')"
+    [void] $xl.Run("Planner.FilterTool", "1")
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "!btnNext", "cboOp")
+    Check ($t -like "op 9  *") "next skips a hidden row: op 9 ('$t')"
+    [void] $xl.Run("Planner.ShowAllOps")
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "@G5", "cboOp|txtRev")
+    Check ($t -like "op 9  *|0.012") "follows the selection to op 9 ('$t')"
+    # Units follow the op's units column (no tick box): a metric op works in mm and m/min.
+    $ws.Range("N3").Value2 = "mm"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "txtDia=100", "txtRpm|lblDia|lblSurf|lblRev")
+    $ws.Range("N3").Value2 = "in"
+    Check ($t -eq "637|Diameter (mm)|Surface speed (m/min)|Feed per rev (mm)") "a metric op: 200 m/min at 100 mm = 637 RPM ('$t')"
 
     # The Tools page: live sums from the main sheet, the inserts table under it.
     $tl = $wb.Worksheets.Item("Tools")
@@ -317,19 +340,48 @@ try {
     Check ($wb.Worksheets.Item("Scenario store").Visible -eq 0) "the store sheet is hidden"
     [void] $xl.Run("ParamTable.RevertCells", $all, $false)
 
-    # ---- Round-insert chip thinning (the calculator, from op 2: tool radius 0.5 = a 1.0 round, stepover 0.25).
+    # ---- Chip thinning (the Speed & feed window's second tab). The Tools page gives each
+    # tool's insert size and entering angle: T1 no angle (op 2 is DYNAMIC with tool radius
+    # 0.5 - a 1.0 round, stepover 0.25), T3 a 95-degree holder (op 7, 0.008 per rev).
     $f = $xl.Run("Planner.ChipFactor", 1, 0.25)
     Check ([math]::Abs($f - 0.8660) -lt 0.0001) "a 1.0 round insert at 0.25 deep: the chip is 0.866 x the feed ($f)"
+    $f = $xl.Run("Planner.AngleChipFactor", 45)
+    Check ([math]::Abs($f - 0.7071) -lt 0.0001 -and $xl.Run("Planner.AngleChipFactor", 90) -eq 1) "a 45-degree entering angle: 0.71 x the feed; 90: no thinning ($f)"
     $t = $xl.Run("ParamTable.ChipSelfTest", $ws.Range("G3"), "")
-    Check ($t -like "1|0.25|0.00866|0.01|Entering angle 60*0.87 x the feed*|Set op 2 feed:  0.01  ->  0.01 per rev") "from op 2: its 0.01 feed makes a 0.00866 chip ('$t')"
+    Check ($t -like "1|0.25|0.00866|0.01|Entering angle 60*0.87 x the feed*|This op's feed is 0.01 per rev - no change") "from op 2: its 0.01 feed makes a 0.00866 chip ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "", "optRound|lblInsert|lblNow")
+    Check ($t -like "1|T1 insert: CNMG 432.  A round insert*|Now: feed 0.01 per rev makes a 0.00866 chip.") "op 2 is taken as a round insert ('$t')"
     $t = $xl.Run("ParamTable.ChipSelfTest", $ws.Range("G3"), "txtHex=0.01")
-    Check ($t -like "1|0.25|0.01|0.01155|*") "a 0.01 chip wants 0.01155 per rev ('$t')"
-    $t = $xl.Run("ParamTable.ChipSelfTest", $ws.Range("G3"), "txtHex=0.01;!btnUseFeed;!btnSetRow")
-    Check ($t -like "*|Done - op 2 feed is 0.01155" -and $ws.Range("G3").Value2 -eq 0.01155) "Use as feed, Set the row: op 2 feed 0.01155 ('$t')"
+    Check ($t -like "1|0.25|0.01|0.01155|*|Set this op's feed:  0.01  ->  0.01155 per rev") "a 0.01 chip wants 0.01155 per rev ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G3"), "txtHex=0.01;!btnSetChip", "lblResult|txtFn")
+    Check ($t -eq "op 2 feed 0.01 -> 0.01155 per rev - Ctrl+Z to undo|0.01155" -and $ws.Range("G3").Value2 -eq 0.01155) "Set this op's feed: op 2 feed 0.01155, said in the window ('$t')"
+    $u = $xl.Run("Panel.UndoLast")
+    Check ($u -eq "1 0" -and $ws.Range("G3").Value2 -eq 0.01) "one undo puts the feed back ('$u')"
     $t = $xl.Run("ParamTable.ChipSelfTest", $ws.Range("G3"), "txtAp=0.6")
     Check ($t -like "*no thinning*") "past half the insert: no thinning ('$t')"
+    # A straight edge: op 7's holder enters at 95 (lead -5); type 45, or a US lead angle.
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G4"), "", "optLead|txtKr|txtLead|txtHex|lblThin|lblInsert")
+    Check ($t -like "1|95|-5|0.00797|Entering angle 95* (lead -5*): the chip is 1.00 x the feed*|T3 insert: CNMG 432.  Holder's entering angle 95* (Tools page).") "op 7: a 95-degree holder, chip 0.00797 at 0.008 ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G4"), "txtKr=45", "txtLead|txtHex|lblThin")
+    Check ($t -like "45|0.00566|Entering angle 45* (lead 45*): the chip is 0.71 x the feed - program 1.41 x the chip you want.") "a 45-degree entering angle: chip 0.00566 ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G4"), "txtLead=15", "txtKr|txtHex")
+    Check ($t -eq "75|0.00773") "a 15-degree US lead angle is a 75 entering angle: chip 0.00773 ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G4"), "txtKr=45;txtHex=0.008;!btnSetChip", "lblResult")
+    Check ($t -eq "op 7 feed 0.008 -> 0.01131 per rev - Ctrl+Z to undo" -and $ws.Range("G4").Value2 -eq 0.01131) "a 0.008 chip at 45: op 7 feed 0.01131 ('$t')"
+    [void] $xl.Run("Panel.UndoLast")
+    Check ($ws.Range("G4").Value2 -eq 0.008) "and undone"
+    # A per-minute feed: per rev at the op's RPM, and written back per minute.
+    $ws.Range("J4").Value2 = "RPM"; $ws.Range("I4").Value2 = 1000; $ws.Range("H4").Value2 = "per min"; $ws.Range("G4").Value2 = 8
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G4"), "", "txtRev|txtFn|lblNow")
+    Check ($t -eq "0.00800|0.00800|Now: feed 0.008 per rev makes a 0.00797 chip.") "8 per min at 1000 RPM is 0.008 per rev ('$t')"
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G4"), "txtKr=45;txtHex=0.008;!btnSetChip", "lblResult")
+    Check ($t -eq "op 7 feed 8 -> 11.31 per min - Ctrl+Z to undo" -and $ws.Range("G4").Value2 -eq 11.31) "written back per minute: 11.31 ('$t')"
+    [void] $xl.Run("ParamTable.RevertCells", $all, $false)
+    # A feed the cell refuses (op 9's ceiling 0.013): nothing written, said why.
+    $t = $xl.Run("ParamTable.CalcProbe", $ws.Range("G5"), "txtKr=90;txtFn=0.02;!btnSetChip", "lblResult")
+    Check ($t -like "Refused - op 9 feed: 0.02 is outside*" -and $ws.Range("G5").Value2 -eq 0.012) "a refused feed is left alone and said why ('$t')"
     $t = $xl.Run("ParamTable.ChipSelfTest", $ws.Range("G5"), "")
-    Check ($t -like "||*Type the insert diameter*") "a row with no round insert: asks for the diameter ('$t')"
+    Check ($t -like "1|||0.012|Type the holder's entering angle*") "op 9: no angle on the Tools page - asks for it ('$t')"
     [void] $xl.Run("ParamTable.RevertCells", $all, $false)
     $t = $xl.Run("ParamTable.EditListSelfTest", "set", $ws.Range("G3:G4"), "0.02")
     Check ($t -like "2#op 2    feed    0.01  ->  0.02") "set window lists each cell old -> new ('$t')"

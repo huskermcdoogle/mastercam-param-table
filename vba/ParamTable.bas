@@ -16,6 +16,8 @@ Private Const HEADER_ROW As Long = 2
 Private Const FIRST_ROW As Long = 3
 Private Const TITLE As String = "Parameter Table"
 
+Private calcWin As Calculator               ' the Speed & feed window, while it is open (calculators)
+
 ' ============================================================ lookups
 
 Public Function MainSheet() As Worksheet
@@ -680,95 +682,144 @@ End Sub
 
 ' ============================================================ calculators
 
-' The speed and feed calculator, filled from the row the active cell is on.
+' The Speed & feed window (the ribbon's button): opens beside the sheet on the first op
+' selected - else the active cell's row - or, already open, comes forward and follows
+' the selection. Modeless: the sheet stays in reach.
 Public Sub CalcSpeed()
-    Dim f As Calculator
-    Set f = CalcWindow(ActiveCell)
-    f.Show
-    Unload f
+    Dim r As Long
+    r = CalcStartRow()
+    If calcWin Is Nothing Then Set calcWin = New Calculator
+    calcWin.GoToRow r, True
+    calcWin.Show vbModeless
+    Panel.Opened calcWin
 End Sub
 
-Public Sub CalcFeed()
-    CalcSpeed
+' The window has closed (its Close button or its X).
+Public Sub CalcClosed(ByVal f As Object)
+    If calcWin Is Nothing Then Exit Sub
+    If calcWin Is f Then Set calcWin = Nothing
 End Sub
 
-' The calculator set up from a cell's row (speed, feed, units, max_ss), not shown.
-Public Function CalcWindow(ByVal c As Range) As Calculator
-    Dim f As Calculator, r As Long, sm As String, sp As Variant, fm As String, fd As Variant, mx As Variant
-    Dim surf As String, rpm As String, rev As String, pm As String, info As String, metric As Boolean
-    Set f = New Calculator
-    info = "Type in any box - the others follow."
-    If Not c Is Nothing Then
-        If c.Worksheet.Name = MAIN_SHEET And c.Row >= FIRST_ROW And c.Row <= LastRow Then
-            r = c.Row
-            sp = ValueAt(r, "speed"): sm = CStr(ValueAt(r, "speed_mode"))
-            fd = ValueAt(r, "feed"): fm = CStr(ValueAt(r, "feed_mode"))
-            mx = ValueAt(r, "max_ss")
-            metric = (CStr(ValueAt(r, "units")) = "mm")
-            If IsNumeric(sp) And Not IsEmpty(sp) Then If sm = "CSS" Then surf = CStr(sp) Else rpm = CStr(sp)
-            If IsNumeric(fd) And Not IsEmpty(fd) Then If fm = "per min" Then pm = CStr(fd) Else rev = CStr(fd)
-            info = "From op " & MainSheet.Cells(r, 1).Value & " (" & MainSheet.Cells(r, 2).Value & ")" & _
-                   IIf(surf <> "", " - CSS: type a diameter for the RPM there.", ".") & "  Type in any box - the others follow."
-        End If
+' Where the window starts: the first op selected, else the active cell's op row, else 0.
+Private Function CalcStartRow() As Long
+    Dim rows As Collection
+    On Error Resume Next
+    If TypeName(Selection) = "Range" Then Set rows = Panel.OpRows(Selection)
+    If Not rows Is Nothing Then
+        If rows.Count > 0 Then CalcStartRow = rows(1): Exit Function
     End If
-    f.Setup "", surf, rpm, rev, pm, metric, IIf(IsNumeric(mx) And Not IsEmpty(mx), Val(CStr(mx)), 0), info
-    If r > 0 And ColOf("feed") > 0 Then f.SetRow MainSheet.Cells(r, ColOf("feed")), (fm = "per min"), RoundInsertDia(r, metric), DepthOf(r)
+    CalcStartRow = CalcOpRow(ActiveCell)
+End Function
+
+' The op row a cell is on (a data row of the main sheet with an op number), or 0.
+Public Function CalcOpRow(ByVal c As Range) As Long
+    If c Is Nothing Then Exit Function
+    If c.Worksheet.Name <> MAIN_SHEET Then Exit Function
+    If c.Row < FIRST_ROW Or c.Row > LastRow Then Exit Function
+    If IsEmpty(MainSheet.Cells(c.Row, 1).Value) Then Exit Function
+    CalcOpRow = c.Row
+End Function
+
+' The window set up on a cell's op row (or on no op), not shown - for the checks.
+Public Function CalcWindow(ByVal c As Range) As Calculator
+    Dim f As Calculator
+    Set f = New Calculator
+    f.GoToRow CalcOpRow(c), False
     Set CalcWindow = f
+End Function
+
+' A cell of the Tools page for a row's tool, under a heading ("Entering angle"), or
+' Empty - no Tools page, no such heading, or the tool is not on it.
+Public Function ToolValue(ByVal r As Long, ByVal head As String) As Variant
+    Dim ws As Worksheet, t As Variant, h As Range, rr As Long
+    On Error Resume Next
+    Set ws = ThisWorkbook.Worksheets("Tools")
+    On Error GoTo 0
+    If ws Is Nothing Then Exit Function
+    t = ValueAt(r, "tool")
+    If IsEmpty(t) Then Exit Function
+    Set h = ws.Rows(1).Find(What:=head, LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False)
+    If h Is Nothing Then Exit Function
+    rr = 2
+    Do While Trim$(CStr(ws.Cells(rr, 1).Value)) <> ""
+        If Trim$(CStr(ws.Cells(rr, 1).Value)) = Trim$(CStr(t)) Then
+            ToolValue = ws.Cells(rr, h.Column).Value
+            Exit Function
+        End If
+        rr = rr + 1
+    Loop
 End Function
 
 ' A round insert's diameter from the row's tool radius - only when the radius is a round
 ' insert's (over 0.07 in / 1.8 mm; a nose radius is smaller), else "".
-Private Function RoundInsertDia(ByVal r As Long, ByVal metric As Boolean) As String
+Public Function RoundInsertDia(ByVal r As Long, ByVal metric As Boolean) As String
     Dim rad As Variant
     rad = ValueAt(r, "tool_radius")
     If IsEmpty(rad) Or Not IsNumeric(rad) Then Exit Function
     If CDbl(rad) > IIf(metric, 1.8, 0.07) Then RoundInsertDia = CStr(Round(2 * CDbl(rad), 4))
 End Function
 
-' The row's depth per pass: stepover (dynamic), else rough_step, else depth.
-Private Function DepthOf(ByVal r As Long) As String
+' The row's depth of cut per pass, and the column it came from: stepover (dynamic),
+' step (rough, finish, prime turning), else rough_step (face, groove). "" when none.
+Public Function CalcDepth(ByVal r As Long, ByRef fromCol As String) As String
     Dim v As Variant, nm As Variant
-    For Each nm In Array("stepover", "rough_step", "depth")
+    fromCol = ""
+    For Each nm In Array("stepover", "step", "rough_step")
         v = ValueAt(r, CStr(nm))
         If Not IsEmpty(v) And IsNumeric(v) Then
-            If CDbl(v) > 0 Then DepthOf = CStr(v): Exit Function
+            If CDbl(v) > 0 Then
+                CalcDepth = CStr(v)
+                fromCol = CStr(nm)
+                Exit Function
+            End If
         End If
     Next
 End Function
 
-' For tools\check_macros.ps1 (no window): the chip part of the calculator - fill from a
-' cell, type "box=value;...", optionally press "!btnUseFeed" / "!btnSetRow";
-' read back "insert dia|depth|chip|feed to program|thinning line|set-row button".
-Public Function ChipSelfTest(ByVal c As Range, ByVal typed As String) As String
-    Dim f As Calculator, t As Variant, kv() As String
-    Set f = CalcWindow(c)
+' Drive a window for the checks (no window shown): "box=value" types into a box (a tick
+' or option takes 1 / 0, a list "#2" its item), "!btnSetChip" presses a button, "@G5"
+' follows the selection to that cell's op, "^" refreshes it. Separated by ";".
+Private Sub CalcDrive(ByVal f As Calculator, ByVal typed As String)
+    Dim t As Variant, kv() As String, rows As Collection
     For Each t In Split(typed, ";")
         If Left$(t, 1) = "!" Then
             f.Press Mid$(t, 2)
+        ElseIf Left$(t, 1) = "@" Then
+            Set rows = New Collection
+            rows.Add MainSheet.Range(Mid$(t, 2)).Row
+            f.FollowRows rows
+        ElseIf t = "^" Then
+            f.Refresh
         ElseIf InStr(t, "=") > 0 Then
             kv = Split(t, "=")
             f.TypeIn kv(0), kv(1)
         End If
     Next
-    ChipSelfTest = f.Field("txtIC") & "|" & f.Field("txtAp") & "|" & f.Field("txtHex") & "|" & f.Field("txtFn") & "|" & _
-                   f.Field("lblThin") & "|" & f.Field("btnSetRow")
+End Sub
+
+' For tools\check_macros.ps1 (no window): set the window up on a cell's op, drive it
+' (CalcDrive), read back the named controls' text joined by "|" ("cboOp|lblInfo").
+Public Function CalcProbe(ByVal c As Range, ByVal typed As String, ByVal fields As String) As String
+    Dim f As Calculator, nm As Variant, s As String, first As Boolean
+    Set f = CalcWindow(c)
+    CalcDrive f, typed
+    first = True
+    For Each nm In Split(fields, "|")
+        s = s & IIf(first, "", "|") & f.Field(CStr(nm))
+        first = False
+    Next
+    CalcProbe = s
     Unload f
 End Function
 
-' For tools\check_macros.ps1 (no window): fill from a cell, type "box=value;box=value",
-' read back "rpm|surface|per rev|per min|note".
+' The chip-thinning tab: "insert dia|depth|chip|feed to program|thinning line|button".
+Public Function ChipSelfTest(ByVal c As Range, ByVal typed As String) As String
+    ChipSelfTest = CalcProbe(c, typed, "txtIC|txtAp|txtHex|txtFn|lblThin|btnSetChip")
+End Function
+
+' The speed and feed tab: "rpm|surface|per rev|per min|note".
 Public Function CalcSelfTest(ByVal c As Range, ByVal typed As String) As String
-    Dim f As Calculator, t As Variant, kv() As String
-    Set f = CalcWindow(c)
-    For Each t In Split(typed, ";")
-        If InStr(t, "=") > 0 Then
-            kv = Split(t, "=")
-            f.TypeIn kv(0), kv(1)
-        End If
-    Next
-    CalcSelfTest = f.Field("txtRpm") & "|" & f.Field("txtSurf") & "|" & f.Field("txtRev") & "|" & _
-                   f.Field("txtMin") & "|" & f.Field("lblNote")
-    Unload f
+    CalcSelfTest = CalcProbe(c, typed, "txtRpm|txtSurf|txtRev|txtMin|lblNote")
 End Function
 
 Public Function RpmFromSurface(ByVal dia As Double, ByVal surface As Double, ByVal metric As Boolean) As Double

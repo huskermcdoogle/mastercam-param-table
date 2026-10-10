@@ -582,7 +582,7 @@ Public Sub RbScenLoad(control As IRibbonControl): Recorded "Restore scenario", "
 ' The op windows (each its own window module; these just open them).
 Public Sub RbText(control As IRibbonControl): Recorded "Edit text", "ParamTable.EditManualText": End Sub
 Public Sub RbCoolant(control As IRibbonControl): Recorded "Coolant", "ParamTable.PickCoolant": End Sub
-Public Sub RbSpeed(control As IRibbonControl): Recorded "Speed and feed", "ParamTable.CalcSpeed": End Sub
+Public Sub RbSpeed(control As IRibbonControl): ParamTable.CalcSpeed: End Sub      ' modeless: its own writes are each one undo
 Public Sub RbInspect(control As IRibbonControl): Recorded "Inspection", "Planner.ShowPlanWindow", "flips": End Sub
 
 ' The Go to menu: every column group of this sheet, and All columns.

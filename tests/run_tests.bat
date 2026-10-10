@@ -109,6 +109,14 @@ if errorlevel 1 ( set FAILED=1 ) else (
     if errorlevel 1 set FAILED=1
 )
 
+echo === holder_test ===
+cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\holder_test.exe" ^
+    "%~dp0holder_test.cpp"
+if errorlevel 1 ( set FAILED=1 ) else (
+    "%OUT%\holder_test.exe"
+    if errorlevel 1 set FAILED=1
+)
+
 echo === summary_test ===
 cl /nologo /EHsc /W4 /O2 /std:c++17 /utf-8 /Fo"%OUT%\\" /Fe"%OUT%\summary_test.exe" ^
     "%~dp0summary_test.cpp" "%~dp0..\src\Summary.cpp" "%~dp0..\src\Xlsx.cpp" "%~dp0..\src\XlsxRead.cpp" "%~dp0..\src\Csv.cpp"
