@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comments &amp; text - Parameter Table Tool manual</title>
+<meta name="description" content="Edit op comments, tool inspection comments and manual entry text - on one op or many.">
+<meta name="keywords" content="comment op comment inspection comment insp_comment ROTATE INSERT CHANGE INSERT INDEX INSERT CHECK INSERT manual entry text manual_text characters limit 119 double-click">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html" aria-current="page">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Comments &amp; text</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Comments &amp; text</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>A roomy window for the three kinds of text an op has:</p>
+<ul>
+<li><strong>Op comment</strong> &ndash; the name the Operation Manager shows (<code>comment</code>, up to 119 characters).</li>
+<li><strong>Inspection comment</strong> &ndash; the message at a <a href="words.html#w-insp-time">tool inspection stop</a>
+(<code>insp_comment</code>), e.g. <code>ROTATE INSERT</code>.</li>
+<li><strong>Manual text</strong> &ndash; the text of a manual entry op (<code>manual_text</code>, up to 3111 characters).
+Only for manual entry ops.</li>
+</ul>
+<p>It counts the characters as you type, against each one's limit. With several ops selected, it sets the same comment on all of them.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>To rename ops so the setup sheet and the operator make sense of them.</li>
+<li>To tell the operator what to do at an inspection stop (rotate the insert, check a size).</li>
+<li>To edit a long manual entry without squinting at a cell.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or just double-click a <code>comment</code>,
+<code>insp_comment</code> or <code>manual_text</code> cell.)</li>
+<li>Click <span class="ui">Comments &amp; text</span>. The sheet jumps to the comment columns so you can see what is there now.</li>
+<li><strong>Pick the tab</strong>: <span class="ui">Op comment</span>, <span class="ui">Inspection comment</span> or
+<span class="ui">Manual text</span>.</li>
+<li><strong>Type the text.</strong> The count under the box shows how many characters you have left. If the ops have
+different text, the box says so (<q>Mixed</q>).</li>
+<li>For an inspection comment, you can click a <strong>quick pick</strong>: <span class="ui">ROTATE INSERT</span>,
+<span class="ui">CHANGE INSERT</span>, <span class="ui">INDEX INSERT</span>, <span class="ui">CHECK INSERT</span>.</li>
+<li>Click <span class="ui">Apply</span>. The cells turn yellow. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes the whole Apply back.</li>
+</ol>
+<p>The window stays open beside the sheet. Click other ops and it follows them (unless you have typed something you have
+not applied yet). The <span class="ui">?</span> button opens this page.</p>
+<!-- CHECK: tab names, the quick-pick buttons, the inspection comment's character limit and the "Mixed" wording in the finished window. -->
+<div class="warn"><p><strong>The words in an inspection comment matter.</strong> A stop whose comment says
+<code>ROTATE</code>, <code>FLIP</code>, <code>CHANGE</code> or <code>INDEX</code> is counted as an
+<a href="flips.html">insert flip</a> &ndash; a new edge. <code>CHECK INSERT</code> is only a look, not a flip.
+Change <code>CHECK INSERT</code> to <code>ROTATE INSERT</code> and the flips per part go up.</p></div>
+<figure class="shot todo" data-img="win-text.png" data-kind="window" data-need="The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count."><strong>Picture coming: win-text.png</strong>The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Comments &amp; text window.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Say your rough bore and finish bore (ops 7 and 8, tool T12) stop for inspection with the comment
+<code>CHECK INSERT</code>. In your shop the operator always turns the insert at that stop. Say so in the comment, and the
+flips will be counted.</p>
+<ol>
+<li>Click a cell in op 7's row, hold <kbd>Ctrl</kbd>, click a cell in op 8's row.</li>
+<li>Click <span class="ui">Comments &amp; text</span>, then the <span class="ui">Inspection comment</span> tab.</li>
+<li>Click <span class="ui">ROTATE INSERT</span>, then <span class="ui">Apply</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th><code>insp_comment</code> before</th><th><code>insp_comment</code> after</th><th>Stops counted as flips (after load and regenerate)</th></tr></thead>
+<tbody>
+<tr><td>7 Rough Bore ID</td><td>CHECK INSERT</td><td class="edited">ROTATE INSERT</td><td>no &rarr; <strong>yes</strong></td></tr>
+<tr><td>8 Finish Bore ID</td><td>CHECK INSERT</td><td class="edited">ROTATE INSERT</td><td>no &rarr; <strong>yes</strong></td></tr>
+</tbody>
+</table></div>
+<p>After you load and regenerate, the NC code carries the message at each stop. If the comment switch
+(<code>insp_comment_on</code>) is off, turn it on too.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>... over the limit by 12</q></dt>
+<dd>Too long. Shorten it &ndash; the load refuses text that would be cut off.</dd>
+<dt>The Manual text tab is greyed out</dt>
+<dd>None of the selected ops is a manual entry op.</dd>
+<dt><q>Mixed</q></dt>
+<dd>The selected ops have different text. Whatever you type replaces all of them.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="flips.html">How insert flips are counted</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+<li><a href="check.html">Program check</a> (finds ops with no comment)</li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

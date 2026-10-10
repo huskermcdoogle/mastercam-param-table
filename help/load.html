@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Load the changes - Parameter Table Tool manual</title>
+<meta name="description" content="Put your edits back into the part: read the preview, untick what to leave out, Apply.">
+<meta name="keywords" content="load import apply write back preview tick untick refused impact cycle time flips regenerate">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html" aria-current="page">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Load the changes</h1>
+<p class="where">Mastercam: <b>Lathe params - load</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>The <a href="words.html#w-load">load</a> reads your saved workbook and puts the changed values back into the ops.
+First it shows a window with every change, op by op: the old value crossed out in red, the new value in green.
+Each change has a tick box. Nothing is written until you click <span class="ui">Apply</span>.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>When you are happy with your edits in Excel and have <strong>saved</strong> the workbook.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Save the workbook in Excel (<kbd>Ctrl</kbd>+<kbd>S</kbd>). You can leave it open.</li>
+<li>In Mastercam, open the same part and click <span class="ui">Lathe params - load</span>.</li>
+<li>Pick the workbook. The file window starts on the one you dumped last for this part. Click <span class="ui">Open</span>.</li>
+<li><strong>Read the top line</strong>: the whole part's cycle time and insert flips, before and after.</li>
+<li><strong>Read the list.</strong> Each op shows its own time and flips, then each change.
+Untick anything you want to leave out. Unticking an op unticks all of its changes. The top line follows.</li>
+<li>Look at the <span class="ui">Refused</span> part, if there is one. Those rows are not written at all (see below).</li>
+<li>Click <span class="ui">Apply</span> (it says how many, e.g. <span class="ui">Apply 4 changes</span>), or
+<span class="ui">Cancel</span> to write nothing.</li>
+<li><strong>Regenerate</strong> the changed ops (they are marked dirty), check them, then save the part.</li>
+</ol>
+<figure class="shot todo" data-img="mc-load-preview.png" data-kind="mastercam" data-need="The load preview window: 1 the impact line at the top (cycle time and flips), 2 an op line with its time, 3 a change with the old value struck through and the new value, 4 a tick box, 5 the Apply button.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The load preview window: 1 the impact line at the top (cycle time and flips), 2 an op line with its time, 3 a change with the old value struck through and the new value, 4 a tick box, 5 the Apply button."><strong>Picture coming: mc-load-preview.png</strong>The load preview window: 1 the impact line at the top (cycle time and flips), 2 an op line with its time, 3 a change with the old value struck through and the new value, 4 a tick box, 5 the Apply button. <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The whole part, before and after. (2) One op. (3) One change. (4) Its tick box. (5) Apply.</figcaption>
+</figure>
+<div class="note"><p>Some changes tick together. A feed and its <code>feed_mode</code> (per rev / per min) go together;
+so do a speed and its CSS / RPM, and a value and the switch that turns it on. Half of a pair would make no sense.</p></div>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>You changed the bore feeds (ops 7 and 8) and the facing speed (op 1). The preview shows:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Operation</th><th>Parameter</th><th class="num">Now</th><th class="num">Will be</th></tr></thead>
+<tbody>
+<tr><td>op 1 &middot; FACE</td><td>speed</td><td class="num">200</td><td class="num edited">250</td></tr>
+<tr><td>op 7 &middot; ROUGH</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td>op 8 &middot; FINISH</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+</tbody>
+</table></div>
+<p>You decide to wait on the facing speed. Untick op 1. The top line drops back to the bore changes only.
+The button now reads <span class="ui">Apply 2 changes</span>. Click it; regenerate ops 7 and 8.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<p>A <strong>refused</strong> row is left out whole &ndash; half a row is a state nobody chose. The reason is beside it:</p>
+<dl class="messages">
+<dt><q>"0.5" is above the maximum ...</q> / <q>... is below the minimum ...</q> / <q>... is not a number</q></dt>
+<dd>A value is outside what Mastercam takes for that setting. Fix the cell, save, load again.</dd>
+<dt><q>"..." is not one of: ...</q></dt>
+<dd>A dropdown cell has something typed in that is not on its list (a typo in <code>per rev</code>, a coolant name).</dd>
+<dt><q>is 131 characters; the operation holds at most 119</q></dt>
+<dd>A comment or text is too long. Shorten it &ndash; the tool will not cut it off for you.</dd>
+<dt><q>"feed" is read-only here but was changed ...</q></dt>
+<dd>You typed in a column the load never writes (a time, a count, an ID). Put the old value back.</dd>
+<dt><q>"..." does not apply to a FACE operation ...</q></dt>
+<dd>That cell is greyed out for that kind of op. Clear it.</dd>
+<dt><q>no ROUGH operation with that number is in the part</q> / <q>... is a different kind of operation</q></dt>
+<dd>The workbook was dumped from another part, or the op was deleted or replaced since. Dump again.</dd>
+<dt><q>Save the part first ...</q></dt>
+<dd>No saved part is open in Mastercam.</dd>
+<dt><q>... could not be opened (is it still open in Excel?)</q></dt>
+<dd>Save the workbook in Excel and try again. If it still fails, close it in Excel.</dd>
+<dt><q>Wrote 2 operation(s). They are marked for regeneration ...</q></dt>
+<dd>Done. Regenerate before you post, or the old values are still in the toolpath.</dd>
+</dl>
+<p>Every old value goes into <code>ParamTable.log</code> beside the part first. That is how
+<a href="undo-load.html">undo last load</a> puts them back.</p>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="undo-load.html">Undo a load</a></li>
+<li><a href="changes.html">List changes</a> (check your edits before you load)</li>
+<li><a href="estimate.html">How the cycle time estimate works</a></li>
+<li><a href="words.html#w-regenerate">Regenerate</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

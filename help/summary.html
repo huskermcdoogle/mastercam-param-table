@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Summary page - Parameter Table Tool manual</title>
+<meta name="description" content="The part's totals as dumped and now, the batch, and where the time and inserts go.">
+<meta name="keywords" content="summary totals cycle time cutting time flips per part batch quantity insert cost per batch longest operations air cutting removal rate">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html" aria-current="page">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Summary page</h1>
+<p class="where">Workbook: the <b>Summary</b> sheet (the first tab)</p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>The Summary is the whole part on one page. It shows the totals <strong>as dumped</strong> and <strong>now</strong>,
+with the change. It follows every edit you make, as you type. Under that: a batch, the longest ops, the tools that flip
+inserts most, the ops that cut the most air, and how many inserts a part uses.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>Before you start: to see where the time goes.</li>
+<li>While you edit: to see the effect on the whole part.</li>
+<li>Before you load: to know what you will gain.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Look at <strong>Part totals</strong>. <span class="ui">As dumped</span> is the program as it is in Mastercam.
+<span class="ui">Now</span> is with your edits. <span class="ui">Change</span> is the difference (minus = less).</li>
+<li>Type your <strong>batch quantity</strong> (how many parts in a run) in the box beside
+<span class="ui">Batch quantity (type it in)</span>. The cycle time, flips and insert cost per batch follow.</li>
+<li>Type the edges and cost of each insert on the <a href="tools-page.html#inserts">Tools page</a> to get
+<span class="ui">Insert cost per part</span> and <span class="ui">per batch</span>.</li>
+<li>Look at <strong>Longest operations</strong>. These are where a change saves the most. Click an op number to jump to its row.</li>
+<li>Look at <strong>Insert flips by tool</strong> and <strong>Most air cutting</strong> for more ideas.</li>
+</ol>
+<figure class="shot" data-img="sheet-summary-top.png" data-kind="sheet" data-need="The top of the Summary: part totals as dumped and now, the batch.">
+<!-- img --><a class="zoom" href="images/sheet-summary-top.png" title="Open the picture full size"><img src="images/sheet-summary-top.png" alt="The top of the Summary: part totals as dumped and now, the batch." width="1699" height="1116" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Cycle time as dumped and now. (2) Type the batch quantity here. (3) Insert cost for the batch (whole inserts).</figcaption>
+</figure>
+<figure class="shot" data-img="sheet-summary-lists.png" data-kind="sheet" data-need="The Summary's Longest operations list.">
+<!-- img --><a class="zoom" href="images/sheet-summary-lists.png" title="Open the picture full size"><img src="images/sheet-summary-lists.png" alt="The Summary&#x27;s Longest operations list." width="1914" height="351" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Click an op number to go to its row. (2) Its share of the whole part's time.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Oil Spool Head, after raising the bore feeds (ops 7 and 8) to 0.012:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>What</th><th class="num">As dumped</th><th class="num">Now</th><th class="num">Change</th></tr></thead>
+<tbody>
+<tr><td>Cycle time (estimate)</td><td class="num">12:46:38</td><td class="num moved">12:26:50</td><td class="num better">-0:19:49</td></tr>
+<tr><td>Cutting time</td><td class="num">12:42:43</td><td class="num moved">12:22:54</td><td class="num better">-0:19:49</td></tr>
+<tr><td>Insert flips per part</td><td class="num">89</td><td class="num">89</td><td class="num">0</td></tr>
+<tr><td>Average removal rate (per min)</td><td class="num">1.74</td><td class="num moved">1.79</td><td class="num better">0.05</td></tr>
+</tbody>
+</table></div>
+<p>The prime turning rough (op 2) is 72.8% of the part. That is where the next big saving is.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>No estimated times - regenerate and dump again.</q></dt>
+<dd>The ops had no toolpath when dumped (they needed regenerating). Regenerate in Mastercam, then dump again.</dd>
+<dt><q>No insert flips counted on this part.</q></dt>
+<dd>No op has tool inspection stops that change the insert. See <a href="flips.html">How insert flips are counted</a>.</dd>
+<dt>Insert cost is blank</dt>
+<dd>Type the edges and the cost per insert on the Tools page.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="slowest.html">Slowest ops</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+<li><a href="estimate.html">How the cycle time estimate works</a></li>
+<li><a href="words.html#w-mrr">MRR and material removed</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

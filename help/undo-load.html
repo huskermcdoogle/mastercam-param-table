@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undo a load - Parameter Table Tool manual</title>
+<meta name="description" content="Put the old values of the last load back into the part.">
+<meta name="keywords" content="undo last load restore old values put back revert part ParamTable.log mistake">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html" aria-current="page">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Undo a load</h1>
+<p class="where">Mastercam: <b>Lathe params - undo last load</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>It takes the last load of this part back. The old values come from <code>ParamTable.log</code>, a file the load
+writes beside the part before it changes anything. You see the same kind of preview window as the load, with tick boxes,
+before anything is written.</p>
+<p>This is the undo for the <strong>part in Mastercam</strong>. For an undo inside Excel, see <a href="undo.html">Undo</a>.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>After a load, when the result is not what you wanted: the backplot looks wrong, the program posts badly, or the
+operator says the new feed chatters. It is its own command so it is there later &ndash; long after the load window
+has closed.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Open the part in Mastercam (the same saved part file the load went into).</li>
+<li>Click <span class="ui">Lathe params - undo last load</span>.</li>
+<li>Read the window. <span class="ui">Restore</span> lists each value it will put back.
+<span class="ui">Changed since the load</span> lists values you changed by hand after the load &ndash; those are left alone.</li>
+<li>Untick anything you want to keep as it is now.</li>
+<li>Click <span class="ui">Restore</span> (e.g. <span class="ui">Restore 2 changes</span>).</li>
+<li>Regenerate the restored ops, then save the part.</li>
+</ol>
+<figure class="shot todo" data-img="mc-undo-load.png" data-kind="mastercam" data-need="The undo last load window: 1 the line saying which load (date and file), 2 a value to restore, 3 the Changed since the load part, 4 the Restore button.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The undo last load window: 1 the line saying which load (date and file), 2 a value to restore, 3 the Changed since the load part, 4 the Restore button."><strong>Picture coming: mc-undo-load.png</strong>The undo last load window: 1 the line saying which load (date and file), 2 a value to restore, 3 the Changed since the load part, 4 the Restore button. <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) Which load. (2) A value going back. (3) Values changed since &ndash; left alone. (4) Restore.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>You loaded feed 0.012 into ops 7 and 8. After the load you also changed op 8's feed by hand in Mastercam to 0.011.
+Now the bore chatters and you want the old feeds back.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">Before the load</th><th class="num">Now</th><th>Undo does</th><th class="num">After undo</th></tr></thead>
+<tbody>
+<tr><td>7 feed</td><td class="num">0.01</td><td class="num">0.012</td><td>Restore</td><td class="num edited">0.01</td></tr>
+<tr><td>8 feed</td><td class="num">0.01</td><td class="num">0.011</td><td>Changed since the load &ndash; left alone</td><td class="num">0.011</td></tr>
+</tbody>
+</table></div>
+<p>Run it a second time and it does nothing: the values are already back.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>There is no ParamTable.log beside ... so there is no load to undo.</q></dt>
+<dd>No load was made into this part from this folder, or the log was moved or deleted.</dd>
+<dt><q>ParamTable.log has no load of ... that can be undone.</q></dt>
+<dd>The log has no load of this part. Loads made by a much older version of the tool cannot be undone with this command;
+their old values are still in the log to put back by hand.</dd>
+<dt><q>Nothing to restore.</q> / <span class="ui">Already as before the load</span></dt>
+<dd>The values are already back (you ran undo before, or changed them back by hand).</dd>
+<dt><q>Restored 1 operation(s). They are marked for regeneration ...</q></dt>
+<dd>Done. Regenerate before posting, then save the part.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo.html">Undo inside Excel</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

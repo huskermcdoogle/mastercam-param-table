@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coolant - Parameter Table Tool manual</title>
+<meta name="description" content="See and set the coolant of the selected ops - all at once, for either coolant setup.">
+<meta name="keywords" content="coolant flood mist thru-tool through spindle high pressure off M08 M09 coolant_before coolant_with coolant_after V9 X-style mixed">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html" aria-current="page">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Coolant</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Coolant</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Shows the coolant of the ops you selected and sets it for all of them at once. It works for both ways a Mastercam
+machine can be set up for <a href="words.html#w-coolant">coolant</a>:</p>
+<ul>
+<li><strong>One setting per op</strong> (&ldquo;V9&rdquo; coolant): <code>Off</code>, <code>Flood</code>,
+<code>Mist</code> or <code>Thru-tool</code>. Column <code>coolant</code>.</li>
+<li><strong>Before / with / after the move</strong> (&ldquo;X-style&rdquo; coolant), using your machine's own coolant names.
+Columns <code>coolant_before</code>, <code>coolant_with</code>, <code>coolant_after</code>. Each can hold more than one coolant.</li>
+</ul>
+<p>Each op follows its own machine, so one part can have both kinds.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>A program came over with coolant off on cutting ops.</li>
+<li>You want thru-tool on all the drills, or mist instead of flood on a whole group.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li><strong>Select the ops</strong> &ndash; any cell in their rows.</li>
+<li>Click <span class="ui">Coolant</span>. The sheet jumps to the coolant columns, so you see what is set now.</li>
+<li><strong>Read the current setting.</strong> If the ops differ, it says how, e.g. <q>Mixed: Flood x3, Off x1</q>.</li>
+<li><strong>Pick the coolant.</strong> One setting: pick Off, Flood, Mist or Thru-tool. Before / with / after: tick the
+coolants for each.</li>
+<li>Click <span class="ui">Apply</span>. Every op gets it. Ops that could not be set are listed, with the reason.</li>
+</ol>
+<p>The window stays open and follows the ops you click. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes back the whole Apply.</p>
+<!-- CHECK: the finished Coolant window's wording (Mixed line, Apply button, the not-set list). -->
+<figure class="shot todo" data-img="win-coolant.png" data-kind="window" data-need="The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply."><strong>Picture coming: win-coolant.png</strong>The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Coolant window: what is set now, and what to set.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>On the Oil Spool Head, the prime turning ops (2, 3, 4, 5, 6) run with coolant <code>Off</code>. The others run
+<code>Flood</code>. You want flood on the two roughs, ops 2 and 3.</p>
+<ol>
+<li>Select a cell in op 2's row and op 3's row.</li>
+<li>Click <span class="ui">Coolant</span>. It says <q>Off</q> (both the same).</li>
+<li>Pick <span class="ui">Flood</span>, click <span class="ui">Apply</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th><code>coolant</code> before</th><th><code>coolant</code> after</th></tr></thead>
+<tbody>
+<tr><td>2 Prime Turn Rough OD</td><td>Off</td><td class="edited">Flood</td></tr>
+<tr><td>3 Prime Turn Rest Rough OD</td><td>Off</td><td class="edited">Flood</td></tr>
+</tbody>
+</table></div>
+<p>Coolant does not change the cycle time estimate. It is listed in the load preview like any other change.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>Mixed: Flood x3, Off x1</q></dt>
+<dd>Three of the selected ops have Flood and one has Off. Applying sets them all the same.</dd>
+<dt>An op listed as not set: <q>this machine has no ...</q></dt>
+<dd>That op's machine does not have that coolant. Each machine has its own list.</dd>
+<dt>An op listed as not set: no coolant</dt>
+<dd>Some ops have no coolant setting at all (a transform, a manual entry).</dd>
+</dl>
+<!-- CHECK: the exact reasons the Coolant window gives for ops it could not set. -->
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="check.html">Program check</a> (finds cutting ops with coolant off)</li>
+<li><a href="set.html">Set</a></li>
+<li><a href="words.html#w-coolant">Coolant words</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change report - Parameter Table Tool manual</title>
+<meta name="description" content="A one-page before and after of your changes - cycle time, flips and insert cost - with a Why column. Ready to print.">
+<meta name="keywords" content="change report print one page before after savings cycle time per batch insert cost flips why reason boss record paperwork PDF">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html" aria-current="page">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Change report</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Undo and review</b> &rsaquo; <b>Change report</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>A one-page report of what you changed and what it saves: cycle time per part and per batch, insert flips, and insert
+cost &ndash; before and after. Every change is listed, with a <span class="ui">Why</span> column for you to type the
+reason. Print it or save it as a PDF for the job folder, your lead, or the next programmer.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>Before you load: to get a change signed off.</li>
+<li>After you load: to keep a record of what changed and why.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Type the batch quantity on the <a href="summary.html">Summary</a> and the insert costs on the
+<a href="tools-page.html#inserts">Tools page</a> first &ndash; the report uses them.</li>
+<li>Click <span class="ui">Change report</span>. The <span class="ui">Change report</span> sheet opens.</li>
+<li>Read the totals at the top: before, after, and the difference.</li>
+<li>Type a short reason in the <span class="ui">Why</span> column for each change (&ldquo;insert maker says 0.012 OK&rdquo;).</li>
+<li>Print it: <span class="ui">File</span> &rsaquo; <span class="ui">Print</span> (or <kbd>Ctrl</kbd>+<kbd>P</kbd>). Pick
+<span class="ui">Microsoft Print to PDF</span> to make a PDF.</li>
+</ol>
+<!-- CHECK: the Change report sheet's layout and headings once it is finished. -->
+<figure class="shot todo" data-img="sheet-report.png" data-kind="window" data-need="The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one."><strong>Picture coming: sheet-report.png</strong>The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Change report, ready to print.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Oil Spool Head, bore feeds raised to 0.012, batch of 20 parts:</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">After</th><th class="num">Saved</th></tr></thead>
+<tbody>
+<tr><td>Cycle time per part</td><td class="num">12:46:38</td><td class="num">12:26:50</td><td class="num better">0:19:49</td></tr>
+<tr><td>Cycle time per batch (20)</td><td class="num">about 255:33</td><td class="num">about 248:57</td><td class="num better">about 6:36</td></tr>
+<tr><td>Insert flips per part</td><td class="num">89</td><td class="num">89</td><td class="num">0</td></tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th>Parameter</th><th class="num">Before</th><th class="num">After</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>7 Rough Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Insert box says 0.008-0.016</td></tr>
+<tr><td>8 Finish Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Same tool; finish checked on first part</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+<li><a href="summary.html">Summary page</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

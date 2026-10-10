@@ -2,11 +2,11 @@
     Package the current build into a folder (and a zip of it) that can be carried to
     another machine. Contents:
 
-        ParamTable.dll        the build
-        ParamTable.ft         the function table
-        install.ps1           installs from this folder, after checking the hashes
-        SHA256SUMS.txt        the hash of each file above, to check nothing changed in transit
-        BUILD-INFO.txt        which source and toolset it came from
+        ParamTable.ft                    the function table
+        ParamTable\ParamTable.dll        the build
+        ParamTable\help\                 the user manual (plain web pages; index.html)
+        ParamTable\SHA256SUMS.txt        the hash of every file here, to check nothing changed in transit
+        ParamTable\BUILD-INFO.txt        which source and toolset it came from
 
     A hash proves the files are unchanged since packaging. It says nothing about whether
     the code is safe - that is what review is for, and the source is in git.
@@ -37,6 +37,13 @@ Copy-Item -LiteralPath $dll -Destination (Join-Path $sub "ParamTable.dll")
 Copy-Item -LiteralPath (Join-Path $Root "ParamTable.ft") -Destination $out
 Copy-Item -LiteralPath (Join-Path $Root "LICENSE") -Destination (Join-Path $sub "LICENSE.txt")
 
+# The user manual: help\ beside the DLL, as Mastercam's "Parameter Table - user manual" and
+# the workbook's links expect it. The list of pictures still to make stays in the repo.
+$helpSrc = Join-Path $Root "help"
+if (-not (Test-Path -LiteralPath (Join-Path $helpSrc "index.html"))) { Write-Error "help\index.html not found - the manual is missing"; exit 1 }
+Copy-Item -LiteralPath $helpSrc -Destination (Join-Path $sub "help") -Recurse
+Get-ChildItem -LiteralPath (Join-Path $sub "help") -Recurse -Filter "NEEDED.txt" | Remove-Item -Force
+
 # ---- Build info: the commit, whether the tree was clean, and what it was built with.
 $commit = (& git -C $Root rev-parse --short HEAD 2>$null)
 $dirty  = (& git -C $Root status --porcelain 2>$null)
@@ -53,8 +60,12 @@ $lines = @(
 )
 Set-Content -LiteralPath (Join-Path $sub "BUILD-INFO.txt") -Value $lines -Encoding UTF8
 
-# ---- Hashes LAST, over the files as they will be shipped.
-$sums = foreach ($n in 'ParamTable.ft','ParamTable\ParamTable.dll','ParamTable\BUILD-INFO.txt') {
+# ---- Hashes LAST, over the files as they will be shipped - the manual's pages too, so a
+# page altered in transit is caught like the DLL would be.
+$names = @('ParamTable.ft', 'ParamTable\ParamTable.dll', 'ParamTable\BUILD-INFO.txt', 'ParamTable\LICENSE.txt')
+$names += Get-ChildItem -LiteralPath (Join-Path $sub "help") -Recurse -File | Sort-Object FullName |
+    ForEach-Object { 'ParamTable\help\' + $_.FullName.Substring((Join-Path $sub "help").Length + 1) }
+$sums = foreach ($n in $names) {
     "{0}  {1}" -f (Get-FileHash -LiteralPath (Join-Path $out $n) -Algorithm SHA256).Hash, $n
 }
 Set-Content -LiteralPath (Join-Path $sub "SHA256SUMS.txt") -Value $sums -Encoding ASCII

@@ -4,10 +4,13 @@
 #define IDS_FT_DUMP                     1
 #define IDS_FT_LOAD                     2
 #define IDS_FT_UNDO                     3
+#define IDS_FT_HELP                     4
 #define IDB_DUMP_SMALL                  18001
 #define IDB_DUMP_LARGE                  18002
 #define IDB_LOAD_SMALL                  18003
 #define IDB_LOAD_LARGE                  18004
+#define IDB_HELP_SMALL                  18005
+#define IDB_HELP_LARGE                  18006
 #define IDR_VBAPROJECT                  18010
 #define IDR_RIBBON                      18011
 

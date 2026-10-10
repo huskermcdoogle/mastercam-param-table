@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scenarios - Parameter Table Tool manual</title>
+<meta name="description" content="Save your edits under a name, bring them back later, and compare ideas side by side.">
+<meta name="keywords" content="scenarios what-if compare two ideas save restore delete side by side option A option B">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html" aria-current="page">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Scenarios</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Improve</b> &rsaquo; <b>Scenarios</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>A <a href="words.html#w-scenario">scenario</a> is your set of edits, saved under a name inside the workbook. Save one
+idea, try another, then compare them side by side: cycle time, cutting time, flips and MRR for each, and every
+parameter each one changes.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>&ldquo;Faster feeds or faster speeds &ndash; which saves more?&rdquo;</li>
+<li>You want to keep a set of edits to come back to, without loading it yet.</li>
+<li>You want to show the boss two options.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Make your first set of edits on the sheet.</li>
+<li><span class="ui">Scenarios</span> &rsaquo; <span class="ui">Save the changes as a scenario</span>. Type a name, click
+<span class="ui">OK</span>.</li>
+<li>Put the sheet back (<a href="undo.html#back">Back to the dump</a> &rsaquo; <span class="ui">Everything</span>) and make
+the second set of edits. Save it under another name.</li>
+<li><span class="ui">Scenarios</span> &rsaquo; <span class="ui">Compare scenarios</span>. A <span class="ui">Scenarios</span>
+sheet opens with the totals and every changed parameter, side by side.</li>
+<li>To go on with one: <span class="ui">Scenarios</span> &rsaquo; <span class="ui">Restore a scenario</span>. The sheet goes
+back to the dump, then that scenario's values go in.</li>
+<li><span class="ui">Delete a scenario</span> removes one you no longer want (the sheet is not changed).</li>
+</ol>
+<figure class="shot" data-img="win-scenario-save.png" data-kind="window" data-need="The save scenario window with a name typed and the list of edits it keeps.">
+<!-- img --><a class="zoom" href="images/win-scenario-save.png" title="Open the picture full size"><img src="images/win-scenario-save.png" alt="The save scenario window with a name typed and the list of edits it keeps." width="982" height="635" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The name. (2) OK. The list shows every edit it keeps.</figcaption>
+</figure>
+<figure class="shot" data-img="sheet-scenarios.png" data-kind="sheet" data-need="The Scenarios sheet comparing two saved scenarios with the dump and the sheet now.">
+<!-- img --><a class="zoom" href="images/sheet-scenarios.png" title="Open the picture full size"><img src="images/sheet-scenarios.png" alt="The Scenarios sheet comparing two saved scenarios with the dump and the sheet now." width="2515" height="522" loading="lazy"></a><!-- /img -->
+<figcaption>The Scenarios sheet: totals for each idea, then every parameter they change.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Two ideas for the Oil Spool Head: faster bore feeds (ops 7 and 8 at 0.012), or a faster facing speed (op 1 at 250 SFM).</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Scenario</th><th class="num">Cells changed</th><th class="num">Cycle time</th><th class="num">vs the dump</th><th class="num">Flips / part</th></tr></thead>
+<tbody>
+<tr><td>As dumped</td><td class="num">0</td><td class="num">12:46:38</td><td class="num">+0:00</td><td class="num">89</td></tr>
+<tr><td>Bore feed 0.012</td><td class="num">2</td><td class="num">12:26:50</td><td class="num better">-19:49 (-2.6%)</td><td class="num">89</td></tr>
+<tr><td>Face 250 SFM</td><td class="num">1</td><td class="num">12:42:26</td><td class="num better">-4:12 (-0.5%)</td><td class="num">89</td></tr>
+</tbody>
+</table></div>
+<p>The bore feeds save about five times more. Restore <span class="ui">Bore feed 0.012</span>, save, and load it.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>No scenarios saved yet - edit the sheet, then Save scenario.</q></dt>
+<dd>There is nothing to restore, compare or delete yet.</dd>
+<dt><q>... REPLACES the one saved ...</q></dt>
+<dd>A scenario by that name exists. OK writes over it. Type a new name to keep both.</dd>
+<dt><q>'Bore feed 0.012' restored - 2 cell(s) set, 1 refused ...</q></dt>
+<dd>A value could not go back: its op or column is gone (the sheet was dumped again), or it is outside its limits.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="undo.html">Undo and back to the dump</a></li>
+<li><a href="report.html">Change report</a></li>
+<li><a href="target-time.html">Hit a target time</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

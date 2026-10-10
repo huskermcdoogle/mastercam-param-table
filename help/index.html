@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User manual - Parameter Table Tool</title>
+<meta name="description" content="The user manual for the Parameter Table Tool: search it, or pick what you want to do.">
+<meta name="keywords" content="help manual home search start contents">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html" aria-current="page">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<h1>Parameter Table Tool &ndash; user manual</h1>
+<p class="lead">Change feeds, speeds, depths, coolant and comments on many ops at once, in Excel &ndash;
+and see what it does to the cycle time and your inserts before anything goes back into Mastercam.</p>
+
+<div class="big-search" role="search">
+<label for="q">Search the manual</label>
+<input id="q" type="search" placeholder="Type a word: coolant, flips, faster, SFM, undo ..." autocomplete="off">
+</div>
+<ul id="results" class="results" aria-live="polite"></ul>
+
+<section id="tasks">
+<h2>I want to ...</h2>
+<ul class="tasks">
+<li><a href="start.html"><strong>Use it for the first time</strong><span>The five steps, start to finish.</span></a></li>
+<li><a href="slowest.html"><strong>Make the part run faster</strong><span>Find the slow ops, then speed them up.</span></a></li>
+<li><a href="target-time.html"><strong>Hit a cycle time I was given</strong><span>Type the time; the feeds follow.</span></a></li>
+<li><a href="inspection.html"><strong>Use fewer inserts / lower insert cost</strong><span>Flips per part and how much of each edge gets used.</span></a></li>
+<li><a href="coolant.html"><strong>Change coolant on several ops</strong><span>Flood, mist, thru-tool or off &ndash; all at once.</span></a></li>
+<li><a href="text.html"><strong>Change a comment or inspection comment</strong><span>Op comments, ROTATE INSERT, manual text.</span></a></li>
+<li><a href="find.html"><strong>Find an op fast</strong><span>By op number, tool (T12) or a word in the comment.</span></a></li>
+<li><a href="calculator.html"><strong>Work out SFM, RPM or a feed</strong><span>Speed &amp; feed, and chip thinning.</span></a></li>
+<li><a href="set.html"><strong>Put one value in many cells</strong><span>Same feed, same depth, same anything.</span></a></li>
+<li><a href="scale.html"><strong>Make numbers 10% bigger or smaller</strong><span>Scale feeds, speeds or depths by a percent.</span></a></li>
+<li><a href="copy.html"><strong>Make ops match each other</strong><span>Copy one op's settings to others, or to every op of a tool.</span></a></li>
+<li><a href="check.html"><strong>Check the program before it goes to the floor</strong><span>A list of things worth a second look.</span></a></li>
+<li><a href="changes.html"><strong>See what I changed</strong><span>Every changed cell, old and new.</span></a></li>
+<li><a href="report.html"><strong>Print a report of my changes</strong><span>One page: before, after, and why.</span></a></li>
+<li><a href="undo.html"><strong>Undo a mistake in Excel</strong><span>Ctrl+Z, Undo, or back to the dump.</span></a></li>
+<li><a href="undo-load.html"><strong>Undo a load in Mastercam</strong><span>Put the old values back in the part.</span></a></li>
+<li><a href="scenarios.html"><strong>Compare two ideas</strong><span>Save each one, then see them side by side.</span></a></li>
+<li><a href="words.html"><strong>Understand a column or a word</strong><span>Every column and term in plain words.</span></a></li>
+<li><a href="troubleshooting.html"><strong>Fix a problem</strong><span>Messages, and what to do about them.</span></a></li>
+</ul>
+</section>
+
+<section id="pages">
+<h2>Every page</h2>
+<!-- pages -->
+<div class="all-pages">
+<h3>Start here</h3>
+<ul>
+<li><a href="start.html">Getting started</a> <span>&ndash; The five steps: dump, edit, save, load, regenerate.</span></li>
+<li><a href="install.html">Install the add-in</a> <span>&ndash; Copy two things into Mastercam&#x27;s Add-Ins folder, then put the commands on your ribbon.</span></li>
+</ul>
+<h3>In Mastercam</h3>
+<ul>
+<li><a href="dump.html">Dump to Excel</a> <span>&ndash; Write the part&#x27;s ops to a workbook: which ops, where, and what to call it.</span></li>
+<li><a href="load.html">Load the changes</a> <span>&ndash; Put your edits back into the part: read the preview, untick what to leave out, Apply.</span></li>
+<li><a href="undo-load.html">Undo a load</a> <span>&ndash; Put the old values of the last load back into the part.</span></li>
+</ul>
+<h3>The workbook</h3>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a> <span>&ndash; The sheets, the colours, the ribbon tab, and the .ptconfig file beside the part.</span></li>
+<li><a href="summary.html">Summary page</a> <span>&ndash; The part&#x27;s totals as dumped and now, the batch, and where the time and inserts go.</span></li>
+<li><a href="sheet.html">The main sheet</a> <span>&ndash; The Lathe params sheet: one row per op, columns in groups, how to edit safely.</span></li>
+<li><a href="tools-page.html">Tools page</a> <span>&ndash; One row per tool with its picture and insert; the inserts table with edges, cost and parts per edge.</span></li>
+</ul>
+<h3>Ribbon: Find</h3>
+<ul>
+<li><a href="find.html">Find an op</a> <span>&ndash; Go to a column group, find an op by number, tool or comment, and show only some ops.</span></li>
+<li><a href="slowest.html">Slowest ops</a> <span>&ndash; Show only the ops that make 80% of the cycle time, longest first.</span></li>
+</ul>
+<h3>Ribbon: Edit cells</h3>
+<ul>
+<li><a href="set.html">Set</a> <span>&ndash; Put one value into every selected cell, with a preview first.</span></li>
+<li><a href="scale.html">Scale %</a> <span>&ndash; Make the selected numbers bigger or smaller by a percent, with a preview.</span></li>
+<li><a href="copy.html">Copy from op</a> <span>&ndash; Copy the selected columns from one op into other ops, or into every op of a tool.</span></li>
+</ul>
+<h3>Ribbon: Selected ops</h3>
+<ul>
+<li><a href="text.html">Comments &amp; text</a> <span>&ndash; Edit op comments, tool inspection comments and manual entry text - on one op or many.</span></li>
+<li><a href="coolant.html">Coolant</a> <span>&ndash; See and set the coolant of the selected ops - all at once, for either coolant setup.</span></li>
+<li><a href="calculator.html">Speed &amp; feed</a> <span>&ndash; SFM and RPM, feed per rev and per minute, and chip thinning for round and lead-angle inserts.</span></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a> <span>&ndash; Flips per part for each tool, how much of each edge is used, and an edge time that uses every edge evenly.</span></li>
+</ul>
+<h3>Ribbon: Improve</h3>
+<ul>
+<li><a href="target-time.html">Hit a target time</a> <span>&ndash; Type the time you want; the feeds change by one factor, each inside its own limits.</span></li>
+<li><a href="check.html">Program check</a> <span>&ndash; A list of things worth a second look before the program goes to the floor, each with why and how to fix it.</span></li>
+<li><a href="scenarios.html">Scenarios</a> <span>&ndash; Save your edits under a name, bring them back later, and compare ideas side by side.</span></li>
+</ul>
+<h3>Ribbon: Undo and review</h3>
+<ul>
+<li><a href="undo.html">Undo</a> <span>&ndash; Take back a command (Ctrl+Z or Undo), or put cells back as they were dumped.</span></li>
+<li><a href="changes.html">List changes</a> <span>&ndash; A Changes sheet listing every cell that differs from the dump, old and new.</span></li>
+<li><a href="report.html">Change report</a> <span>&ndash; A one-page before and after of your changes - cycle time, flips and insert cost - with a Why column. Ready to print.</span></li>
+</ul>
+<h3>How it works</h3>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a> <span>&ndash; How est_cycle_time follows your edits, what it counts and what it leaves out.</span></li>
+<li><a href="flips.html">How insert flips are counted</a> <span>&ndash; Which tool inspection stops count as insert flips, how stops with no comment are worked out, and how flips become inserts.</span></li>
+</ul>
+<h3>Help</h3>
+<ul>
+<li><a href="words.html">Word list</a> <span>&ndash; Every column and every word in plain language: flips, CSS, SFM, RPM, per rev, edge life, MRR, chip thinning and more.</span></li>
+<li><a href="troubleshooting.html">Troubleshooting</a> <span>&ndash; Problems and messages, and what to do about them.</span></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</div>
+<!-- /pages -->
+</section>
+
+<section id="offline">
+<h2>About this manual</h2>
+<p>This manual is a folder of web pages that comes with the add-in. It works with no internet.
+Open it from Mastercam (<span class="ui">Parameter Table - user manual</span>), from the
+<span class="ui">User manual</span> button on the Excel ribbon, from the <span class="ui">?</span> button in any window,
+or from the link on the workbook's Summary page.</p>
+<p>To print it all, use <a href="print.html">Print the whole manual</a>.</p>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

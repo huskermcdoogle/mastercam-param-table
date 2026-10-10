@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How insert flips are counted - Parameter Table Tool manual</title>
+<meta name="description" content="Which tool inspection stops count as insert flips, how stops with no comment are worked out, and how flips become inserts.">
+<meta name="keywords" content="insert flips how counted tool inspection stop comment ROTATE FLIP CHANGE INDEX edge clock edge life insp_time flips_part flips_est flips_uncommented edge_limit inserts per part">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html" aria-current="page">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>How insert flips are counted</h1>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>An <a href="words.html#w-flip">insert flip</a> is a fresh cutting edge: the operator rotates, flips or changes the
+insert. Flips per part tell you how many inserts a part uses &ndash; and what they cost. This page explains where the
+numbers in the flip columns come from, so you can trust them (or know when not to).</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>When the flips on the sheet look too high or too low, or before you change <code>insp_time</code> or an inspection comment.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<p>The tool counts flips in three steps, for every op:</p>
+<ol class="steps">
+<li><strong>Stops with a comment.</strong> Mastercam's <span class="ui">Tool inspection</span> settings stop the machine
+(every so much cutting time, distance, or number of cuts). Each stop has a comment. If the comment says
+<code>ROTATE</code>, <code>FLIP</code>, <code>CHANGE</code> or <code>INDEX</code>, the stop is a flip. Other stops
+(<code>CHECK INSERT</code>) are just a look. These are read from the toolpath as it is &ndash; column <code>flips</code>
+&ndash; and follow your edits live in <code>flips_est</code>.</li>
+<li><strong>Stops with no comment</strong> (the op's inspection comment switch, <code>insp_comment_on</code>, is off).
+They leave nothing in the toolpath, so the tool works them out with an
+<strong>edge clock</strong>: it adds up the tool's cutting time, and every time the edge has cut its
+<code>edge_limit</code>, that is one flip. <code>edge_limit</code> is the op's <code>insp_time</code>, or, if the op has
+none, the tool's <span class="ui">Edge life</span> on the Tools page (8:00 to start). The clock carries over from one op
+of the tool to the next. Column <code>flips_uncommented</code>.</li>
+<li><strong>Add them up.</strong> <code>flips_part</code> = <code>flips_est</code> + <code>flips_uncommented</code>,
+in whole flips. The Tools page adds each tool's ops (counting the copies a transform makes); the inserts
+table divides by the edges per insert.</li>
+</ol>
+<figure>
+<svg class="diagram" viewBox="0 0 760 250" role="img" aria-labelledby="flip-t flip-d">
+<title id="flip-t">One tool, two ops: the edge clock and Mastercam's own timer</title>
+<desc id="flip-d">Tool T5 cuts 5 minutes in op A, then 7 minutes in op B, with an edge time of 8:00. The edge clock runs on across both ops and counts one flip at 8 minutes, 3 minutes into op B; the second edge then cuts the last 4 minutes. Mastercam's own timer starts again at op B, so neither op reaches 8:00 and Mastercam puts no stop in the toolpath.</desc>
+<g font-size="16" fill="#1b1f24">
+<text x="20" y="22" font-weight="700">Edge clock (stops with no comment) &ndash; carries on from op to op</text>
+<rect x="40" y="34" width="250" height="34" fill="#dbe7ff" stroke="#1d4ed8"/>
+<rect x="290" y="34" width="350" height="34" fill="#e7f5e9" stroke="#1e7b34"/>
+<text x="165" y="56" text-anchor="middle">op A: 5:00</text>
+<text x="465" y="56" text-anchor="middle">op B: 7:00</text>
+<rect x="40" y="72" width="400" height="12" fill="#1d4ed8"/>
+<rect x="440" y="72" width="200" height="12" fill="#c2185b"/>
+<text x="240" y="102" text-anchor="middle" fill="#1d4ed8">edge 1 cuts 8:00</text>
+<text x="540" y="102" text-anchor="middle" fill="#c2185b">edge 2 cuts 4:00</text>
+<line x1="440" y1="30" x2="440" y2="122" stroke="#c2185b" stroke-width="3"/>
+<text x="446" y="122" fill="#c2185b" font-weight="700">1 flip at 8:00</text>
+
+<text x="20" y="146" font-weight="700">Mastercam's own timer (stops with a comment) &ndash; starts again each op</text>
+<rect x="40" y="158" width="250" height="34" fill="#dbe7ff" stroke="#1d4ed8"/>
+<rect x="290" y="158" width="350" height="34" fill="#e7f5e9" stroke="#1e7b34"/>
+<text x="165" y="180" text-anchor="middle">op A: 0 to 5:00</text>
+<text x="465" y="180" text-anchor="middle">op B: 0 to 7:00</text>
+<text x="40" y="218">Neither op reaches 8:00, so there is no stop &ndash; 0 flips in the toolpath.</text>
+<g fill="#4a525c" font-size="14">
+<text x="40" y="242">0</text><text x="282" y="242">5:00</text><text x="428" y="242">8:00</text><text x="626" y="242">12:00</text>
+</g>
+</g>
+</svg>
+<figcaption>Why the two counts can differ: the edge keeps wearing from op to op, but Mastercam's timer starts again.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>Tool T5 runs two ops: A cuts 5:00, B cuts 7:00. Its ops stop for inspection with <strong>no comment</strong>; the
+tool's edge life is 8:00.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">op A</th><th class="num">op B</th><th class="num">Tool T5</th></tr></thead>
+<tbody>
+<tr><td>Cutting time</td><td class="num">5:00</td><td class="num">7:00</td><td class="num">12:00</td></tr>
+<tr><td><code>edge_after</code> (edge clock leaving the op)</td><td class="num">5:00</td><td class="num">4:00</td><td></td></tr>
+<tr><td><code>flips_uncommented</code></td><td class="num">0</td><td class="num">1</td><td class="num">1 flip per part</td></tr>
+</tbody>
+</table></div>
+<p>Now say op B's feed goes up 40%. Its cutting time drops to 5:00, the clock reaches only 10:00 &ndash; and still one
+flip. Up 70%: 4:07, the clock ends at 9:07, still one flip. The flips only drop when the whole tool cuts less than one
+edge life.</p>
+<p>If the stops <strong>had</strong> a comment like <code>ROTATE INSERT</code>, Mastercam's own timer would decide: it
+starts again in op B, neither op reaches 8:00, so there would be 0 flips. That is why
+<a href="text.html">the comment you pick</a> matters.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><code>flips_why</code> says <q>time 8 + end 1</q></dt>
+<dd>8 flips came from the time setting and 1 from the stop at the end of the op.</dd>
+<dt><code>flip_longest</code> is much longer than <code>insp_time</code></dt>
+<dd>The op stops only between cuts, so a long pass runs past the setting before it can stop. See
+<code>insp_between_cuts</code> in the <a href="words.html">word list</a>.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="inspection.html">Inspection &amp; inserts</a> &ndash; use every edge evenly</li>
+<li><a href="tools-page.html">Tools page</a></li>
+<li><a href="words.html#w-edge-life">Edge life</a>, <a href="words.html#w-insp-time">insp_time</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find an op - Parameter Table Tool manual</title>
+<meta name="description" content="Go to a column group, find an op by number, tool or comment, and show only some ops.">
+<meta name="keywords" content="find op search jump go to column group next match changed ops this tool's ops show all filter hide rows row mark lost my place">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html" aria-current="page">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Find an op</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Find</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>A part can have dozens of ops and hundreds of columns. The <span class="ui">Find</span> group gets you to the
+right row and the right columns fast &ndash; and can hide the rows you do not need right now.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>&ldquo;Where is op 23?&rdquo; &ndash; or &ldquo;where are all the ops of tool 12?&rdquo;</li>
+<li>&ldquo;Where are the coolant columns?&rdquo;</li>
+<li>&ldquo;Which ops did I change?&rdquo;</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<h3 id="find-op">Find an op by number, tool or words</h3>
+<ol class="steps">
+<li>Click in the <span class="ui">Find op</span> box on the ribbon.</li>
+<li>Type one of these, then press <kbd>Enter</kbd>:
+<ul>
+<li>an op number: <code>23</code></li>
+<li>a T and a tool number: <code>T12</code></li>
+<li>words from the comment or the type: <code>bore</code>, <code>groove</code></li>
+</ul></li>
+<li>The sheet jumps to the first op that matches. The status bar (bottom of Excel) names it.</li>
+<li>Click <span class="ui">Next match</span> for the next one. After the last, it starts again at the top.</li>
+</ol>
+<h3 id="goto">Go to a column group</h3>
+<ol class="steps">
+<li>Select a cell in the op rows you care about (or just one).</li>
+<li>Click <span class="ui">Go to</span> and pick a group, e.g. <span class="ui">Coolant</span>.</li>
+<li>That group opens and the others fold away, so the sheet is easy to read. The cursor lands in that group, on the same rows.</li>
+<li>To open every group again: <span class="ui">Go to</span> &rsaquo; <span class="ui">All columns (open every group)</span>.</li>
+</ol>
+<h3 id="show">Show only some ops</h3>
+<ul>
+<li><span class="ui">Changed ops</span> &ndash; only the ops you have changed.</li>
+<li><span class="ui">This tool's ops</span> &ndash; click a cell in an op's row first; shows only the ops with the same tool.</li>
+<li><a href="slowest.html">Slowest ops</a> &ndash; only the ops that take most of the time.</li>
+<li><span class="ui">Show all</span> &ndash; every op again.</li>
+</ul>
+<p>Hidden rows are not lost. The tools that work on &ldquo;selected cells&rdquo; skip hidden rows, so you can show only
+one tool's ops, select a whole column, and change just those.</p>
+<div class="note"><p><strong>The row mark.</strong> The op row your cursor is on gets a blue line above and below
+(and its first columns a light blue tint). On a wide sheet it stops you reading across into the wrong row.</p></div>
+<figure class="shot todo" data-img="ribbon-find.png" data-kind="screen" data-need="Excel's Parameter Table ribbon tab, the Find group: 1 Go to, 2 the Find op box with T12 typed, 3 Next match, 4 Changed ops / This tool's ops / Show all. (A screenshot of Excel, not Mastercam.)">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: Excel&#x27;s Parameter Table ribbon tab, the Find group: 1 Go to, 2 the Find op box with T12 typed, 3 Next match, 4 Changed ops / This tool&#x27;s ops / Show all. (A screenshot of Excel, not Mastercam.)"><strong>Picture coming: ribbon-find.png</strong>Excel&#x27;s Parameter Table ribbon tab, the Find group: 1 Go to, 2 the Find op box with T12 typed, 3 Next match, 4 Changed ops / This tool&#x27;s ops / Show all. (A screenshot of Excel, not Mastercam.) <em>(a screenshot - to be added)</em></div><!-- /img -->
+<figcaption>(1) Go to. (2) Find op. (3) Next match. (4) Show only some ops.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>You want every op of tool 12 on the Oil Spool Head, with their feeds.</p>
+<ol>
+<li>Type <code>T12</code> in <span class="ui">Find op</span>, press <kbd>Enter</kbd>: the cursor goes to op 7.</li>
+<li>Click <span class="ui">This tool's ops</span>.</li>
+<li>Click <span class="ui">Go to</span> &rsaquo; <span class="ui">Feeds and speeds</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>Rows showing</td><td class="num">18 ops</td><td class="num edited">2 ops (7 and 8)</td></tr>
+<tr><td>Column groups open</td><td>all</td><td class="edited">Identity and Feeds and speeds</td></tr>
+<tr><td>Cursor</td><td>op 1</td><td class="edited">op 7, <code>feed</code></td></tr>
+</tbody>
+</table></div>
+<p>Click <span class="ui">Show all</span> and <span class="ui">Go to</span> &rsaquo; <span class="ui">All columns</span> when you are done.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>no op matches 'xyz' (an op number, T and a tool number, or words in the comment).</q></dt>
+<dd>Nothing matched. Check the spelling, or try fewer words. Hidden rows are not searched &ndash; click <span class="ui">Show all</span> first.</dd>
+<dt><q>type an op number, T12 or words from a comment in Find op first.</q></dt>
+<dd>You clicked <span class="ui">Next match</span> before searching.</dd>
+<dt><q>Click a cell in an operation's row (one with a tool number) first.</q></dt>
+<dd><span class="ui">This tool's ops</span> needs to know which tool: click a cell in that op's row.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="slowest.html">Slowest ops</a></li>
+<li><a href="sheet.html">The main sheet</a> (column groups)</li>
+<li><a href="set.html">Set</a> &ndash; change the cells you found</li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

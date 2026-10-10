@@ -1,18 +1,22 @@
 // Mastercam 2026 C++ Add-In: Parameter Table Tool
 //
-// Three entry points. Each is its own FUNCTION block in ParamTable.ft, so each
+// Four entry points. Each is its own FUNCTION block in ParamTable.ft, so each
 // can sit on a ribbon or the Quick Access Toolbar:
 //
 //   LatheParamsDumpEntry  - the operations' parameters to a workbook
 //   LatheParamsLoadEntry  - the edited workbook back into the operations
 //   LatheParamsUndoEntry  - the last load's old values back, from ParamTable.log
+//   ParamTableHelpEntry   - the user manual (help\index.html beside the DLL)
 
 #include "stdafx.h"
 #include "resource.h"
 #include "ParamTable.h"
 #include "Dump.h"
 #include "Load.h"
+#include "Settings.h"
 #include "Util.h"
+
+#include <shellapi.h>
 
 extern "C" __declspec(dllexport) int m_open (int not_used)
 	{
@@ -81,6 +85,36 @@ extern "C" __declspec(dllexport) int LatheParamsUndoEntry (int param)
 		Util::Say (L"The undo failed unexpectedly. Check ParamTable.log beside "
 				   L"the part to see which operations were restored before it "
 				   L"stopped.", MB_ICONERROR);
+		}
+	return MC_NOERROR | MC_UNLOADAPP;
+	}
+
+/// The user manual: a folder of plain web pages that ships beside the DLL
+/// (Add-Ins\ParamTable\help). Opened in the default browser - it needs no
+/// internet, and nothing in Mastercam changes.
+extern "C" __declspec(dllexport) int ParamTableHelpEntry (int param)
+	{
+	ChangeResCl res (GetChookResourceHandle ());
+
+	try
+		{
+		const std::wstring folder = Settings::AddinFolder ();
+		const std::wstring page = folder + L"help\\index.html";
+		if (folder.empty () || GetFileAttributesW (page.c_str ()) == INVALID_FILE_ATTRIBUTES)
+			{
+			Util::Say (L"The user manual is not installed. It comes with the add-in, in the help "
+					   L"folder beside it:\r\n\r\n  " + (folder.empty () ? std::wstring (L"Add-Ins\\ParamTable\\help") : folder + L"help")
+					   + L"\r\n\r\nCopy the whole ParamTable folder from the release zip again.");
+			return MC_NOERROR | MC_UNLOADAPP;
+			}
+		const HINSTANCE h = ShellExecuteW (nullptr, L"open", page.c_str (), nullptr, nullptr, SW_SHOWNORMAL);
+		if (reinterpret_cast<INT_PTR> (h) <= 32)
+			Util::Say (L"Windows could not open the user manual in a browser. Open this file by hand:"
+					   L"\r\n\r\n  " + page, MB_ICONWARNING);
+		}
+	catch (...)
+		{
+		Util::Say (L"Could not open the user manual.", MB_ICONERROR);
 		}
 	return MC_NOERROR | MC_UNLOADAPP;
 	}

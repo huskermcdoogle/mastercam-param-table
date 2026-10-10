@@ -1,0 +1,3106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Print the whole manual - Parameter Table Tool</title>
+<meta name="description" content="Every page of the manual on one page - print it, or save it as a PDF.">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<!-- Made by tools/make_help.py from every page - do not edit. -->
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html" aria-current="page">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb no-print"><a href="index.html">&larr; Home and search</a></p>
+<h1>Parameter Table Tool &ndash; the whole manual</h1>
+<p class="lead no-print">Every page on one page. Press <kbd>Ctrl</kbd>+<kbd>P</kbd> to print it, or pick
+<span class="ui">Microsoft Print to PDF</span> (or <span class="ui">Save as PDF</span>) as the printer to make a PDF.
+Each topic starts on a new sheet of paper.</p>
+<h2 id="contents">Contents</h2>
+<ol>
+<li><a href="#page-index">Home and search</a></li>
+<li><a href="#page-start">Getting started</a></li>
+<li><a href="#page-install">Install the add-in</a></li>
+<li><a href="#page-dump">Dump to Excel</a></li>
+<li><a href="#page-load">Load the changes</a></li>
+<li><a href="#page-undo-load">Undo a load</a></li>
+<li><a href="#page-workbook">What is in the workbook</a></li>
+<li><a href="#page-summary">Summary page</a></li>
+<li><a href="#page-sheet">The main sheet</a></li>
+<li><a href="#page-tools-page">Tools page</a></li>
+<li><a href="#page-find">Find an op</a></li>
+<li><a href="#page-slowest">Slowest ops</a></li>
+<li><a href="#page-set">Set</a></li>
+<li><a href="#page-scale">Scale %</a></li>
+<li><a href="#page-copy">Copy from op</a></li>
+<li><a href="#page-text">Comments &amp; text</a></li>
+<li><a href="#page-coolant">Coolant</a></li>
+<li><a href="#page-calculator">Speed &amp; feed</a></li>
+<li><a href="#page-inspection">Inspection &amp; inserts</a></li>
+<li><a href="#page-target-time">Hit a target time</a></li>
+<li><a href="#page-check">Program check</a></li>
+<li><a href="#page-scenarios">Scenarios</a></li>
+<li><a href="#page-undo">Undo</a></li>
+<li><a href="#page-changes">List changes</a></li>
+<li><a href="#page-report">Change report</a></li>
+<li><a href="#page-estimate">The cycle time estimate</a></li>
+<li><a href="#page-flips">How insert flips are counted</a></li>
+<li><a href="#page-words">Word list</a></li>
+<li><a href="#page-troubleshooting">Troubleshooting</a></li>
+</ol>
+<section class="print-page" id="page-index">
+<h2 class="page-title">Parameter Table Tool &ndash; user manual</h2>
+<p class="lead">Change feeds, speeds, depths, coolant and comments on many ops at once, in Excel &ndash;
+and see what it does to the cycle time and your inserts before anything goes back into Mastercam.</p>
+
+<div class="big-search" role="search">
+<label for="q">Search the manual</label>
+<input id="index--q" type="search" placeholder="Type a word: coolant, flips, faster, SFM, undo ..." autocomplete="off">
+</div>
+<ul id="index--results" class="results" aria-live="polite"></ul>
+
+<section id="index--tasks">
+<h3>I want to ...</h3>
+<ul class="tasks">
+<li><a href="#page-start"><strong>Use it for the first time</strong><span>The five steps, start to finish.</span></a></li>
+<li><a href="#page-slowest"><strong>Make the part run faster</strong><span>Find the slow ops, then speed them up.</span></a></li>
+<li><a href="#page-target-time"><strong>Hit a cycle time I was given</strong><span>Type the time; the feeds follow.</span></a></li>
+<li><a href="#page-inspection"><strong>Use fewer inserts / lower insert cost</strong><span>Flips per part and how much of each edge gets used.</span></a></li>
+<li><a href="#page-coolant"><strong>Change coolant on several ops</strong><span>Flood, mist, thru-tool or off &ndash; all at once.</span></a></li>
+<li><a href="#page-text"><strong>Change a comment or inspection comment</strong><span>Op comments, ROTATE INSERT, manual text.</span></a></li>
+<li><a href="#page-find"><strong>Find an op fast</strong><span>By op number, tool (T12) or a word in the comment.</span></a></li>
+<li><a href="#page-calculator"><strong>Work out SFM, RPM or a feed</strong><span>Speed &amp; feed, and chip thinning.</span></a></li>
+<li><a href="#page-set"><strong>Put one value in many cells</strong><span>Same feed, same depth, same anything.</span></a></li>
+<li><a href="#page-scale"><strong>Make numbers 10% bigger or smaller</strong><span>Scale feeds, speeds or depths by a percent.</span></a></li>
+<li><a href="#page-copy"><strong>Make ops match each other</strong><span>Copy one op's settings to others, or to every op of a tool.</span></a></li>
+<li><a href="#page-check"><strong>Check the program before it goes to the floor</strong><span>A list of things worth a second look.</span></a></li>
+<li><a href="#page-changes"><strong>See what I changed</strong><span>Every changed cell, old and new.</span></a></li>
+<li><a href="#page-report"><strong>Print a report of my changes</strong><span>One page: before, after, and why.</span></a></li>
+<li><a href="#page-undo"><strong>Undo a mistake in Excel</strong><span>Ctrl+Z, Undo, or back to the dump.</span></a></li>
+<li><a href="#page-undo-load"><strong>Undo a load in Mastercam</strong><span>Put the old values back in the part.</span></a></li>
+<li><a href="#page-scenarios"><strong>Compare two ideas</strong><span>Save each one, then see them side by side.</span></a></li>
+<li><a href="#page-words"><strong>Understand a column or a word</strong><span>Every column and term in plain words.</span></a></li>
+<li><a href="#page-troubleshooting"><strong>Fix a problem</strong><span>Messages, and what to do about them.</span></a></li>
+</ul>
+</section>
+
+<section id="index--pages">
+<h3>Every page</h3>
+<!-- pages -->
+<div class="all-pages">
+<h4>Start here</h4>
+<ul>
+<li><a href="#page-start">Getting started</a> <span>&ndash; The five steps: dump, edit, save, load, regenerate.</span></li>
+<li><a href="#page-install">Install the add-in</a> <span>&ndash; Copy two things into Mastercam&#x27;s Add-Ins folder, then put the commands on your ribbon.</span></li>
+</ul>
+<h4>In Mastercam</h4>
+<ul>
+<li><a href="#page-dump">Dump to Excel</a> <span>&ndash; Write the part&#x27;s ops to a workbook: which ops, where, and what to call it.</span></li>
+<li><a href="#page-load">Load the changes</a> <span>&ndash; Put your edits back into the part: read the preview, untick what to leave out, Apply.</span></li>
+<li><a href="#page-undo-load">Undo a load</a> <span>&ndash; Put the old values of the last load back into the part.</span></li>
+</ul>
+<h4>The workbook</h4>
+<ul>
+<li><a href="#page-workbook">What is in the workbook</a> <span>&ndash; The sheets, the colours, the ribbon tab, and the .ptconfig file beside the part.</span></li>
+<li><a href="#page-summary">Summary page</a> <span>&ndash; The part&#x27;s totals as dumped and now, the batch, and where the time and inserts go.</span></li>
+<li><a href="#page-sheet">The main sheet</a> <span>&ndash; The Lathe params sheet: one row per op, columns in groups, how to edit safely.</span></li>
+<li><a href="#page-tools-page">Tools page</a> <span>&ndash; One row per tool with its picture and insert; the inserts table with edges, cost and parts per edge.</span></li>
+</ul>
+<h4>Ribbon: Find</h4>
+<ul>
+<li><a href="#page-find">Find an op</a> <span>&ndash; Go to a column group, find an op by number, tool or comment, and show only some ops.</span></li>
+<li><a href="#page-slowest">Slowest ops</a> <span>&ndash; Show only the ops that make 80% of the cycle time, longest first.</span></li>
+</ul>
+<h4>Ribbon: Edit cells</h4>
+<ul>
+<li><a href="#page-set">Set</a> <span>&ndash; Put one value into every selected cell, with a preview first.</span></li>
+<li><a href="#page-scale">Scale %</a> <span>&ndash; Make the selected numbers bigger or smaller by a percent, with a preview.</span></li>
+<li><a href="#page-copy">Copy from op</a> <span>&ndash; Copy the selected columns from one op into other ops, or into every op of a tool.</span></li>
+</ul>
+<h4>Ribbon: Selected ops</h4>
+<ul>
+<li><a href="#page-text">Comments &amp; text</a> <span>&ndash; Edit op comments, tool inspection comments and manual entry text - on one op or many.</span></li>
+<li><a href="#page-coolant">Coolant</a> <span>&ndash; See and set the coolant of the selected ops - all at once, for either coolant setup.</span></li>
+<li><a href="#page-calculator">Speed &amp; feed</a> <span>&ndash; SFM and RPM, feed per rev and per minute, and chip thinning for round and lead-angle inserts.</span></li>
+<li><a href="#page-inspection">Inspection &amp; inserts</a> <span>&ndash; Flips per part for each tool, how much of each edge is used, and an edge time that uses every edge evenly.</span></li>
+</ul>
+<h4>Ribbon: Improve</h4>
+<ul>
+<li><a href="#page-target-time">Hit a target time</a> <span>&ndash; Type the time you want; the feeds change by one factor, each inside its own limits.</span></li>
+<li><a href="#page-check">Program check</a> <span>&ndash; A list of things worth a second look before the program goes to the floor, each with why and how to fix it.</span></li>
+<li><a href="#page-scenarios">Scenarios</a> <span>&ndash; Save your edits under a name, bring them back later, and compare ideas side by side.</span></li>
+</ul>
+<h4>Ribbon: Undo and review</h4>
+<ul>
+<li><a href="#page-undo">Undo</a> <span>&ndash; Take back a command (Ctrl+Z or Undo), or put cells back as they were dumped.</span></li>
+<li><a href="#page-changes">List changes</a> <span>&ndash; A Changes sheet listing every cell that differs from the dump, old and new.</span></li>
+<li><a href="#page-report">Change report</a> <span>&ndash; A one-page before and after of your changes - cycle time, flips and insert cost - with a Why column. Ready to print.</span></li>
+</ul>
+<h4>How it works</h4>
+<ul>
+<li><a href="#page-estimate">The cycle time estimate</a> <span>&ndash; How est_cycle_time follows your edits, what it counts and what it leaves out.</span></li>
+<li><a href="#page-flips">How insert flips are counted</a> <span>&ndash; Which tool inspection stops count as insert flips, how stops with no comment are worked out, and how flips become inserts.</span></li>
+</ul>
+<h4>Help</h4>
+<ul>
+<li><a href="#page-words">Word list</a> <span>&ndash; Every column and every word in plain language: flips, CSS, SFM, RPM, per rev, edge life, MRR, chip thinning and more.</span></li>
+<li><a href="#page-troubleshooting">Troubleshooting</a> <span>&ndash; Problems and messages, and what to do about them.</span></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</div>
+<!-- /pages -->
+</section>
+
+<section id="index--offline">
+<h3>About this manual</h3>
+<p>This manual is a folder of web pages that comes with the add-in. It works with no internet.
+Open it from Mastercam (<span class="ui">Parameter Table - user manual</span>), from the
+<span class="ui">User manual</span> button on the Excel ribbon, from the <span class="ui">?</span> button in any window,
+or from the link on the workbook's Summary page.</p>
+<p>To print it all, use <a href="print.html">Print the whole manual</a>.</p>
+</section>
+</section>
+<section class="print-page" id="page-start">
+<h2 class="page-title">Getting started</h2>
+<p class="lead">Five steps: dump, edit, save, load, regenerate.</p>
+
+<section id="start--what">
+<h3>What this is for</h3>
+<p>In Mastercam you change one operation at a time, one dialog at a time. This tool puts every
+<a href="#words--w-op">op</a> of your part into one Excel <a href="#words--w-workbook">workbook</a>, one row per op.
+You change feeds, speeds, depths, coolant and comments there &ndash; many at once if you like.
+Excel shows you the new cycle time and insert use as you type. Then the tool puts your changes back into the part.
+It shows you every change first, and nothing goes in until you say so.</p>
+</section>
+
+<section id="start--when">
+<h3>When to use it</h3>
+<ul>
+<li>You want the part to run faster, or you were given a cycle time to hit.</li>
+<li>Inserts are wearing out too soon, or cost too much.</li>
+<li>You need the same change on many ops (coolant, a feed, a comment).</li>
+<li>You want to look over a whole program before it goes to the floor.</li>
+</ul>
+</section>
+
+<section id="start--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Save the part</strong> in Mastercam. The tool works on the saved part file.</li>
+<li><strong>Dump.</strong> Click <span class="ui">Lathe params - dump to Excel</span>. Pick the ops, the folder and the
+name, then click <span class="ui">Dump</span>. The workbook opens in Excel. See <a href="#page-dump">Dump to Excel</a>.</li>
+<li><strong>Edit.</strong> Change cells on the <span class="ui">Lathe params</span> sheet. Every cell you change turns
+yellow. The cycle time and flips on that row move as you type. See <a href="#page-sheet">The main sheet</a>.</li>
+<li><strong>Save the workbook</strong> in Excel (<kbd>Ctrl</kbd>+<kbd>S</kbd>). Keep it as it is &ndash; do not
+&ldquo;Save As&rdquo; CSV.</li>
+<li><strong>Load.</strong> Back in Mastercam, click <span class="ui">Lathe params - load</span> and pick the workbook.
+A window lists every change. Untick anything you want to leave out, then click <span class="ui">Apply</span>.
+See <a href="#page-load">Load the changes</a>.</li>
+<li><strong>Regenerate</strong> the changed ops in Mastercam, check them (backplot, verify), and save the part.
+If it is not right, run <a href="#page-undo-load">Lathe params - undo last load</a>.</li>
+</ol>
+<div class="tip"><p>An empty cell means &ldquo;leave it alone&rdquo; &ndash; never zero. If you clear a cell by
+mistake, the load does not change that setting.</p></div>
+</section>
+
+<section id="start--example">
+<h3>Worked example</h3>
+<p>The <em>Oil Spool Head</em> sample part has 18 ops and a cycle time of 12:46:38. The rough bore (op 7) runs at
+0.010 inch per rev. You think the insert can take more.</p>
+<ol>
+<li>Dump all ops. The workbook opens on the Summary page.</li>
+<li>On <span class="ui">Lathe params</span>, find op 7 and type <code>0.012</code> in its <code>feed</code> cell.
+Do the same for op 8, the finish bore.</li>
+<li>Look at the Summary page: the cycle time is now 12:26:50.</li>
+<li>Save, load, Apply, regenerate ops 7 and 8.</li>
+</ol>
+<div class="table-scroll"><table>
+<caption>What changed</caption>
+<thead><tr><th>Op</th><th>What</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td>7 Rough Bore ID</td><td>feed (per rev)</td><td class="num">0.010</td><td class="num edited">0.012</td></tr>
+<tr><td>7 Rough Bore ID</td><td>time</td><td class="num">1:44:00</td><td class="num moved">1:26:45</td></tr>
+<tr><td>8 Finish Bore ID</td><td>feed (per rev)</td><td class="num">0.010</td><td class="num edited">0.012</td></tr>
+<tr><td>8 Finish Bore ID</td><td>time</td><td class="num">0:15:24</td><td class="num moved">0:12:50</td></tr>
+<tr><td>Whole part</td><td>cycle time</td><td class="num">12:46:38</td><td class="num better">12:26:50 (&minus;0:19:49)</td></tr>
+</tbody>
+</table></div>
+<figure class="shot" data-img="sheet-estimate.png" data-kind="sheet" data-need="The main sheet: ops 7 and 8 with feed 0.012 (yellow), est_cycle_time moved (blue).">
+<!-- img --><a class="zoom" href="images/sheet-estimate.png" title="Open the picture full size"><img src="images/sheet-estimate.png" alt="The main sheet: ops 7 and 8 with feed 0.012 (yellow), est_cycle_time moved (blue)." width="1518" height="348" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The feed you typed turns yellow. (2) Mastercam's own time stays as it was.
+(3) The estimate moves &ndash; blue means &ldquo;this moved because of your edit&rdquo;.</figcaption>
+</figure>
+</section>
+
+<section id="start--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-install">Install the add-in</a></li>
+<li><a href="#page-workbook">What is in the workbook</a></li>
+<li><a href="#page-estimate">How the cycle time estimate works</a></li>
+<li><a href="#page-words">Word list</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-install">
+<h2 class="page-title">Install the add-in</h2>
+<p class="lead">A file copy. No installer, no admin rights.</p>
+
+<section id="install--what">
+<h3>What this is for</h3>
+<p>The tool is a Mastercam 2026 <a href="#words--w-add-in">add-in</a>. Installing it puts four commands into Mastercam:
+<span class="ui">Lathe params - dump to Excel</span>, <span class="ui">Lathe params - load</span>,
+<span class="ui">Lathe params - undo last load</span> and <span class="ui">Parameter Table - user manual</span>.
+This manual comes with it.</p>
+</section>
+
+<section id="install--when">
+<h3>When to use it</h3>
+<p>Once per computer, and again when a new version comes out. Ask your CAD/CAM lead or IT if you are not
+allowed to add programs &ndash; some shops want to look at add-ins first.</p>
+</section>
+
+<section id="install--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Download the release <span class="ui">.zip</span> file and unzip it (right-click it, <span class="ui">Extract All</span>).
+Inside are <code>ParamTable.ft</code> and a folder called <code>ParamTable</code>.</li>
+<li><strong>Close Mastercam.</strong> It only looks for add-ins when it starts.</li>
+<li>Open the folder <code>Documents\My Mastercam 2026\Mastercam\Add-Ins</code>.</li>
+<li>Copy <code>ParamTable.ft</code> <strong>and</strong> the <code>ParamTable</code> folder into it. You need both.</li>
+<li>Start Mastercam.</li>
+<li>Put the commands where you can reach them: right-click the ribbon, pick
+<span class="ui">Customize the Ribbon</span> (or <span class="ui">Customize Quick Access Toolbar</span>),
+find the category <span class="ui">Parameter Table Tool</span>, and add the four commands.
+<!-- CHECK: the exact menu names for customizing the ribbon / QAT in Mastercam 2026 --></li>
+</ol>
+<figure class="shot todo" data-img="mc-customize.png" data-kind="mastercam" data-need="Mastercam's Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button).">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: Mastercam&#x27;s Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button)."><strong>Picture coming: mc-customize.png</strong>Mastercam&#x27;s Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button). <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The category. (2) Its four commands. (3) Add them to a ribbon tab or the Quick Access Toolbar.</figcaption>
+</figure>
+<div class="note"><p><strong>Macros in Excel.</strong> If you tick <span class="ui">Include macros</span> when you dump,
+Excel may show a yellow bar: <q>Macros have been disabled</q>. Click <span class="ui">Enable Content</span> on that bar
+to get the <span class="ui">Parameter Table</span> tab. The workbook works without macros too &ndash; you just do not
+get the extra tools.</p></div>
+</section>
+
+<section id="install--example">
+<h3>Worked example</h3>
+<div class="table-scroll"><table>
+<caption>The Add-Ins folder before and after</caption>
+<thead><tr><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>(other add-ins, if any)</td><td>(other add-ins, if any)</td></tr>
+<tr><td></td><td class="edited"><code>ParamTable.ft</code></td></tr>
+<tr><td></td><td class="edited"><code>ParamTable\ParamTable.dll</code></td></tr>
+<tr><td></td><td class="edited"><code>ParamTable\help\</code> (this manual)</td></tr>
+<tr><td></td><td class="edited"><code>ParamTable\SHA256SUMS.txt</code>, <code>BUILD-INFO.txt</code>, <code>LICENSE.txt</code></td></tr>
+</tbody>
+</table></div>
+<p>After Mastercam starts, the Customize list shows the category <span class="ui">Parameter Table Tool</span> with four
+commands.</p>
+</section>
+
+<section id="install--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt>The commands are not in the Customize list.</dt>
+<dd>Mastercam was open when you copied, or <code>ParamTable.ft</code> is not in the <code>Add-Ins</code> folder itself
+(it must not be inside the <code>ParamTable</code> folder). Fix it and restart Mastercam.</dd>
+<dt><q>The user manual is not installed.</q></dt>
+<dd>The <code>help</code> folder is missing from <code>Add-Ins\ParamTable</code>. Copy the whole
+<code>ParamTable</code> folder again from the zip.</dd>
+</dl>
+</section>
+
+<section id="install--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-start">Getting started</a></li>
+<li><a href="#page-dump">Dump to Excel</a></li>
+<li><a href="#page-troubleshooting">Troubleshooting</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-dump">
+<h2 class="page-title">Dump to Excel</h2>
+<p class="where">Mastercam: <b>Lathe params - dump to Excel</b></p>
+
+<section id="dump--what">
+<h3>What this is for</h3>
+<p>The <a href="#words--w-dump">dump</a> writes your part's ops into one Excel workbook. A window asks which ops,
+which folder, and what to call the file. It never writes over a file that is already there.</p>
+</section>
+
+<section id="dump--when">
+<h3>When to use it</h3>
+<ul>
+<li>Every time you start working on a part in Excel.</li>
+<li>Again after a load and a regenerate, so the sheet shows the new times.</li>
+<li>To look over a program without changing anything (dump, read, close).</li>
+</ul>
+</section>
+
+<section id="dump--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Save the part. Then click <span class="ui">Lathe params - dump to Excel</span>.</li>
+<li><strong>Pick the ops.</strong> Every op is listed by toolpath group, with a tick box. Use the buttons:
+<span class="ui">All</span>, <span class="ui">None</span>, <span class="ui">Selected in Operation Manager</span>,
+or pick a kind (ROUGH, FINISH ...) and click <span class="ui">Tick kind</span> / <span class="ui">Untick kind</span>.</li>
+<li><strong>Or find them.</strong> Type part of a comment, a tool, a type or an op number in <span class="ui">Find</span>.
+Matching ops light up. Click <span class="ui">Tick matches</span>.</li>
+<li><strong>Keep a pick for next time</strong> (if you like): type a name under <span class="ui">Saved ticks</span>
+and click <span class="ui">Save ticks</span>. Next time, pick the name to tick the same ops.</li>
+<li><strong>Where:</strong> under <span class="ui">Save to</span>, click <span class="ui">Beside the part</span> or
+<span class="ui">Browse...</span>.</li>
+<li><strong>Name:</strong> leave <span class="ui">File name</span> as it is, or change it. The line under it shows the
+name you will get.</li>
+<li><strong>Options:</strong> tick <span class="ui">Include macros (.xlsm)</span> to get the
+<span class="ui">Parameter Table</span> tab in Excel (most of this manual needs it). Leave the other boxes ticked.</li>
+<li>Click <span class="ui">Dump</span> (it says how many ops, e.g. <span class="ui">Dump 18 operations</span>).
+The workbook opens in Excel.</li>
+</ol>
+<figure class="shot todo" data-img="mc-dump-window.png" data-kind="mastercam" data-need="The dump window in Mastercam with a few ops ticked: 1 the op list, 2 Find with Tick matches, 3 Save to, 4 File name and the name line under it, 5 Include macros ticked, 6 the Dump button.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The dump window in Mastercam with a few ops ticked: 1 the op list, 2 Find with Tick matches, 3 Save to, 4 File name and the name line under it, 5 Include macros ticked, 6 the Dump button."><strong>Picture coming: mc-dump-window.png</strong>The dump window in Mastercam with a few ops ticked: 1 the op list, 2 Find with Tick matches, 3 Save to, 4 File name and the name line under it, 5 Include macros ticked, 6 the Dump button. <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The ops. (2) Find. (3) Save to. (4) File name. (5) Include macros. (6) Dump.</figcaption>
+</figure>
+<h4 id="dump--names">The file name</h4>
+<p>The name can hold these words in braces; the tool fills them in:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Type</th><th>You get</th></tr></thead>
+<tbody>
+<tr><td><code>{part}</code></td><td>the part's file name, e.g. <code>Oil Spool Head_2026</code></td></tr>
+<tr><td><code>{date}</code> <code>{time}</code></td><td>today's date and the time, e.g. <code>20261009</code> <code>155309</code></td></tr>
+<tr><td><code>{scope}</code></td><td><code>all</code>, or <code>selected</code> when you dump only some ops</td></tr>
+<tr><td><code>{ops}</code></td><td>how many ops, e.g. <code>18</code></td></tr>
+</tbody>
+</table></div>
+<p>If a file by that name is already there, the new one gets <code>(2)</code> on the end. Nothing is ever written over.</p>
+</section>
+
+<section id="dump--example">
+<h3>Worked example</h3>
+<p>You only want to work on the boring ops of the Oil Spool Head.</p>
+<ol>
+<li>In <span class="ui">Find</span>, type <code>bore</code>. Two ops light up: 7 Rough Bore ID and 8 Finish Bore ID.</li>
+<li>Click <span class="ui">None</span>, then <span class="ui">Tick matches</span>.</li>
+<li>Type <code>Bore ops</code> under <span class="ui">Saved ticks</span> and click <span class="ui">Save ticks</span>.</li>
+<li>Click <span class="ui">Dump 2 operations</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>Ops ticked</td><td>18 (all)</td><td class="edited">2 (ops 7 and 8)</td></tr>
+<tr><td>Button</td><td>Dump 18 operations</td><td class="edited">Dump 2 operations</td></tr>
+<tr><td>Saved ticks</td><td>(none)</td><td class="edited">Bore ops</td></tr>
+</tbody>
+</table></div>
+<p class="tip">Dump the whole part when you can. The Summary page and the Tools page add up only the ops in the
+workbook, so a part-dump gives the true cycle time and flips.</p>
+</section>
+
+<section id="dump--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>Save the part first ...</q></dt>
+<dd>The part has never been saved. Save it, then dump again.</dd>
+<dt><q>This part has no operations of a kind this tool reads ...</q></dt>
+<dd>The tool reads lathe ops (rough, finish, face, groove, drill, PrimeTurning, dynamic rough, manual entry ...) and
+some mill ops (contour, drill, dynamic mill). Other kinds are listed as <span class="ui">Not read yet (left out)</span>.</dd>
+<dt><q>Could not write ... Check the folder can be written to ...</q></dt>
+<dd>The folder is read-only, full, or on a network drive that went away. Pick another folder.</dd>
+<dt><span class="ui">that folder does not exist</span> (under the file name)</dt>
+<dd>Fix the <span class="ui">Save to</span> folder, or click <span class="ui">Beside the part</span>.</dd>
+<dt><q>Dumped 18 operation(s) ...</q></dt>
+<dd>Done. It says how many of each kind, and where the file went.</dd>
+</dl>
+</section>
+
+<section id="dump--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-workbook">What is in the workbook</a></li>
+<li><a href="#page-load">Load the changes</a></li>
+<li><a href="#words--w-ptconfig">The part's .ptconfig file</a> (what you typed, kept for the next dump)</li>
+<li><a href="#page-troubleshooting">Troubleshooting</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-load">
+<h2 class="page-title">Load the changes</h2>
+<p class="where">Mastercam: <b>Lathe params - load</b></p>
+
+<section id="load--what">
+<h3>What this is for</h3>
+<p>The <a href="#words--w-load">load</a> reads your saved workbook and puts the changed values back into the ops.
+First it shows a window with every change, op by op: the old value crossed out in red, the new value in green.
+Each change has a tick box. Nothing is written until you click <span class="ui">Apply</span>.</p>
+</section>
+
+<section id="load--when">
+<h3>When to use it</h3>
+<p>When you are happy with your edits in Excel and have <strong>saved</strong> the workbook.</p>
+</section>
+
+<section id="load--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Save the workbook in Excel (<kbd>Ctrl</kbd>+<kbd>S</kbd>). You can leave it open.</li>
+<li>In Mastercam, open the same part and click <span class="ui">Lathe params - load</span>.</li>
+<li>Pick the workbook. The file window starts on the one you dumped last for this part. Click <span class="ui">Open</span>.</li>
+<li><strong>Read the top line</strong>: the whole part's cycle time and insert flips, before and after.</li>
+<li><strong>Read the list.</strong> Each op shows its own time and flips, then each change.
+Untick anything you want to leave out. Unticking an op unticks all of its changes. The top line follows.</li>
+<li>Look at the <span class="ui">Refused</span> part, if there is one. Those rows are not written at all (see below).</li>
+<li>Click <span class="ui">Apply</span> (it says how many, e.g. <span class="ui">Apply 4 changes</span>), or
+<span class="ui">Cancel</span> to write nothing.</li>
+<li><strong>Regenerate</strong> the changed ops (they are marked dirty), check them, then save the part.</li>
+</ol>
+<figure class="shot todo" data-img="mc-load-preview.png" data-kind="mastercam" data-need="The load preview window: 1 the impact line at the top (cycle time and flips), 2 an op line with its time, 3 a change with the old value struck through and the new value, 4 a tick box, 5 the Apply button.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The load preview window: 1 the impact line at the top (cycle time and flips), 2 an op line with its time, 3 a change with the old value struck through and the new value, 4 a tick box, 5 the Apply button."><strong>Picture coming: mc-load-preview.png</strong>The load preview window: 1 the impact line at the top (cycle time and flips), 2 an op line with its time, 3 a change with the old value struck through and the new value, 4 a tick box, 5 the Apply button. <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The whole part, before and after. (2) One op. (3) One change. (4) Its tick box. (5) Apply.</figcaption>
+</figure>
+<div class="note"><p>Some changes tick together. A feed and its <code>feed_mode</code> (per rev / per min) go together;
+so do a speed and its CSS / RPM, and a value and the switch that turns it on. Half of a pair would make no sense.</p></div>
+</section>
+
+<section id="load--example">
+<h3>Worked example</h3>
+<p>You changed the bore feeds (ops 7 and 8) and the facing speed (op 1). The preview shows:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Operation</th><th>Parameter</th><th class="num">Now</th><th class="num">Will be</th></tr></thead>
+<tbody>
+<tr><td>op 1 &middot; FACE</td><td>speed</td><td class="num">200</td><td class="num edited">250</td></tr>
+<tr><td>op 7 &middot; ROUGH</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td>op 8 &middot; FINISH</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+</tbody>
+</table></div>
+<p>You decide to wait on the facing speed. Untick op 1. The top line drops back to the bore changes only.
+The button now reads <span class="ui">Apply 2 changes</span>. Click it; regenerate ops 7 and 8.</p>
+</section>
+
+<section id="load--messages">
+<h3>What the messages mean</h3>
+<p>A <strong>refused</strong> row is left out whole &ndash; half a row is a state nobody chose. The reason is beside it:</p>
+<dl class="messages">
+<dt><q>"0.5" is above the maximum ...</q> / <q>... is below the minimum ...</q> / <q>... is not a number</q></dt>
+<dd>A value is outside what Mastercam takes for that setting. Fix the cell, save, load again.</dd>
+<dt><q>"..." is not one of: ...</q></dt>
+<dd>A dropdown cell has something typed in that is not on its list (a typo in <code>per rev</code>, a coolant name).</dd>
+<dt><q>is 131 characters; the operation holds at most 119</q></dt>
+<dd>A comment or text is too long. Shorten it &ndash; the tool will not cut it off for you.</dd>
+<dt><q>"feed" is read-only here but was changed ...</q></dt>
+<dd>You typed in a column the load never writes (a time, a count, an ID). Put the old value back.</dd>
+<dt><q>"..." does not apply to a FACE operation ...</q></dt>
+<dd>That cell is greyed out for that kind of op. Clear it.</dd>
+<dt><q>no ROUGH operation with that number is in the part</q> / <q>... is a different kind of operation</q></dt>
+<dd>The workbook was dumped from another part, or the op was deleted or replaced since. Dump again.</dd>
+<dt><q>Save the part first ...</q></dt>
+<dd>No saved part is open in Mastercam.</dd>
+<dt><q>... could not be opened (is it still open in Excel?)</q></dt>
+<dd>Save the workbook in Excel and try again. If it still fails, close it in Excel.</dd>
+<dt><q>Wrote 2 operation(s). They are marked for regeneration ...</q></dt>
+<dd>Done. Regenerate before you post, or the old values are still in the toolpath.</dd>
+</dl>
+<p>Every old value goes into <code>ParamTable.log</code> beside the part first. That is how
+<a href="#page-undo-load">undo last load</a> puts them back.</p>
+</section>
+
+<section id="load--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-undo-load">Undo a load</a></li>
+<li><a href="#page-changes">List changes</a> (check your edits before you load)</li>
+<li><a href="#page-estimate">How the cycle time estimate works</a></li>
+<li><a href="#words--w-regenerate">Regenerate</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-undo-load">
+<h2 class="page-title">Undo a load</h2>
+<p class="where">Mastercam: <b>Lathe params - undo last load</b></p>
+
+<section id="undo-load--what">
+<h3>What this is for</h3>
+<p>It takes the last load of this part back. The old values come from <code>ParamTable.log</code>, a file the load
+writes beside the part before it changes anything. You see the same kind of preview window as the load, with tick boxes,
+before anything is written.</p>
+<p>This is the undo for the <strong>part in Mastercam</strong>. For an undo inside Excel, see <a href="#page-undo">Undo</a>.</p>
+</section>
+
+<section id="undo-load--when">
+<h3>When to use it</h3>
+<p>After a load, when the result is not what you wanted: the backplot looks wrong, the program posts badly, or the
+operator says the new feed chatters. It is its own command so it is there later &ndash; long after the load window
+has closed.</p>
+</section>
+
+<section id="undo-load--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Open the part in Mastercam (the same saved part file the load went into).</li>
+<li>Click <span class="ui">Lathe params - undo last load</span>.</li>
+<li>Read the window. <span class="ui">Restore</span> lists each value it will put back.
+<span class="ui">Changed since the load</span> lists values you changed by hand after the load &ndash; those are left alone.</li>
+<li>Untick anything you want to keep as it is now.</li>
+<li>Click <span class="ui">Restore</span> (e.g. <span class="ui">Restore 2 changes</span>).</li>
+<li>Regenerate the restored ops, then save the part.</li>
+</ol>
+<figure class="shot todo" data-img="mc-undo-load.png" data-kind="mastercam" data-need="The undo last load window: 1 the line saying which load (date and file), 2 a value to restore, 3 the Changed since the load part, 4 the Restore button.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The undo last load window: 1 the line saying which load (date and file), 2 a value to restore, 3 the Changed since the load part, 4 the Restore button."><strong>Picture coming: mc-undo-load.png</strong>The undo last load window: 1 the line saying which load (date and file), 2 a value to restore, 3 the Changed since the load part, 4 the Restore button. <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) Which load. (2) A value going back. (3) Values changed since &ndash; left alone. (4) Restore.</figcaption>
+</figure>
+</section>
+
+<section id="undo-load--example">
+<h3>Worked example</h3>
+<p>You loaded feed 0.012 into ops 7 and 8. After the load you also changed op 8's feed by hand in Mastercam to 0.011.
+Now the bore chatters and you want the old feeds back.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">Before the load</th><th class="num">Now</th><th>Undo does</th><th class="num">After undo</th></tr></thead>
+<tbody>
+<tr><td>7 feed</td><td class="num">0.01</td><td class="num">0.012</td><td>Restore</td><td class="num edited">0.01</td></tr>
+<tr><td>8 feed</td><td class="num">0.01</td><td class="num">0.011</td><td>Changed since the load &ndash; left alone</td><td class="num">0.011</td></tr>
+</tbody>
+</table></div>
+<p>Run it a second time and it does nothing: the values are already back.</p>
+</section>
+
+<section id="undo-load--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>There is no ParamTable.log beside ... so there is no load to undo.</q></dt>
+<dd>No load was made into this part from this folder, or the log was moved or deleted.</dd>
+<dt><q>ParamTable.log has no load of ... that can be undone.</q></dt>
+<dd>The log has no load of this part. Loads made by a much older version of the tool cannot be undone with this command;
+their old values are still in the log to put back by hand.</dd>
+<dt><q>Nothing to restore.</q> / <span class="ui">Already as before the load</span></dt>
+<dd>The values are already back (you ran undo before, or changed them back by hand).</dd>
+<dt><q>Restored 1 operation(s). They are marked for regeneration ...</q></dt>
+<dd>Done. Regenerate before posting, then save the part.</dd>
+</dl>
+</section>
+
+<section id="undo-load--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-load">Load the changes</a></li>
+<li><a href="#page-undo">Undo inside Excel</a></li>
+<li><a href="#page-troubleshooting">Troubleshooting</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-workbook">
+<h2 class="page-title">What is in the workbook</h2>
+
+<section id="workbook--what">
+<h3>What this is for</h3>
+<p>A map of the workbook the dump makes: which sheet is which, what the colours mean, and where the buttons are.
+The sheet tabs are along the bottom of the Excel window.</p>
+</section>
+
+<section id="workbook--when">
+<h3>When to use it</h3>
+<p>The first time you open a dumped workbook, or when a sheet or colour puzzles you.</p>
+</section>
+
+<section id="workbook--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>The workbook opens on the <a href="#page-summary">Summary</a> sheet: the part's totals.</li>
+<li>Click the <span class="ui">Lathe params</span> tab at the bottom: <a href="#page-sheet">the main sheet</a>, one row per op.
+This is where you edit.</li>
+<li>Click the <span class="ui">Tools</span> tab: <a href="#page-tools-page">one row per tool</a>, with its picture and insert,
+and the inserts table under it.</li>
+<li>If you ticked <span class="ui">Include macros</span>, click the <span class="ui">Parameter Table</span> tab on Excel's
+ribbon (at the top) to see the tools below.</li>
+</ol>
+<h4 id="workbook--sheets">The sheets</h4>
+<div class="table-scroll"><table>
+<thead><tr><th>Sheet</th><th>What it holds</th><th>You type in it?</th></tr></thead>
+<tbody>
+<tr><td>Summary</td><td>Cycle time, flips, material removed &ndash; as dumped and now. A batch quantity and insert cost. The longest ops.</td><td>Batch quantity only</td></tr>
+<tr><td>Lathe params</td><td>One row per op: every setting the tool reads.</td><td>Yes &ndash; the white cells</td></tr>
+<tr><td>Tools</td><td>One row per tool; an inserts table under it.</td><td>Insert names, edges, cost, edge life</td></tr>
+<tr><td>Dumped (hidden)</td><td>A copy of every value as dumped. It is how changed cells light up, and how <span class="ui">Back to the dump</span> works.</td><td>Never</td></tr>
+<tr><td>Changes</td><td>Made by <a href="#page-changes">List changes</a>.</td><td>No</td></tr>
+<tr><td>Scenarios</td><td>Made by <a href="#page-scenarios">Compare scenarios</a>.</td><td>No</td></tr>
+<tr><td>Program check</td><td>Made by <a href="#page-check">Program check</a>.</td><td>The Ignore column</td></tr>
+<tr><td>Change report</td><td>Made by <a href="#page-report">Change report</a>.</td><td>The Why column</td></tr>
+</tbody>
+</table></div>
+<h4 id="workbook--colours">The colours</h4>
+<div class="table-scroll"><table>
+<thead><tr><th>Looks like</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td>white</td><td>You can type here.</td></tr>
+<tr><td class="edited">yellow</td><td>You changed this cell. It differs from the dump.</td></tr>
+<tr><td class="moved">blue</td><td>A worked-out number (time, flips, MRR) that moved because of your edits.</td></tr>
+<tr><td style="background:#d9d9d9">grey</td><td>Read-only, or the setting does not apply to this kind of op. Excel will not take typing here.</td></tr>
+<tr><td>blue line above and below a row</td><td>The op row your cursor is on (with macros), so you do not lose your place on a wide sheet.</td></tr>
+</tbody>
+</table></div>
+<h4 id="workbook--ribbon">The Parameter Table tab (with macros)</h4>
+<div class="ribbon">
+<div class="grp"><b>Find</b><a href="#page-find">Go to</a><a href="#find--find-op">Find op</a><a href="#find--find-op">Next match</a><a href="#find--show">Changed ops</a><a href="#find--show">This tool's ops</a><a href="#page-slowest">Slowest ops</a><a href="#find--show">Show all</a></div>
+<div class="grp"><b>Edit cells</b><a href="#page-set">Set</a><a href="#page-scale">Scale %</a><a href="#page-copy">Copy from op</a></div>
+<div class="grp"><b>Selected ops</b><a href="#page-text">Comments &amp; text</a><a href="#page-coolant">Coolant</a><a href="#page-calculator">Speed &amp; feed</a><a href="#page-inspection">Inspection &amp; inserts</a></div>
+<div class="grp"><b>Improve</b><a href="#page-target-time">Hit a target time</a><a href="#page-check">Program check</a><a href="#page-scenarios">Scenarios</a></div>
+<div class="grp"><b>Undo and review</b><a href="#page-undo">Undo</a><a href="#undo--back">Back to the dump</a><a href="#page-changes">List changes</a><a href="#page-report">Change report</a></div>
+<div class="grp"><b>Help</b><a href="#page-index">User manual</a></div>
+</div>
+<p>Every window these open has a <span class="ui">?</span> button that opens its page in this manual.</p>
+<h4 id="workbook--ptconfig">The .ptconfig file beside the part</h4>
+<p>What you type on the Tools page and the Summary (insert names, edges, cost, parts per edge, edge life, batch
+quantity) is kept in a small file next to the part, called <code>&lt;part&gt;.ptconfig</code>. The next dump starts
+with those values, so you type them once. Delete the file to start over.</p>
+</section>
+
+<section id="workbook--example">
+<h3>Worked example</h3>
+<p>You type <code>0.012</code> over the <code>feed</code> of op 7 (it was 0.01).</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Cell</th><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>op 7 <code>feed</code></td><td class="num">0.01 (white)</td><td class="num edited">0.012 (yellow)</td></tr>
+<tr><td>op 7 <code>changes</code></td><td class="num">0</td><td class="num edited">1</td></tr>
+<tr><td>op 7 <code>est_cycle_time</code></td><td class="num">1:44:00</td><td class="num moved">1:26:45 (blue)</td></tr>
+<tr><td>Summary: cycle time, Now</td><td class="num">12:46:38</td><td class="num moved">12:29:23</td></tr>
+</tbody>
+</table></div>
+<figure class="shot" data-img="sheet-main.png" data-kind="sheet" data-need="The main sheet with edits: group names, column names, a yellow edited cell, the changes count.">
+<!-- img --><a class="zoom" href="images/sheet-main.png" title="Open the picture full size"><img src="images/sheet-main.png" alt="The main sheet with edits: group names, column names, a yellow edited cell, the changes count." width="1881" height="348" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Column group names. (2) Column names. (3) An edited cell (yellow). (4) The <code>changes</code> count for the row.</figcaption>
+</figure>
+</section>
+
+<section id="workbook--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-summary">Summary page</a></li>
+<li><a href="#page-sheet">The main sheet</a></li>
+<li><a href="#page-tools-page">Tools page</a></li>
+<li><a href="#page-words">Word list</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-summary">
+<h2 class="page-title">Summary page</h2>
+<p class="where">Workbook: the <b>Summary</b> sheet (the first tab)</p>
+
+<section id="summary--what">
+<h3>What this is for</h3>
+<p>The Summary is the whole part on one page. It shows the totals <strong>as dumped</strong> and <strong>now</strong>,
+with the change. It follows every edit you make, as you type. Under that: a batch, the longest ops, the tools that flip
+inserts most, the ops that cut the most air, and how many inserts a part uses.</p>
+</section>
+
+<section id="summary--when">
+<h3>When to use it</h3>
+<ul>
+<li>Before you start: to see where the time goes.</li>
+<li>While you edit: to see the effect on the whole part.</li>
+<li>Before you load: to know what you will gain.</li>
+</ul>
+</section>
+
+<section id="summary--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Look at <strong>Part totals</strong>. <span class="ui">As dumped</span> is the program as it is in Mastercam.
+<span class="ui">Now</span> is with your edits. <span class="ui">Change</span> is the difference (minus = less).</li>
+<li>Type your <strong>batch quantity</strong> (how many parts in a run) in the box beside
+<span class="ui">Batch quantity (type it in)</span>. The cycle time, flips and insert cost per batch follow.</li>
+<li>Type the edges and cost of each insert on the <a href="#tools-page--inserts">Tools page</a> to get
+<span class="ui">Insert cost per part</span> and <span class="ui">per batch</span>.</li>
+<li>Look at <strong>Longest operations</strong>. These are where a change saves the most. Click an op number to jump to its row.</li>
+<li>Look at <strong>Insert flips by tool</strong> and <strong>Most air cutting</strong> for more ideas.</li>
+</ol>
+<figure class="shot" data-img="sheet-summary-top.png" data-kind="sheet" data-need="The top of the Summary: part totals as dumped and now, the batch.">
+<!-- img --><a class="zoom" href="images/sheet-summary-top.png" title="Open the picture full size"><img src="images/sheet-summary-top.png" alt="The top of the Summary: part totals as dumped and now, the batch." width="1699" height="1116" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Cycle time as dumped and now. (2) Type the batch quantity here. (3) Insert cost for the batch (whole inserts).</figcaption>
+</figure>
+<figure class="shot" data-img="sheet-summary-lists.png" data-kind="sheet" data-need="The Summary's Longest operations list.">
+<!-- img --><a class="zoom" href="images/sheet-summary-lists.png" title="Open the picture full size"><img src="images/sheet-summary-lists.png" alt="The Summary&#x27;s Longest operations list." width="1914" height="351" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Click an op number to go to its row. (2) Its share of the whole part's time.</figcaption>
+</figure>
+</section>
+
+<section id="summary--example">
+<h3>Worked example</h3>
+<p>Oil Spool Head, after raising the bore feeds (ops 7 and 8) to 0.012:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>What</th><th class="num">As dumped</th><th class="num">Now</th><th class="num">Change</th></tr></thead>
+<tbody>
+<tr><td>Cycle time (estimate)</td><td class="num">12:46:38</td><td class="num moved">12:26:50</td><td class="num better">-0:19:49</td></tr>
+<tr><td>Cutting time</td><td class="num">12:42:43</td><td class="num moved">12:22:54</td><td class="num better">-0:19:49</td></tr>
+<tr><td>Insert flips per part</td><td class="num">89</td><td class="num">89</td><td class="num">0</td></tr>
+<tr><td>Average removal rate (per min)</td><td class="num">1.74</td><td class="num moved">1.79</td><td class="num better">0.05</td></tr>
+</tbody>
+</table></div>
+<p>The prime turning rough (op 2) is 72.8% of the part. That is where the next big saving is.</p>
+</section>
+
+<section id="summary--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>No estimated times - regenerate and dump again.</q></dt>
+<dd>The ops had no toolpath when dumped (they needed regenerating). Regenerate in Mastercam, then dump again.</dd>
+<dt><q>No insert flips counted on this part.</q></dt>
+<dd>No op has tool inspection stops that change the insert. See <a href="#page-flips">How insert flips are counted</a>.</dd>
+<dt>Insert cost is blank</dt>
+<dd>Type the edges and the cost per insert on the Tools page.</dd>
+</dl>
+</section>
+
+<section id="summary--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-slowest">Slowest ops</a></li>
+<li><a href="#page-tools-page">Tools page</a></li>
+<li><a href="#page-estimate">How the cycle time estimate works</a></li>
+<li><a href="#words--w-mrr">MRR and material removed</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-sheet">
+<h2 class="page-title">The main sheet</h2>
+<p class="where">Workbook: the <b>Lathe params</b> sheet</p>
+
+<section id="sheet--what">
+<h3>What this is for</h3>
+<p>This is where you edit. Each row is one op, in the same order as Mastercam's
+<a href="#words--w-operation-manager">Operation Manager</a>. Row 1 has the <strong>group</strong> names
+(Feeds and speeds, Coolant ...). Row 2 has the <strong>column</strong> names (<code>feed</code>, <code>speed</code> ...).
+The first columns &ndash; op number, type, tool, comment &ndash; stay in view when you scroll right.</p>
+<figure>
+<svg class="diagram" viewBox="0 0 640 388" role="img" aria-labelledby="groups-t groups-d">
+<title id="sheet--groups-t">The column groups, left to right</title>
+<desc id="sheet--groups-d">Sixteen boxes in reading order, as they sit left to right on the sheet: Identity, Feeds and speeds, Depth of cut, Stock to leave, Coolant (you edit these); Toolpath stats, Insert flips, Material removal (read-only); Working numbers (read-only, folded at first); Toolpath; Home position; Reference points (folded); Planes; Filter (folded); Where it sits (read-only, folded); Tool inspection (folded).</desc>
+<g stroke-width="2">
+<g fill="#ffffff" stroke="#1d4ed8">
+<rect x="4" y="34" width="151" height="64" rx="7"/><rect x="163" y="34" width="151" height="64" rx="7"/><rect x="322" y="34" width="151" height="64" rx="7"/><rect x="481" y="34" width="151" height="64" rx="7"/>
+<rect x="4" y="110" width="151" height="64" rx="7"/>
+<rect x="163" y="186" width="151" height="64" rx="7"/><rect x="322" y="186" width="151" height="64" rx="7"/>
+<rect x="4" y="262" width="151" height="64" rx="7"/>
+</g>
+<g fill="#e5e7eb" stroke="#6b7280">
+<rect x="163" y="110" width="151" height="64" rx="7"/><rect x="322" y="110" width="151" height="64" rx="7"/><rect x="481" y="110" width="151" height="64" rx="7"/>
+</g>
+<g fill="#ffffff" stroke="#1d4ed8" stroke-dasharray="7 5">
+<rect x="481" y="186" width="151" height="64" rx="7"/><rect x="163" y="262" width="151" height="64" rx="7"/><rect x="481" y="262" width="151" height="64" rx="7"/>
+</g>
+<g fill="#e5e7eb" stroke="#6b7280" stroke-dasharray="7 5">
+<rect x="4" y="186" width="151" height="64" rx="7"/><rect x="322" y="262" width="151" height="64" rx="7"/>
+</g>
+</g>
+<g font-size="17" text-anchor="middle" fill="#1b1f24">
+<text x="79.5" y="72">Identity</text>
+<text x="238.5" y="62">Feeds and</text><text x="238.5" y="83">speeds</text>
+<text x="397.5" y="72">Depth of cut</text>
+<text x="556.5" y="72">Stock to leave</text>
+<text x="79.5" y="148">Coolant</text>
+<text x="238.5" y="148">Toolpath stats</text>
+<text x="397.5" y="148">Insert flips</text>
+<text x="556.5" y="138">Material</text><text x="556.5" y="159">removal</text>
+<text x="79.5" y="214">Working</text><text x="79.5" y="235">numbers</text>
+<text x="238.5" y="224">Toolpath</text>
+<text x="397.5" y="224">Home position</text>
+<text x="556.5" y="214">Reference</text><text x="556.5" y="235">points</text>
+<text x="79.5" y="300">Planes</text>
+<text x="238.5" y="300">Filter</text>
+<text x="397.5" y="300">Where it sits</text>
+<text x="556.5" y="290">Tool</text><text x="556.5" y="311">inspection</text>
+</g>
+<g font-size="16" fill="#4a525c">
+<text x="4" y="20">Left to right on the sheet, row by row:</text>
+<text x="4" y="356">White = you can edit. Grey = read-only (worked out).</text>
+<text x="4" y="380">Dashed = folded away at first (click its + to open it).</text>
+</g>
+</svg>
+<figcaption>The column groups. The ones you change most are first.</figcaption>
+</figure>
+</section>
+
+<section id="sheet--when">
+<h3>When to use it</h3>
+<p>Any time you change a setting. You can type straight into the cells, like any spreadsheet. The ribbon tools
+(<a href="#page-set">Set</a>, <a href="#page-scale">Scale</a> ...) just make big changes quicker.</p>
+</section>
+
+<section id="sheet--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Find the op's row.</strong> Scroll, or use <a href="#page-find">Find op</a> on the ribbon.</li>
+<li><strong>Find the column.</strong> Hover over a column name in row 2 to read what it is. A group that is folded
+away shows only one column: click the small <span class="ui">+</span> above the column letters to open it.
+(With macros: <span class="ui">Go to</span> on the ribbon opens a group for you.)</li>
+<li><strong>Type the new value</strong> and press <kbd>Enter</kbd>. The cell turns yellow. Click a cell with a
+small arrow on its right to pick from a list (for example <code>per rev</code> / <code>per min</code>).</li>
+<li><strong>Watch the row's numbers move</strong>: <code>est_cycle_time</code>, flips and MRR follow your edit.
+See <a href="#page-estimate">How the estimate works</a>.</li>
+<li><strong>Save</strong> when you are done (<kbd>Ctrl</kbd>+<kbd>S</kbd>).</li>
+</ol>
+<h4 id="sheet--rules">Rules that keep you safe</h4>
+<ul>
+<li><strong>An empty cell means &ldquo;leave it alone&rdquo;</strong> &ndash; never zero.</li>
+<li><strong>Each cell checks what you type.</strong> A value Mastercam would not take is refused straight away, with a
+message saying what the cell takes. Click <span class="ui">Retry</span> or <span class="ui">Cancel</span>.</li>
+<li><strong>Grey cells refuse typing.</strong> They are read-only (a time, a count) or the setting is not part of this
+kind of op.</li>
+<li><strong>A feed is two cells:</strong> the number (<code>feed</code>, always positive) and its unit
+(<code>feed_mode</code>: <a href="#words--w-per-rev">per rev or per min</a>). A speed is the number
+(<code>speed</code>), CSS or RPM (<code>speed_mode</code>) and CW or CCW (<code>spindle_dir</code>).</li>
+<li><strong>Sorting and filtering are fine.</strong> The load finds each row by its op number, not by where it is.</li>
+<li><strong>X values are a radius</strong> in the travel columns (double them for diameter). A few angles are in
+radians &ndash; the tooltip says so.</li>
+</ul>
+</section>
+
+<section id="sheet--example">
+<h3>Worked example</h3>
+<p>Op 17 (Multiple Plunge Groove) plunges at 0.0025 inch per rev. You want 0.003.</p>
+<ol>
+<li>Find op 17's row. Click its <code>feed</code> cell (Feeds and speeds group).</li>
+<li>Type <code>0.003</code>, press <kbd>Enter</kbd>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>op 17</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code></td><td class="num">0.0025</td><td class="num edited">0.003</td></tr>
+<tr><td><code>feed_mode</code></td><td>per rev</td><td>per rev</td></tr>
+<tr><td><code>changes</code></td><td class="num">0</td><td class="num edited">1</td></tr>
+<tr><td><code>est_cycle_time</code></td><td class="num">0:09:00</td><td class="num moved">shorter (blue)</td></tr>
+</tbody>
+</table></div>
+<p>If you had typed <code>-0.003</code> by mistake, the cell would refuse it: a feed is never below 0 here.</p>
+<figure class="shot" data-img="sheet-main.png" data-kind="sheet" data-need="The main sheet with edits: group names, column names, a yellow edited cell, the changes count.">
+<!-- img --><a class="zoom" href="images/sheet-main.png" title="Open the picture full size"><img src="images/sheet-main.png" alt="The main sheet with edits: group names, column names, a yellow edited cell, the changes count." width="1881" height="348" loading="lazy"></a><!-- /img -->
+<figcaption>(1) A group name. (2) A column name &ndash; hover it for help. (3) An edited cell. (4) The row's <code>changes</code> count.</figcaption>
+</figure>
+</section>
+
+<section id="sheet--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt>Excel: <q>This value doesn't match the data validation restrictions ...</q> (or the cell's own message)</dt>
+<dd>The value is outside what the setting takes. The message says what it takes, e.g. <q>A number, 0 or more.</q></dd>
+<dt>The cell will not take any typing</dt>
+<dd>It is grey: read-only, or not for this kind of op. Its message says which.</dd>
+<dt>Status bar: <q>CSS with no max_ss ...</q> or <q>... looks like a per-rev feed</q></dt>
+<dd>A gentle warning, not a refusal. CSS with no max RPM can spin very fast near the center. A per-minute feed of 0.01
+is probably a per-rev number in the wrong mode. Check the row.</dd>
+</dl>
+</section>
+
+<section id="sheet--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-words">Word list</a> &ndash; every column in plain words</li>
+<li><a href="#page-find">Find an op</a> and <a href="#find--goto">Go to a column group</a></li>
+<li><a href="#page-undo">Undo</a></li>
+<li><a href="#page-estimate">How the cycle time estimate works</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-tools-page">
+<h2 class="page-title">Tools page</h2>
+<p class="where">Workbook: the <b>Tools</b> sheet</p>
+
+<section id="tools-page--what">
+<h3>What this is for</h3>
+<p>One row per tool: its picture, which ops use it, its <a href="#words--w-insert">insert</a>, how many
+<a href="#words--w-flip">insert flips</a> a part takes, and how long it cuts. Under the tools is the
+<strong>inserts table</strong>: one row per insert, with its edges and cost. From those, the workbook works out how many
+inserts a part uses and what they cost. In the main sheet, click a tool number to jump here.</p>
+</section>
+
+<section id="tools-page--when">
+<h3>When to use it</h3>
+<ul>
+<li>To see which tools eat inserts.</li>
+<li>To get the insert cost per part and per batch (type edges and cost once &ndash; they are kept for next time).</li>
+<li>When the insert name the tool guessed is wrong.</li>
+</ul>
+</section>
+
+<section id="tools-page--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Check each tool's insert</strong> (the <span class="ui">Insert</span> column). The tool works it out from
+the tool's shape, e.g. <code>C 80&deg; r0.031</code>. If it is wrong, type over it. Tools with the same insert name
+are added up together below.</li>
+<li><strong>Look at the flips:</strong> <span class="ui">Flips / part</span>, <span class="ui">Cut time / part</span>,
+<span class="ui">Longest between flips</span>, and <span class="ui">Inspection</span> (what its ops stop on).</li>
+<li><strong>Edge life (fallback):</strong> only for ops that stop for inspection with no time of their own. Type the cut
+time one edge lasts, as minutes:seconds (<code>8:00</code>). Greyed out where no op uses it.</li>
+<li id="tools-page--inserts"><strong>In the inserts table, type the edges per insert</strong> (a CNMG: 4; a VNMG: 4; a VCMT: 2; a
+round: about 8). The guess counts one side only &ndash; type over it for a double-sided insert.</li>
+<li><strong>Type the cost per insert.</strong> <span class="ui">Inserts / part</span> and
+<span class="ui">Insert cost / part</span> fill in. The Summary page takes them to a batch.</li>
+<li><strong>Parts per edge</strong> &ndash; only for an insert that lasts more than one part (the toolpath never flips it).
+Type how many parts one edge makes. It is greyed out where the toolpath already flips the edge every part.</li>
+</ol>
+<!-- CHECK: new Tools page columns from the Inspection & inserts / Speed & feed work - "Usual edge time" (per insert),
+"Insert size" and "Entering angle" (per tool): their exact headings and where they sit. -->
+<p>Newer versions add a few typed columns: <span class="ui">Usual edge time</span> for each insert (what one edge
+normally lasts &ndash; the <a href="#page-check">Program check</a> compares with it), and
+<span class="ui">Insert size</span> and <span class="ui">Entering angle</span> for each tool (the
+<a href="#calculator--chip">chip thinning</a> calculator uses them).</p>
+<figure class="shot" data-img="sheet-tools.png" data-kind="sheet" data-need="The Tools page: two tools with pictures, insert, flips per part, edge life.">
+<!-- img --><a class="zoom" href="images/sheet-tools.png" title="Open the picture full size"><img src="images/sheet-tools.png" alt="The Tools page: two tools with pictures, insert, flips per part, edge life." width="3151" height="733" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The insert &ndash; type over it if it is wrong. (2) Flips per part. (3) Edge life, only where it is used.</figcaption>
+</figure>
+<figure class="shot" data-img="sheet-inserts.png" data-kind="sheet" data-need="The inserts table under the tools: edges, cost, parts per edge typed in.">
+<!-- img --><a class="zoom" href="images/sheet-inserts.png" title="Open the picture full size"><img src="images/sheet-inserts.png" alt="The inserts table under the tools: edges, cost, parts per edge typed in." width="2871" height="261" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Edges per insert. (2) Cost per insert. (3) Parts per edge (only for inserts that outlast a part).</figcaption>
+</figure>
+</section>
+
+<section id="tools-page--example">
+<h3>Worked example</h3>
+<p>On the Oil Spool Head, tools T11 and T12 both carry a <code>C 80&deg; r0.031</code> insert. Together they flip
+15 edges per part. The guess says 2 edges, but it is a CNMG &ndash; double-sided, 4 edges. Inserts cost $12.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>C 80&deg; r0.031</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td>Edges per insert</td><td class="num">2</td><td class="num edited">4</td></tr>
+<tr><td>Flips / part</td><td class="num">15</td><td class="num">15</td></tr>
+<tr><td>Inserts / part</td><td class="num">8</td><td class="num moved">4</td></tr>
+<tr><td>Cost per insert</td><td class="num">(blank)</td><td class="num edited">$12.00</td></tr>
+<tr><td>Insert cost / part</td><td class="num">(blank)</td><td class="num moved">$45.00</td></tr>
+</tbody>
+</table></div>
+<p>15 flips &divide; 4 edges = 3.75 inserts, shown as 4 whole inserts. The cost uses 3.75 &times; $12 = $45.00.
+Next dump, the 4 and the $12 are already there (kept in the part's <a href="#words--w-ptconfig">.ptconfig</a> file).</p>
+</section>
+
+<section id="tools-page--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>A whole number of edges, 1 or more.</q></dt>
+<dd>Edges per insert takes a whole number.</dd>
+<dt><q>Type a time: minutes:seconds (8:00) or seconds (480).</q></dt>
+<dd>Edge life takes a time. <code>8:00</code> and <code>480</code> mean the same.</dd>
+<dt><q>A number of parts, more than 0 - and only for an insert whose edge is not already flipped every part ...</q></dt>
+<dd>Parts per edge is only for inserts the toolpath never flips. Leave it blank for the others.</dd>
+<dt><span class="ui">no insert data - grouped by its cutting outline</span> (Shape check column)</dt>
+<dd>The tool in Mastercam has no insert data, so the name was worked out from its outline. Check the name.</dd>
+</dl>
+</section>
+
+<section id="tools-page--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-inspection">Inspection &amp; inserts</a> &ndash; use every edge evenly</li>
+<li><a href="#page-flips">How insert flips are counted</a></li>
+<li><a href="#page-summary">Summary page</a> (insert cost per batch)</li>
+<li><a href="#words--w-edge-life">Edge life</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-find">
+<h2 class="page-title">Find an op</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Find</b></p>
+
+<section id="find--what">
+<h3>What this is for</h3>
+<p>A part can have dozens of ops and hundreds of columns. The <span class="ui">Find</span> group gets you to the
+right row and the right columns fast &ndash; and can hide the rows you do not need right now.</p>
+</section>
+
+<section id="find--when">
+<h3>When to use it</h3>
+<ul>
+<li>&ldquo;Where is op 23?&rdquo; &ndash; or &ldquo;where are all the ops of tool 12?&rdquo;</li>
+<li>&ldquo;Where are the coolant columns?&rdquo;</li>
+<li>&ldquo;Which ops did I change?&rdquo;</li>
+</ul>
+</section>
+
+<section id="find--steps">
+<h3>Steps</h3>
+<h4 id="find--find-op">Find an op by number, tool or words</h4>
+<ol class="steps">
+<li>Click in the <span class="ui">Find op</span> box on the ribbon.</li>
+<li>Type one of these, then press <kbd>Enter</kbd>:
+<ul>
+<li>an op number: <code>23</code></li>
+<li>a T and a tool number: <code>T12</code></li>
+<li>words from the comment or the type: <code>bore</code>, <code>groove</code></li>
+</ul></li>
+<li>The sheet jumps to the first op that matches. The status bar (bottom of Excel) names it.</li>
+<li>Click <span class="ui">Next match</span> for the next one. After the last, it starts again at the top.</li>
+</ol>
+<h4 id="find--goto">Go to a column group</h4>
+<ol class="steps">
+<li>Select a cell in the op rows you care about (or just one).</li>
+<li>Click <span class="ui">Go to</span> and pick a group, e.g. <span class="ui">Coolant</span>.</li>
+<li>That group opens and the others fold away, so the sheet is easy to read. The cursor lands in that group, on the same rows.</li>
+<li>To open every group again: <span class="ui">Go to</span> &rsaquo; <span class="ui">All columns (open every group)</span>.</li>
+</ol>
+<h4 id="find--show">Show only some ops</h4>
+<ul>
+<li><span class="ui">Changed ops</span> &ndash; only the ops you have changed.</li>
+<li><span class="ui">This tool's ops</span> &ndash; click a cell in an op's row first; shows only the ops with the same tool.</li>
+<li><a href="#page-slowest">Slowest ops</a> &ndash; only the ops that take most of the time.</li>
+<li><span class="ui">Show all</span> &ndash; every op again.</li>
+</ul>
+<p>Hidden rows are not lost. The tools that work on &ldquo;selected cells&rdquo; skip hidden rows, so you can show only
+one tool's ops, select a whole column, and change just those.</p>
+<div class="note"><p><strong>The row mark.</strong> The op row your cursor is on gets a blue line above and below
+(and its first columns a light blue tint). On a wide sheet it stops you reading across into the wrong row.</p></div>
+<figure class="shot todo" data-img="ribbon-find.png" data-kind="screen" data-need="Excel's Parameter Table ribbon tab, the Find group: 1 Go to, 2 the Find op box with T12 typed, 3 Next match, 4 Changed ops / This tool's ops / Show all. (A screenshot of Excel, not Mastercam.)">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: Excel&#x27;s Parameter Table ribbon tab, the Find group: 1 Go to, 2 the Find op box with T12 typed, 3 Next match, 4 Changed ops / This tool&#x27;s ops / Show all. (A screenshot of Excel, not Mastercam.)"><strong>Picture coming: ribbon-find.png</strong>Excel&#x27;s Parameter Table ribbon tab, the Find group: 1 Go to, 2 the Find op box with T12 typed, 3 Next match, 4 Changed ops / This tool&#x27;s ops / Show all. (A screenshot of Excel, not Mastercam.) <em>(a screenshot - to be added)</em></div><!-- /img -->
+<figcaption>(1) Go to. (2) Find op. (3) Next match. (4) Show only some ops.</figcaption>
+</figure>
+</section>
+
+<section id="find--example">
+<h3>Worked example</h3>
+<p>You want every op of tool 12 on the Oil Spool Head, with their feeds.</p>
+<ol>
+<li>Type <code>T12</code> in <span class="ui">Find op</span>, press <kbd>Enter</kbd>: the cursor goes to op 7.</li>
+<li>Click <span class="ui">This tool's ops</span>.</li>
+<li>Click <span class="ui">Go to</span> &rsaquo; <span class="ui">Feeds and speeds</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>Rows showing</td><td class="num">18 ops</td><td class="num edited">2 ops (7 and 8)</td></tr>
+<tr><td>Column groups open</td><td>all</td><td class="edited">Identity and Feeds and speeds</td></tr>
+<tr><td>Cursor</td><td>op 1</td><td class="edited">op 7, <code>feed</code></td></tr>
+</tbody>
+</table></div>
+<p>Click <span class="ui">Show all</span> and <span class="ui">Go to</span> &rsaquo; <span class="ui">All columns</span> when you are done.</p>
+</section>
+
+<section id="find--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>no op matches 'xyz' (an op number, T and a tool number, or words in the comment).</q></dt>
+<dd>Nothing matched. Check the spelling, or try fewer words. Hidden rows are not searched &ndash; click <span class="ui">Show all</span> first.</dd>
+<dt><q>type an op number, T12 or words from a comment in Find op first.</q></dt>
+<dd>You clicked <span class="ui">Next match</span> before searching.</dd>
+<dt><q>Click a cell in an operation's row (one with a tool number) first.</q></dt>
+<dd><span class="ui">This tool's ops</span> needs to know which tool: click a cell in that op's row.</dd>
+</dl>
+</section>
+
+<section id="find--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-slowest">Slowest ops</a></li>
+<li><a href="#page-sheet">The main sheet</a> (column groups)</li>
+<li><a href="#page-set">Set</a> &ndash; change the cells you found</li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-slowest">
+<h2 class="page-title">Slowest ops</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Find</b> &rsaquo; <b>Slowest ops</b></p>
+
+<section id="slowest--what">
+<h3>What this is for</h3>
+<p>On most parts, a few ops take most of the time. <span class="ui">Slowest ops</span> shows only the ops that make up
+80% of the cycle time, longest first, and hides the rest. That is where a change saves the most.</p>
+</section>
+
+<section id="slowest--when">
+<h3>When to use it</h3>
+<p>First thing, whenever the goal is &ldquo;make it faster&rdquo;. Saving 10% on an op that is 70% of the part beats
+saving 50% on an op that is 1% of it.</p>
+</section>
+
+<section id="slowest--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Click <span class="ui">Slowest ops</span>.</li>
+<li>The sheet shows only the slow ops, longest first. Look at their feeds, speeds and depths.</li>
+<li>Change them (type, <a href="#page-scale">Scale %</a>, or <a href="#page-target-time">Hit a target time</a>).</li>
+<li>Click <span class="ui">Show all</span> to see every op again, in the normal order.</li>
+</ol>
+<!-- CHECK: whether Slowest ops sorts the sheet (and Show all puts the order back) or only filters. -->
+<figure class="shot todo" data-img="sheet-slowest.png" data-kind="window" data-need="The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times."><strong>Picture coming: sheet-slowest.png</strong>The main sheet after Slowest ops: only the ops making 80% of the time, longest first, with their times. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>Only the slow ops are left on the sheet.</figcaption>
+</figure>
+</section>
+
+<section id="slowest--example">
+<h3>Worked example</h3>
+<p>The Oil Spool Head runs 12:46:38. Slowest ops shows:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">Time</th><th class="num">Share of the part</th><th class="num">Adds up to</th></tr></thead>
+<tbody>
+<tr><td>2 Prime Turn Rough OD</td><td class="num">9:04:03</td><td class="num">71.0%</td><td class="num">71.0%</td></tr>
+<tr><td>7 Rough Bore ID</td><td class="num">1:44:00</td><td class="num">13.6%</td><td class="num">84.5%</td></tr>
+</tbody>
+</table></div>
+<p>Two ops out of 18 are 84.5% of the time. Everything else together is 15.5%. Start with op 2.</p>
+</section>
+
+<section id="slowest--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-summary">Summary page</a> &ndash; the ten longest ops</li>
+<li><a href="#page-target-time">Hit a target time</a></li>
+<li><a href="#find--show">Show all</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-set">
+<h2 class="page-title">Set</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Edit cells</b> &rsaquo; <b>Set</b></p>
+
+<section id="set--what">
+<h3>What this is for</h3>
+<p>Puts one value into every cell you selected. Before anything is written, the window tells you how many cells will
+change and which ones are <strong>refused</strong> (read-only, not for that kind of op, or outside its limits).</p>
+</section>
+
+<section id="set--when">
+<h3>When to use it</h3>
+<ul>
+<li>The same feed, depth or stock to leave on many ops.</li>
+<li>The same choice on many ops: <code>per rev</code>, <code>CSS</code>, a yes/no switch.</li>
+</ul>
+<p>For coolant, use <a href="#page-coolant">Coolant</a>. For a percent up or down, use <a href="#page-scale">Scale %</a>.</p>
+</section>
+
+<section id="set--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Select the cells</strong> on the <span class="ui">Lathe params</span> sheet. To pick cells that are not
+next to each other, hold <kbd>Ctrl</kbd> while you click. To pick a whole column of ops, click the first cell, hold
+<kbd>Shift</kbd>, click the last.</li>
+<li>Click <span class="ui">Set</span> on the ribbon.</li>
+<li><strong>Type the value</strong> (or pick it from the list). The list shows what is in the cells now, or the cell's
+own choices.</li>
+<li><strong>Read the line under it</strong>: how many cells will change, how many already have that value, how many are
+refused. The list below shows each cell, old &rarr; new.</li>
+<li>Click <span class="ui">OK</span>. The cells turn yellow. The status bar (bottom of Excel) says what was done.</li>
+</ol>
+<figure class="shot" data-img="win-set.png" data-kind="window" data-need="The Set window: 0.012 typed for the feed of ops 1, 7 and 8; 3 cells will change; the list of old -> new.">
+<!-- img --><a class="zoom" href="images/win-set.png" title="Open the picture full size"><img src="images/win-set.png" alt="The Set window: 0.012 typed for the feed of ops 1, 7 and 8; 3 cells will change; the list of old -&gt; new." width="982" height="635" loading="lazy"></a><!-- /img -->
+<figcaption>(1) Type or pick the value. (2) What OK will do. (3) Each cell, old &rarr; new. (4) OK.</figcaption>
+</figure>
+<p class="tip">Hidden rows are skipped. Use <a href="#find--show">This tool's ops</a> or <span class="ui">Changed ops</span>
+first, then select the whole column &ndash; only the rows you can see are set.</p>
+</section>
+
+<section id="set--example">
+<h3>Worked example</h3>
+<p>Set the feed of ops 1, 7 and 8 to 0.012 per rev.</p>
+<ol>
+<li>Click op 1's <code>feed</code> cell. Hold <kbd>Ctrl</kbd> and click op 7's and op 8's.</li>
+<li>Click <span class="ui">Set</span>, type <code>0.012</code>.</li>
+<li>The window says <q>3 cell(s) will change.</q> Click <span class="ui">OK</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">feed before</th><th class="num">feed after</th></tr></thead>
+<tbody>
+<tr><td>1 Face Stock</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td>7 Rough Bore ID</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td>8 Finish Bore ID</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+</tbody>
+</table></div>
+<p>Changed your mind? Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (or <a href="#page-undo">Undo</a>) &ndash; all three go back at once.</p>
+</section>
+
+<section id="set--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>3 cell(s) will change, 1 already that.</q></dt>
+<dd>One of the cells already holds that value; it is left as is.</dd>
+<dt><q>... 2 refused (read-only, not for that operation, or outside its limits).</q></dt>
+<dd>Those cells cannot take that value. They stay as they are. The list shows which.</dd>
+<dt><q>Type or pick a value.</q></dt>
+<dd>The box is empty &ndash; <span class="ui">OK</span> stays grey until you type something.</dd>
+<dt><q>Select cells on the 'Lathe params' sheet first.</q></dt>
+<dd>You were on another sheet. Go to <span class="ui">Lathe params</span> and select cells.</dd>
+</dl>
+</section>
+
+<section id="set--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-scale">Scale %</a></li>
+<li><a href="#page-copy">Copy from op</a></li>
+<li><a href="#page-undo">Undo</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-scale">
+<h2 class="page-title">Scale %</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Edit cells</b> &rsaquo; <b>Scale %</b></p>
+
+<section id="scale--what">
+<h3>What this is for</h3>
+<p>Makes every selected number bigger or smaller by the same percent &ndash; like turning the feed override knob, but
+saved in the program. Each cell keeps its own value: 0.010 and 0.020 at +10% become 0.011 and 0.022.</p>
+</section>
+
+<section id="scale--when">
+<h3>When to use it</h3>
+<ul>
+<li>&ldquo;These ops can all go 10% faster.&rdquo;</li>
+<li>&ldquo;Back the speeds off 15% on this tough material.&rdquo;</li>
+</ul>
+<p>To reach a set cycle time instead, use <a href="#page-target-time">Hit a target time</a>.</p>
+</section>
+
+<section id="scale--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Select the number cells</strong> to change (e.g. the <code>feed</code> of several ops). Text cells and
+worked-out cells are skipped.</li>
+<li>Click <span class="ui">Scale %</span>.</li>
+<li><strong>Type the percent</strong>: <code>+10%</code> means 10% more, <code>-10%</code> means 10% less.</li>
+<li>Read the preview: how many cells change, a few examples (old &rarr; new), and any that are refused for going past
+their limits.</li>
+<li>Click <span class="ui">OK</span>.</li>
+</ol>
+<!-- CHECK: the Scale window's percent wording after the rebuild. Older versions ask for the new size as a percent
+of the old (110 = 10% more, 90 = 10% less); the agreed new wording is +10% / -10%. -->
+<div class="note"><p>Some versions ask for the new size as a percent of the old one: <code>110</code> means 10% more,
+<code>90</code> means 10% less. The window says which it wants.</p></div>
+<figure class="shot todo" data-img="win-scale.png" data-kind="window" data-need="The Scale window: +10% typed for the feed of three ops, the preview with old -> new examples.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Scale window: +10% typed for the feed of three ops, the preview with old -&gt; new examples."><strong>Picture coming: win-scale.png</strong>The Scale window: +10% typed for the feed of three ops, the preview with old -&gt; new examples. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Scale window with +10% on three feeds.</figcaption>
+</figure>
+</section>
+
+<section id="scale--example">
+<h3>Worked example</h3>
+<p>Raise the feeds of the three facing and bore ops by 10%.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">feed before</th><th class="num">+10%</th></tr></thead>
+<tbody>
+<tr><td>1 Face Stock</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
+<tr><td>7 Rough Bore ID</td><td class="num">0.01</td><td class="num edited">0.011</td></tr>
+<tr><td>17 Multiple Plunge Groove</td><td class="num">0.0025</td><td class="num edited">0.00275</td></tr>
+</tbody>
+</table></div>
+<p>The estimate on each row drops by about 9% of its cutting time (time goes down as feed goes up: 1 &divide; 1.10 = 0.91).</p>
+</section>
+
+<section id="scale--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>3 cell(s) will change ... e.g. 0.01 -> 0.011</q></dt>
+<dd>What OK will do, with examples.</dd>
+<dt><q>... refused (read-only, not for that operation, or outside its limits)</q></dt>
+<dd>The new value would be past what the setting takes. Those cells are left as they are.</dd>
+<dt><q>Type a percent ...</q> / <q>The percent has to be more than 0.</q></dt>
+<dd>The box is empty or not a number.</dd>
+</dl>
+</section>
+
+<section id="scale--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-target-time">Hit a target time</a></li>
+<li><a href="#page-set">Set</a></li>
+<li><a href="#page-undo">Undo</a></li>
+<li><a href="#words--w-percent">What +10% means</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-copy">
+<h2 class="page-title">Copy from op</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Edit cells</b> &rsaquo; <b>Copy from op</b></p>
+
+<section id="copy--what">
+<h3>What this is for</h3>
+<p>Makes ops match. You pick the columns (by selecting cells in them), pick the op to copy <strong>from</strong>, and
+the values go into the other ops you selected &ndash; or into every op that uses the same tool.</p>
+</section>
+
+<section id="copy--when">
+<h3>When to use it</h3>
+<ul>
+<li>One op runs well. You want the same feed and speed on a similar op.</li>
+<li>You tuned one op of a tool and want all of that tool's ops the same.</li>
+</ul>
+</section>
+
+<section id="copy--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Select cells in the columns to copy</strong> (for example <code>feed</code> and <code>speed</code>), in the
+rows of the ops to copy <strong>into</strong>.</li>
+<li>Click <span class="ui">Copy from op</span>.</li>
+<li><strong>Pick the op to copy from</strong> in the list (it shows each op's number, type and comment).</li>
+<li><strong>Pick where it goes:</strong> the ops you selected, or every op of the tool.
+<!-- CHECK: how the merged window offers "the selected ops" vs "every op of tool T12" (an option, a list entry or a second button). --></li>
+<li>Read the preview: each cell, old &rarr; new, and any warning.</li>
+<li>Click <span class="ui">OK</span>.</li>
+</ol>
+<div class="warn"><p><strong>Watch the units.</strong> If the op you copy from runs <code>per rev</code> and the other runs
+<code>per min</code> (or one is CSS and the other RPM), the window warns you. Copy the <code>feed_mode</code> /
+<code>speed_mode</code> column too, or the number will mean something else. A feed of 0.012 per minute is a crawl.</p></div>
+<figure class="shot todo" data-img="win-copy.png" data-kind="window" data-need="The Copy from op window: feed and speed selected on op 8, op 7 picked as the source, the preview of old -> new.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Copy from op window: feed and speed selected on op 8, op 7 picked as the source, the preview of old -&gt; new."><strong>Picture coming: win-copy.png</strong>The Copy from op window: feed and speed selected on op 8, op 7 picked as the source, the preview of old -&gt; new. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Copy from op window.</figcaption>
+</figure>
+</section>
+
+<section id="copy--example">
+<h3>Worked example</h3>
+<p>Op 7 (Rough Bore ID) now runs well at 0.012 per rev and 220 SFM. Make op 8 (Finish Bore ID, same tool T12) the same.</p>
+<ol>
+<li>Select op 8's <code>feed</code> and <code>speed</code> cells.</li>
+<li>Click <span class="ui">Copy from op</span>, pick <span class="ui">op 7</span>, click <span class="ui">OK</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>op 8</th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code></td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td><code>speed</code></td><td class="num">200</td><td class="num edited">220</td></tr>
+<tr><td><code>feed_mode</code>, <code>speed_mode</code></td><td>per rev, CSS</td><td>per rev, CSS (same &ndash; no warning)</td></tr>
+</tbody>
+</table></div>
+<p>A finish pass often wants a lighter feed than the rough. Copy what makes sense, not everything.</p>
+</section>
+
+<section id="copy--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>Pick the operation to copy from.</q></dt>
+<dd>No source op is picked yet.</dd>
+<dt><q>No other operation uses this tool.</q></dt>
+<dd>&ldquo;Every op of the tool&rdquo; found only the op you copy from.</dd>
+<dt>A warning that per rev / per min (or CSS / RPM) differ</dt>
+<dd>The source and the target count the feed (or speed) in different units. See the box above.</dd>
+<dt><q>... refused (read-only, not for that operation, or outside its limits)</q></dt>
+<dd>That column does not exist for the target's kind of op, or the value is past its limits.</dd>
+</dl>
+</section>
+
+<section id="copy--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-set">Set</a></li>
+<li><a href="#find--show">This tool's ops</a></li>
+<li><a href="#words--w-per-rev">Per rev and per min</a>, <a href="#words--w-css">CSS and RPM</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-text">
+<h2 class="page-title">Comments &amp; text</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Comments &amp; text</b></p>
+
+<section id="text--what">
+<h3>What this is for</h3>
+<p>A roomy window for the three kinds of text an op has:</p>
+<ul>
+<li><strong>Op comment</strong> &ndash; the name the Operation Manager shows (<code>comment</code>, up to 119 characters).</li>
+<li><strong>Inspection comment</strong> &ndash; the message at a <a href="#words--w-insp-time">tool inspection stop</a>
+(<code>insp_comment</code>), e.g. <code>ROTATE INSERT</code>.</li>
+<li><strong>Manual text</strong> &ndash; the text of a manual entry op (<code>manual_text</code>, up to 3111 characters).
+Only for manual entry ops.</li>
+</ul>
+<p>It counts the characters as you type, against each one's limit. With several ops selected, it sets the same comment on all of them.</p>
+</section>
+
+<section id="text--when">
+<h3>When to use it</h3>
+<ul>
+<li>To rename ops so the setup sheet and the operator make sense of them.</li>
+<li>To tell the operator what to do at an inspection stop (rotate the insert, check a size).</li>
+<li>To edit a long manual entry without squinting at a cell.</li>
+</ul>
+</section>
+
+<section id="text--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Select the ops</strong> &ndash; any cell in their rows. (Or just double-click a <code>comment</code>,
+<code>insp_comment</code> or <code>manual_text</code> cell.)</li>
+<li>Click <span class="ui">Comments &amp; text</span>. The sheet jumps to the comment columns so you can see what is there now.</li>
+<li><strong>Pick the tab</strong>: <span class="ui">Op comment</span>, <span class="ui">Inspection comment</span> or
+<span class="ui">Manual text</span>.</li>
+<li><strong>Type the text.</strong> The count under the box shows how many characters you have left. If the ops have
+different text, the box says so (<q>Mixed</q>).</li>
+<li>For an inspection comment, you can click a <strong>quick pick</strong>: <span class="ui">ROTATE INSERT</span>,
+<span class="ui">CHANGE INSERT</span>, <span class="ui">INDEX INSERT</span>, <span class="ui">CHECK INSERT</span>.</li>
+<li>Click <span class="ui">Apply</span>. The cells turn yellow. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes the whole Apply back.</li>
+</ol>
+<p>The window stays open beside the sheet. Click other ops and it follows them (unless you have typed something you have
+not applied yet). The <span class="ui">?</span> button opens this page.</p>
+<!-- CHECK: tab names, the quick-pick buttons, the inspection comment's character limit and the "Mixed" wording in the finished window. -->
+<div class="warn"><p><strong>The words in an inspection comment matter.</strong> A stop whose comment says
+<code>ROTATE</code>, <code>FLIP</code>, <code>CHANGE</code> or <code>INDEX</code> is counted as an
+<a href="#page-flips">insert flip</a> &ndash; a new edge. <code>CHECK INSERT</code> is only a look, not a flip.
+Change <code>CHECK INSERT</code> to <code>ROTATE INSERT</code> and the flips per part go up.</p></div>
+<figure class="shot todo" data-img="win-text.png" data-kind="window" data-need="The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count."><strong>Picture coming: win-text.png</strong>The Comments &amp; text window on the Inspection comment tab, two ops selected, ROTATE INSERT picked, the character count. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Comments &amp; text window.</figcaption>
+</figure>
+</section>
+
+<section id="text--example">
+<h3>Worked example</h3>
+<p>Say your rough bore and finish bore (ops 7 and 8, tool T12) stop for inspection with the comment
+<code>CHECK INSERT</code>. In your shop the operator always turns the insert at that stop. Say so in the comment, and the
+flips will be counted.</p>
+<ol>
+<li>Click a cell in op 7's row, hold <kbd>Ctrl</kbd>, click a cell in op 8's row.</li>
+<li>Click <span class="ui">Comments &amp; text</span>, then the <span class="ui">Inspection comment</span> tab.</li>
+<li>Click <span class="ui">ROTATE INSERT</span>, then <span class="ui">Apply</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th><code>insp_comment</code> before</th><th><code>insp_comment</code> after</th><th>Stops counted as flips (after load and regenerate)</th></tr></thead>
+<tbody>
+<tr><td>7 Rough Bore ID</td><td>CHECK INSERT</td><td class="edited">ROTATE INSERT</td><td>no &rarr; <strong>yes</strong></td></tr>
+<tr><td>8 Finish Bore ID</td><td>CHECK INSERT</td><td class="edited">ROTATE INSERT</td><td>no &rarr; <strong>yes</strong></td></tr>
+</tbody>
+</table></div>
+<p>After you load and regenerate, the NC code carries the message at each stop. If the comment switch
+(<code>insp_comment_on</code>) is off, turn it on too.</p>
+</section>
+
+<section id="text--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>... over the limit by 12</q></dt>
+<dd>Too long. Shorten it &ndash; the load refuses text that would be cut off.</dd>
+<dt>The Manual text tab is greyed out</dt>
+<dd>None of the selected ops is a manual entry op.</dd>
+<dt><q>Mixed</q></dt>
+<dd>The selected ops have different text. Whatever you type replaces all of them.</dd>
+</dl>
+</section>
+
+<section id="text--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-flips">How insert flips are counted</a></li>
+<li><a href="#page-inspection">Inspection &amp; inserts</a></li>
+<li><a href="#page-check">Program check</a> (finds ops with no comment)</li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-coolant">
+<h2 class="page-title">Coolant</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Coolant</b></p>
+
+<section id="coolant--what">
+<h3>What this is for</h3>
+<p>Shows the coolant of the ops you selected and sets it for all of them at once. It works for both ways a Mastercam
+machine can be set up for <a href="#words--w-coolant">coolant</a>:</p>
+<ul>
+<li><strong>One setting per op</strong> (&ldquo;V9&rdquo; coolant): <code>Off</code>, <code>Flood</code>,
+<code>Mist</code> or <code>Thru-tool</code>. Column <code>coolant</code>.</li>
+<li><strong>Before / with / after the move</strong> (&ldquo;X-style&rdquo; coolant), using your machine's own coolant names.
+Columns <code>coolant_before</code>, <code>coolant_with</code>, <code>coolant_after</code>. Each can hold more than one coolant.</li>
+</ul>
+<p>Each op follows its own machine, so one part can have both kinds.</p>
+</section>
+
+<section id="coolant--when">
+<h3>When to use it</h3>
+<ul>
+<li>A program came over with coolant off on cutting ops.</li>
+<li>You want thru-tool on all the drills, or mist instead of flood on a whole group.</li>
+</ul>
+</section>
+
+<section id="coolant--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Select the ops</strong> &ndash; any cell in their rows.</li>
+<li>Click <span class="ui">Coolant</span>. The sheet jumps to the coolant columns, so you see what is set now.</li>
+<li><strong>Read the current setting.</strong> If the ops differ, it says how, e.g. <q>Mixed: Flood x3, Off x1</q>.</li>
+<li><strong>Pick the coolant.</strong> One setting: pick Off, Flood, Mist or Thru-tool. Before / with / after: tick the
+coolants for each.</li>
+<li>Click <span class="ui">Apply</span>. Every op gets it. Ops that could not be set are listed, with the reason.</li>
+</ol>
+<p>The window stays open and follows the ops you click. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes back the whole Apply.</p>
+<!-- CHECK: the finished Coolant window's wording (Mixed line, Apply button, the not-set list). -->
+<figure class="shot todo" data-img="win-coolant.png" data-kind="window" data-need="The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply."><strong>Picture coming: win-coolant.png</strong>The Coolant window with four ops selected: the Mixed line (Flood x3, Off x1), Flood picked, Apply. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Coolant window: what is set now, and what to set.</figcaption>
+</figure>
+</section>
+
+<section id="coolant--example">
+<h3>Worked example</h3>
+<p>On the Oil Spool Head, the prime turning ops (2, 3, 4, 5, 6) run with coolant <code>Off</code>. The others run
+<code>Flood</code>. You want flood on the two roughs, ops 2 and 3.</p>
+<ol>
+<li>Select a cell in op 2's row and op 3's row.</li>
+<li>Click <span class="ui">Coolant</span>. It says <q>Off</q> (both the same).</li>
+<li>Pick <span class="ui">Flood</span>, click <span class="ui">Apply</span>.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th><code>coolant</code> before</th><th><code>coolant</code> after</th></tr></thead>
+<tbody>
+<tr><td>2 Prime Turn Rough OD</td><td>Off</td><td class="edited">Flood</td></tr>
+<tr><td>3 Prime Turn Rest Rough OD</td><td>Off</td><td class="edited">Flood</td></tr>
+</tbody>
+</table></div>
+<p>Coolant does not change the cycle time estimate. It is listed in the load preview like any other change.</p>
+</section>
+
+<section id="coolant--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>Mixed: Flood x3, Off x1</q></dt>
+<dd>Three of the selected ops have Flood and one has Off. Applying sets them all the same.</dd>
+<dt>An op listed as not set: <q>this machine has no ...</q></dt>
+<dd>That op's machine does not have that coolant. Each machine has its own list.</dd>
+<dt>An op listed as not set: no coolant</dt>
+<dd>Some ops have no coolant setting at all (a transform, a manual entry).</dd>
+</dl>
+<!-- CHECK: the exact reasons the Coolant window gives for ops it could not set. -->
+</section>
+
+<section id="coolant--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-check">Program check</a> (finds cutting ops with coolant off)</li>
+<li><a href="#page-set">Set</a></li>
+<li><a href="#words--w-coolant">Coolant words</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-calculator">
+<h2 class="page-title">Speed &amp; feed</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Speed &amp; feed</b></p>
+
+<section id="calculator--what">
+<h3>What this is for</h3>
+<p>A calculator that fills itself in from the op you are on. It has two tabs:</p>
+<ul>
+<li><strong>Speed &amp; feed</strong> &ndash; <a href="#words--w-sfm">SFM</a> and <a href="#words--w-rpm">RPM</a> at a
+diameter, and feed <a href="#words--w-per-rev">per rev and per minute</a>. Type in any box; the others follow. It warns
+when the RPM would go past the op's <a href="#words--w-max-rpm">max RPM</a>.</li>
+<li><strong>Chip thinning</strong> &ndash; how thick the chip really is with a round insert or an insert with a
+<a href="#words--w-entering-angle">lead angle</a>, and the feed to program for the chip you want. It can write that
+feed back to the op.</li>
+</ul>
+</section>
+
+<section id="calculator--when">
+<h3>When to use it</h3>
+<ul>
+<li>The insert box says 650 SFM and you want to know the RPM at your diameter.</li>
+<li>You need the feed in inches per minute for a per-minute op.</li>
+<li>A round insert or a 45&deg; lead insert is rubbing instead of cutting &ndash; the chip is thinner than the feed.</li>
+</ul>
+</section>
+
+<section id="calculator--steps">
+<h3>Steps</h3>
+<h4 id="calculator--speed">Speed &amp; feed tab</h4>
+<ol class="steps">
+<li>Click a cell in the op's row, then click <span class="ui">Speed &amp; feed</span>.</li>
+<li>The boxes fill in from the op: diameter (where it cuts), surface speed, RPM, feed per rev, feed per minute.</li>
+<li>Type a new value in any box. The others work it out:
+RPM = SFM &times; 3.82 &divide; diameter (inch), feed per minute = feed per rev &times; RPM.</li>
+<li>Watch the note: it warns when the RPM is above the op's max RPM (<code>max_ss</code>) &ndash; the spindle would stop
+at the max and the real surface speed is lower.</li>
+</ol>
+<h4 id="calculator--chip">Chip thinning tab</h4>
+<ol class="steps">
+<li>Click the <span class="ui">Chip thinning</span> tab. It fills in from the op and its tool:
+the insert size (round inserts) or the entering angle (lead-angle inserts), and the depth of cut.</li>
+<li>Read the real chip: <strong>real chip = feed &times; sin(entering angle)</strong>. A round insert's entering angle
+comes from its size and the depth: the shallower the cut, the thinner the chip.</li>
+<li>Type the <strong>chip you want</strong>. It shows the <strong>feed to program</strong>.</li>
+<li>Click <span class="ui">Set this op's feed</span> to write it into the op's <code>feed</code> cell (it turns yellow).</li>
+</ol>
+<p>The insert size and entering angle come from columns on the <a href="#page-tools-page">Tools page</a> &ndash; type them
+there once per tool. The window stays open and follows the op you click.</p>
+<!-- CHECK: tab names, the button "Set this op's feed", and that insert size / entering angle are read from the Tools page. -->
+<figure class="shot todo" data-img="win-calculator.png" data-kind="window" data-need="The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab."><strong>Picture coming: win-calculator.png</strong>The Speed &amp; feed window on op 7: diameter 6.905, 200 SFM, about 111 RPM, 0.010 per rev, 1.11 per min; and the Chip thinning tab. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Speed &amp; feed window.</figcaption>
+</figure>
+</section>
+
+<section id="calculator--example">
+<h3>Worked example</h3>
+<h4 id="calculator--example-speed">Speed and feed</h4>
+<p>Op 7 (Rough Bore ID) cuts at about 6.905&Prime; diameter, 200 SFM, 0.010 per rev.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">You type 260 SFM</th></tr></thead>
+<tbody>
+<tr><td>Surface speed (SFM)</td><td class="num">200</td><td class="num edited">260</td></tr>
+<tr><td>RPM at 6.905&Prime;</td><td class="num">110.6</td><td class="num moved">143.8</td></tr>
+<tr><td>Feed per rev</td><td class="num">0.010</td><td class="num">0.010</td></tr>
+<tr><td>Feed per minute</td><td class="num">1.11</td><td class="num moved">1.44</td></tr>
+</tbody>
+</table></div>
+<h4 id="calculator--example-chip">Chip thinning</h4>
+<p>A 0.5&Prime; round insert cutting 0.050&Prime; deep. Its entering angle works out to about 37&deg;
+(sin = 0.6), so the chip is only 60% of the feed.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Programmed now</th><th class="num">For a 0.006&Prime; chip</th></tr></thead>
+<tbody>
+<tr><td>Feed per rev</td><td class="num">0.006</td><td class="num edited">0.010</td></tr>
+<tr><td>Real chip</td><td class="num">0.0036</td><td class="num moved">0.006</td></tr>
+</tbody>
+</table></div>
+<p>A 45&deg; lead insert is the same idea: sin 45&deg; = 0.71, so a 0.010 feed gives a 0.0071 chip.</p>
+</section>
+
+<section id="calculator--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>Above this row's max_ss of 3500 RPM - at this diameter the spindle stops at ...</q></dt>
+<dd>The RPM you asked for is more than the op allows. The machine will run at the max, so the surface speed will be lower than you typed.</dd>
+<dt><q>At half the insert or deeper the chip is as thick as the feed - no thinning.</q></dt>
+<dd>A round insert cutting half its size deep (or more) has no chip thinning. Program the feed you want as the chip.</dd>
+<dt><q>Type the insert diameter and the depth (or stepover) it cuts at.</q></dt>
+<dd>The calculator needs both to work out the chip.</dd>
+<dt><q>Refused - ... is outside this feed's limits</q></dt>
+<dd>The feed it worked out is past what the op takes. Nothing was written.</dd>
+</dl>
+</section>
+
+<section id="calculator--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#words--w-chip-thinning">Chip thinning</a>, <a href="#words--w-entering-angle">entering angle</a></li>
+<li><a href="#words--w-css">CSS</a> and <a href="#words--w-max-rpm">max RPM</a></li>
+<li><a href="#page-estimate">How the cycle time estimate works</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-inspection">
+<h2 class="page-title">Inspection &amp; inserts</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Inspection &amp; inserts</b></p>
+
+<section id="inspection--what">
+<h3>What this is for</h3>
+<p>Shows, for each tool, how often it stops to turn its insert and how much of each edge gets used. Often the last edge
+of a part is thrown away half used. The window works out an <strong>edge time</strong> (<code>insp_time</code>) that
+splits the tool's cutting evenly over its edges &ndash; fewer flips, no wasted edge &ndash; and writes it to every op of
+the tool.</p>
+</section>
+
+<section id="inspection--when">
+<h3>When to use it</h3>
+<ul>
+<li>Insert cost per part is high (see the <a href="#page-summary">Summary</a>).</li>
+<li>A tool flips one more time per part than it needs to.</li>
+<li>After you changed feeds or speeds &ndash; the cutting time changed, so the best edge time did too.</li>
+</ul>
+</section>
+
+<section id="inspection--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Select the ops</strong> of the tools to look at (any cell in their rows), then click
+<span class="ui">Inspection &amp; inserts</span>.</li>
+<li><strong>Read one row per tool:</strong> flips per part; the edge time now; how much of the last edge is used; and the
+suggested edge time.</li>
+<li><strong>Pick the tools</strong> to change and check the suggested edge time is one your insert can really do.
+A longer edge time means each edge cuts longer.</li>
+<li>Click <span class="ui">Apply</span>. The edge time goes into <code>insp_time</code> on every op of that tool (yellow).
+The flips per part on the sheet and the Summary follow.</li>
+</ol>
+<div class="note"><p><strong>&ldquo;Change it in Mastercam.&rdquo;</strong> Some tools stop for another reason &ndash; after a
+number of cuts, at each depth, by distance, or at stops in the toolpath itself. A new edge time does not move those stops.
+The window says so; change the op's <span class="ui">Tool inspection</span> settings in Mastercam instead.</p></div>
+<!-- CHECK: the columns of the finished window (flips per part, edge time now, last edge used, suggested edge time), and when it says "change it in Mastercam". -->
+<figure class="shot todo" data-img="win-inspection.png" data-kind="window" data-need="The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked."><strong>Picture coming: win-inspection.png</strong>The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Inspection &amp; inserts window.</figcaption>
+</figure>
+</section>
+
+<section id="inspection--example">
+<h3>Worked example</h3>
+<p>A tool cuts 25:00 per part. Its edge time is 8:00, so it stops at 8:00, 16:00 and 24:00 &ndash; 3 flips &ndash; and
+the fourth edge cuts only 1:00 before the part is done.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">After Apply</th></tr></thead>
+<tbody>
+<tr><td>Edge time (<code>insp_time</code>)</td><td class="num">8:00</td><td class="num edited">8:20</td></tr>
+<tr><td>Flips per part</td><td class="num">3</td><td class="num moved better">2</td></tr>
+<tr><td>Edges used per part</td><td class="num">4 (the last only 13%)</td><td class="num moved">3 (each 100%)</td></tr>
+<tr><td>Inserts per 100 parts (4-edge insert)</td><td class="num">100</td><td class="num moved better">75</td></tr>
+</tbody>
+</table></div>
+<p>8:20 is only 4% longer per edge than 8:00 &ndash; usually fine. If the suggested time is much longer than what the
+insert lasts, do not use it; look at <a href="#page-target-time">feeds</a> or a tougher grade instead.</p>
+</section>
+
+<section id="inspection--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>change it in Mastercam</q></dt>
+<dd>The tool's flips do not come from an edge time. See the note above.</dd>
+<dt>A tool shows 0 flips</dt>
+<dd>Its ops do not stop for inspection, or the stops are not insert flips (their comment does not say ROTATE, FLIP,
+CHANGE or INDEX). See <a href="#page-flips">How insert flips are counted</a>.</dd>
+</dl>
+</section>
+
+<section id="inspection--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-flips">How insert flips are counted</a></li>
+<li><a href="#page-tools-page">Tools page</a> (edges and cost per insert)</li>
+<li><a href="#page-text">Comments &amp; text</a> (inspection comments)</li>
+<li><a href="#words--w-edge-life">Edge life</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-target-time">
+<h2 class="page-title">Hit a target time</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Improve</b> &rsaquo; <b>Hit a target time</b></p>
+
+<section id="target-time--what">
+<h3>What this is for</h3>
+<p>You say how long some ops should take. The tool finds one factor for their feeds that gets there &ndash; each feed
+kept inside its own limits &ndash; and shows every op before and after: time, <a href="#words--w-flip">flips</a> and
+<a href="#words--w-mrr">MRR</a>. Nothing is written until you click <span class="ui">Apply</span>.</p>
+</section>
+
+<section id="target-time--when">
+<h3>When to use it</h3>
+<ul>
+<li>A quote or a schedule needs the part (or a tool's ops) under a certain time.</li>
+<li>&ldquo;Take 10% off this tool's time&rdquo; &ndash; and you want to see what that does to the inserts first.</li>
+</ul>
+</section>
+
+<section id="target-time--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li><strong>Select the ops</strong> (any cell in their rows), or click a cell in one op of a tool.</li>
+<li>Click <span class="ui">Hit a target time</span>.</li>
+<li><strong>Operations:</strong> pick the selected ops, or every op of the tool.</li>
+<li><strong>Target:</strong> type the time you want for them, like <code>12:30</code> (minutes:seconds) or
+<code>1:02:00</code> (hours:minutes:seconds) &ndash; or a percent, like <code>-10%</code> for 10% less time.</li>
+<li><strong>Options:</strong> tick <span class="ui">Speeds too</span> to change speeds by the same factor (the time
+then goes down with feed &times; speed). Tick <span class="ui">Main cutting feed only</span> to leave plunge, retract and
+back feeds alone.</li>
+<li>Press <kbd>Enter</kbd> or click <span class="ui">Preview</span>. Read each op: time, flips and MRR before and after,
+and any cell that hit its limit.</li>
+<li>Click <span class="ui">Apply</span>. <kbd>Ctrl</kbd>+<kbd>Z</kbd> takes it all back.</li>
+</ol>
+<!-- CHECK: the target box's percent wording after the rebuild ("-10%" = 10% less time, "+10%" = 10% more?). Older versions took "10%" to mean a 10% cut. -->
+<div class="note"><p>Only the cutting part of the time can change. Rapids, tool changes and dwells stay the same, so a
+very short target may not be reachable. The window says how close it gets.</p></div>
+<figure class="shot todo" data-img="win-target.png" data-kind="window" data-need="The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -> after time, flips, MRR.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -&gt; after time, flips, MRR."><strong>Picture coming: win-target.png</strong>The Hit a target time window: ops 7 and 8, target 1:40:00, the preview list per op with before -&gt; after time, flips, MRR. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Hit a target time window.</figcaption>
+</figure>
+</section>
+
+<section id="target-time--example">
+<h3>Worked example</h3>
+<p>The bore ops 7 and 8 take 1:59:24 together. The cell lead wants them under 1:40:00.</p>
+<ol>
+<li>Select a cell in op 7's row and op 8's row. Click <span class="ui">Hit a target time</span>.</li>
+<li>Type <code>1:40:00</code>, press <kbd>Enter</kbd>. The feeds go up about 20%.</li>
+</ol>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">feed</th><th class="num">time before</th><th class="num">time after</th><th class="num">flips per part</th></tr></thead>
+<tbody>
+<tr><td>7 Rough Bore ID</td><td class="num edited">0.010 &rarr; 0.012</td><td class="num">1:44:00</td><td class="num moved">about 1:27:00</td><td class="num">follows the shorter cut time</td></tr>
+<tr><td>8 Finish Bore ID</td><td class="num edited">0.010 &rarr; 0.012</td><td class="num">0:15:24</td><td class="num moved">about 0:13:00</td><td class="num"></td></tr>
+<tr><td><strong>Both</strong></td><td></td><td class="num">1:59:24</td><td class="num better">about 1:40:00</td><td></td></tr>
+</tbody>
+</table></div>
+<p>Then check the insert: is 0.012 per rev inside the maker's range for that insert and that depth? If not, the time is
+a wish, not a plan.</p>
+</section>
+
+<section id="target-time--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>Press Enter to work out what this changes.</q></dt>
+<dd>Type the target, then press <kbd>Enter</kbd> or click <span class="ui">Preview</span>.</dd>
+<dt>A cell marked as at its limit</dt>
+<dd>That feed could not go as far as the others (its op's limit). The other ops make up the difference where they can.</dd>
+<dt><q>Select operations (cells in their rows) on the 'Lathe params' sheet first.</q></dt>
+<dd>Go to the main sheet and select cells in the ops' rows.</dd>
+</dl>
+</section>
+
+<section id="target-time--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-slowest">Slowest ops</a> &ndash; where to aim</li>
+<li><a href="#page-scale">Scale %</a></li>
+<li><a href="#page-estimate">How the cycle time estimate works</a></li>
+<li><a href="#page-scenarios">Scenarios</a> &ndash; save this idea and compare</li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-check">
+<h2 class="page-title">Program check</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Improve</b> &rsaquo; <b>Program check</b></p>
+
+<section id="check--what">
+<h3>What this is for</h3>
+<p>A second pair of eyes. It looks over every op and makes a <span class="ui">Program check</span> sheet of
+<strong>findings</strong>. Each finding says why it matters, how to fix it, and links to the op.
+<span class="ui">Look at</span> findings are worth a look before the program runs; <span class="ui">FYI</span> ones are
+just good to know. It changes nothing.</p>
+</section>
+
+<section id="check--when">
+<h3>When to use it</h3>
+<ul>
+<li>Before a program goes to the floor for the first time.</li>
+<li>After you edited a lot of ops.</li>
+<li>When you take over a program someone else wrote.</li>
+</ul>
+</section>
+
+<section id="check--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Click <span class="ui">Program check</span>. The <span class="ui">Program check</span> sheet opens.</li>
+<li>Read the <span class="ui">Look at</span> findings first. Read <em>why it matters</em> and <em>how to fix</em>.</li>
+<li>Click the op link to go to that op's row. Fix it there (or in Mastercam).</li>
+<li>If a finding is fine as it is (you meant it), type <code>x</code> in its <span class="ui">Ignore</span> column. It stays
+ignored next time you check &ndash; even after a new dump.</li>
+<li>Run the check again after your fixes.</li>
+</ol>
+<!-- CHECK: the Program check sheet's column names (Look at / FYI, Why it matters, How to fix, Ignore) and what to type in Ignore. -->
+<h4 id="check--what-it-checks">What it looks for</h4>
+<div class="table-scroll"><table>
+<thead><tr><th>Finding</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr><td><strong>An insert's edge runs much longer than usual</strong> (the main check)</td><td>The edge may wear out, chip or break
+before the stop. &ldquo;Usual&rdquo; is the <span class="ui">Usual edge time</span> you type for the insert on the
+<a href="#page-tools-page">Tools page</a> &ndash; or, if blank, the same insert on your other tools.</td></tr>
+<tr><td>The same tool at different speeds or feeds</td><td>Often a copy-paste slip. Sometimes on purpose (rough vs finish).</td></tr>
+<tr><td>CSS with no max RPM</td><td>Near the center, CSS asks for a huge RPM. Set a <a href="#words--w-max-rpm">max RPM</a>.</td></tr>
+<tr><td>Coolant off on a cutting op</td><td>Usually forgotten. Dry on purpose? Ignore it.</td></tr>
+<tr><td>Lots of <a href="#words--w-air-cutting">air cutting</a></td><td>Time spent cutting nothing. Tighten the stock or the start point.</td></tr>
+<tr><td>Extra tool changes</td><td>The same tool called again right after another &ndash; ops that could be next to each other.</td></tr>
+<tr><td>Ops needing <a href="#words--w-regenerate">regeneration</a></td><td>The toolpath is out of date. The times on the sheet are too.</td></tr>
+<tr><td>Ops with no comment</td><td>The setup sheet and the operator see a blank name.</td></tr>
+<tr><td>A feed that looks like the wrong unit</td><td>0.012 <em>per minute</em> crawls; 12 <em>per rev</em> crashes. One of them is wrong.</td></tr>
+</tbody>
+</table></div>
+<div class="note"><p>Two things it does <strong>not</strong> do: it never flags tool inspection being off by itself
+(plenty of ops need no stops), and the words in an inspection comment do not decide what it counts as a flip.</p></div>
+<figure class="shot todo" data-img="sheet-check.png" data-kind="window" data-need="The Program check sheet: a few findings, Look at and FYI, why / how to fix, op links, the Ignore column with one x.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Program check sheet: a few findings, Look at and FYI, why / how to fix, op links, the Ignore column with one x."><strong>Picture coming: sheet-check.png</strong>The Program check sheet: a few findings, Look at and FYI, why / how to fix, op links, the Ignore column with one x. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Program check sheet.</figcaption>
+</figure>
+</section>
+
+<section id="check--example">
+<h3>Worked example</h3>
+<p>You typed a usual edge time of 8:00 for the <code>C 80&deg; r0.031</code> insert. Tool T12 (the bore bar) runs it for
+11:31 between flips.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Kind</th><th>Finding</th><th>How to fix</th><th>Ignore</th></tr></thead>
+<tbody>
+<tr><td>Look at</td><td>T12: the edge cuts 11:31 between flips; usual for this insert is 8:00</td><td>Shorter edge time
+(<code>insp_time</code>) on ops 7 and 8, or a lower speed</td><td></td></tr>
+<tr><td>FYI</td><td>Op 13 has no comment</td><td>Type a comment</td><td class="edited">x</td></tr>
+</tbody>
+</table></div>
+<p>After you set <code>insp_time</code> to 8:00 on ops 7 and 8 (with <a href="#page-inspection">Inspection &amp; inserts</a>)
+and check again, the first finding is gone. The second stays ignored.</p>
+</section>
+
+<section id="check--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>No findings.</q></dt>
+<dd>Nothing to look at. (Ignored findings are not shown.)</dd>
+<dt>A finding came back after a new dump</dt>
+<dd>It is a different finding now (a different op or value), or it was never ignored. Type <code>x</code> again.</dd>
+</dl>
+<!-- CHECK: the messages the finished Program check gives. -->
+</section>
+
+<section id="check--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-slowest">Slowest ops</a></li>
+<li><a href="#page-inspection">Inspection &amp; inserts</a></li>
+<li><a href="#page-report">Change report</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-scenarios">
+<h2 class="page-title">Scenarios</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Improve</b> &rsaquo; <b>Scenarios</b></p>
+
+<section id="scenarios--what">
+<h3>What this is for</h3>
+<p>A <a href="#words--w-scenario">scenario</a> is your set of edits, saved under a name inside the workbook. Save one
+idea, try another, then compare them side by side: cycle time, cutting time, flips and MRR for each, and every
+parameter each one changes.</p>
+</section>
+
+<section id="scenarios--when">
+<h3>When to use it</h3>
+<ul>
+<li>&ldquo;Faster feeds or faster speeds &ndash; which saves more?&rdquo;</li>
+<li>You want to keep a set of edits to come back to, without loading it yet.</li>
+<li>You want to show the boss two options.</li>
+</ul>
+</section>
+
+<section id="scenarios--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Make your first set of edits on the sheet.</li>
+<li><span class="ui">Scenarios</span> &rsaquo; <span class="ui">Save the changes as a scenario</span>. Type a name, click
+<span class="ui">OK</span>.</li>
+<li>Put the sheet back (<a href="#undo--back">Back to the dump</a> &rsaquo; <span class="ui">Everything</span>) and make
+the second set of edits. Save it under another name.</li>
+<li><span class="ui">Scenarios</span> &rsaquo; <span class="ui">Compare scenarios</span>. A <span class="ui">Scenarios</span>
+sheet opens with the totals and every changed parameter, side by side.</li>
+<li>To go on with one: <span class="ui">Scenarios</span> &rsaquo; <span class="ui">Restore a scenario</span>. The sheet goes
+back to the dump, then that scenario's values go in.</li>
+<li><span class="ui">Delete a scenario</span> removes one you no longer want (the sheet is not changed).</li>
+</ol>
+<figure class="shot" data-img="win-scenario-save.png" data-kind="window" data-need="The save scenario window with a name typed and the list of edits it keeps.">
+<!-- img --><a class="zoom" href="images/win-scenario-save.png" title="Open the picture full size"><img src="images/win-scenario-save.png" alt="The save scenario window with a name typed and the list of edits it keeps." width="982" height="635" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The name. (2) OK. The list shows every edit it keeps.</figcaption>
+</figure>
+<figure class="shot" data-img="sheet-scenarios.png" data-kind="sheet" data-need="The Scenarios sheet comparing two saved scenarios with the dump and the sheet now.">
+<!-- img --><a class="zoom" href="images/sheet-scenarios.png" title="Open the picture full size"><img src="images/sheet-scenarios.png" alt="The Scenarios sheet comparing two saved scenarios with the dump and the sheet now." width="2515" height="522" loading="lazy"></a><!-- /img -->
+<figcaption>The Scenarios sheet: totals for each idea, then every parameter they change.</figcaption>
+</figure>
+</section>
+
+<section id="scenarios--example">
+<h3>Worked example</h3>
+<p>Two ideas for the Oil Spool Head: faster bore feeds (ops 7 and 8 at 0.012), or a faster facing speed (op 1 at 250 SFM).</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Scenario</th><th class="num">Cells changed</th><th class="num">Cycle time</th><th class="num">vs the dump</th><th class="num">Flips / part</th></tr></thead>
+<tbody>
+<tr><td>As dumped</td><td class="num">0</td><td class="num">12:46:38</td><td class="num">+0:00</td><td class="num">89</td></tr>
+<tr><td>Bore feed 0.012</td><td class="num">2</td><td class="num">12:26:50</td><td class="num better">-19:49 (-2.6%)</td><td class="num">89</td></tr>
+<tr><td>Face 250 SFM</td><td class="num">1</td><td class="num">12:42:26</td><td class="num better">-4:12 (-0.5%)</td><td class="num">89</td></tr>
+</tbody>
+</table></div>
+<p>The bore feeds save about five times more. Restore <span class="ui">Bore feed 0.012</span>, save, and load it.</p>
+</section>
+
+<section id="scenarios--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>No scenarios saved yet - edit the sheet, then Save scenario.</q></dt>
+<dd>There is nothing to restore, compare or delete yet.</dd>
+<dt><q>... REPLACES the one saved ...</q></dt>
+<dd>A scenario by that name exists. OK writes over it. Type a new name to keep both.</dd>
+<dt><q>'Bore feed 0.012' restored - 2 cell(s) set, 1 refused ...</q></dt>
+<dd>A value could not go back: its op or column is gone (the sheet was dumped again), or it is outside its limits.</dd>
+</dl>
+</section>
+
+<section id="scenarios--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-undo">Undo and back to the dump</a></li>
+<li><a href="#page-report">Change report</a></li>
+<li><a href="#page-target-time">Hit a target time</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-undo">
+<h2 class="page-title">Undo</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Undo and review</b> &rsaquo; <b>Undo</b> / <b>Back to the dump</b></p>
+
+<section id="undo--what">
+<h3>What this is for</h3>
+<p>Two ways back in Excel:</p>
+<ul>
+<li><strong>Undo</strong> (or <kbd>Ctrl</kbd>+<kbd>Z</kbd>) takes back the last Parameter Table command &ndash; a whole
+Set, Scale, Copy or Apply at once. Press it again to go further back, up to 20 commands.</li>
+<li><strong>Back to the dump</strong> puts cells back to the values they had when the sheet was dumped: the
+<span class="ui">Selected cells</span>, the <span class="ui">Selected ops (whole rows)</span>, or
+<span class="ui">Everything</span>.</li>
+</ul>
+<p>To take back a load that already went into Mastercam, see <a href="#page-undo-load">Undo a load</a>.</p>
+</section>
+
+<section id="undo--when">
+<h3>When to use it</h3>
+<ul>
+<li>Undo: right after a command did something you did not mean.</li>
+<li>Back to the dump: when an idea did not work out and you want a clean start on some ops &ndash; or on all of them.</li>
+</ul>
+</section>
+
+<section id="undo--steps">
+<h3>Steps</h3>
+<h4 id="undo--undo-steps">Undo a command</h4>
+<ol class="steps">
+<li>Press <kbd>Ctrl</kbd>+<kbd>Z</kbd>, or click <span class="ui">Undo</span> on the ribbon.</li>
+<li>The status bar says what was undone and how many cells went back.</li>
+<li>Press again to undo the command before that.</li>
+</ol>
+<p class="note">A cell you have typed over since the command is <strong>left alone</strong> &ndash; Undo never throws away
+your typing. The status bar counts those cells as &ldquo;left alone (changed since)&rdquo;. Plain typing in a cell is
+undone by Excel's own <kbd>Ctrl</kbd>+<kbd>Z</kbd>, as usual.</p>
+<h4 id="undo--back">Back to the dump</h4>
+<ol class="steps">
+<li>Select the cells (or any cell in the op rows) to put back.</li>
+<li>Click <span class="ui">Back to the dump</span> and pick <span class="ui">Selected cells</span>,
+<span class="ui">Selected ops (whole rows)</span> or <span class="ui">Everything</span>.</li>
+<li><span class="ui">Everything</span> asks first and says how many cells. Save a <a href="#page-scenarios">scenario</a>
+first if you might want these edits again.</li>
+<li>The cells go back to their dumped values; the yellow goes away.</li>
+</ol>
+</section>
+
+<section id="undo--example">
+<h3>Worked example</h3>
+<p>You used <span class="ui">Set</span> to put 0.012 in the feed of ops 1, 7 and 8. Then you typed 0.011 into op 8's feed
+by hand. Now you click <span class="ui">Undo</span> on the ribbon:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th class="num">Dumped</th><th class="num">After Set</th><th class="num">Now</th><th class="num">After Undo</th></tr></thead>
+<tbody>
+<tr><td>1 feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="num">0.012</td><td class="num">0.01</td></tr>
+<tr><td>7 feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="num">0.012</td><td class="num">0.01</td></tr>
+<tr><td>8 feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="num edited">0.011 (typed)</td><td class="num edited">0.011 (left alone)</td></tr>
+</tbody>
+</table></div>
+<p>Ops 1 and 7 go back. Op 8 keeps your 0.011, because you typed it after the Set. To clear op 8 too, use
+<span class="ui">Back to the dump</span> &rsaquo; <span class="ui">Selected cells</span> on it.</p>
+<p>The ribbon's <span class="ui">Undo</span> button always takes back the last <em>command</em>. <kbd>Ctrl</kbd>+<kbd>Z</kbd>
+right after you typed in a cell takes back that typing first (Excel's own undo).</p>
+<!-- CHECK: how Excel's own Ctrl+Z (typing) and the command undo take turns after a ribbon command. -->
+</section>
+
+<section id="undo--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>undid Set selected - 3 cell(s) put back.</q></dt>
+<dd>Done.</dd>
+<dt><q>... 1 left alone (changed since).</q></dt>
+<dd>That cell was typed over after the command. Your typing stays.</dd>
+<dt><q>nothing to undo.</q></dt>
+<dd>No command to take back (or more than 20 ago, or the workbook was closed since).</dd>
+<dt><q>nothing to revert - the sheet is as dumped.</q></dt>
+<dd><span class="ui">Everything</span> found no edits.</dd>
+<dt><q>3 cell(s) put back to their dumped value.</q></dt>
+<dd>Back to the dump is done.</dd>
+</dl>
+</section>
+
+<section id="undo--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-undo-load">Undo a load (in Mastercam)</a></li>
+<li><a href="#page-changes">List changes</a></li>
+<li><a href="#page-scenarios">Scenarios</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-changes">
+<h2 class="page-title">List changes</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Undo and review</b> &rsaquo; <b>List changes</b></p>
+
+<section id="changes--what">
+<h3>What this is for</h3>
+<p>Makes a <span class="ui">Changes</span> sheet: one line for every cell that is different from the dump &ndash; the op,
+its type and comment, the parameter, the dumped value and the value now. Click a parameter to jump to its cell.</p>
+</section>
+
+<section id="changes--when">
+<h3>When to use it</h3>
+<ul>
+<li>Before you load: one last look at everything that will go into the part.</li>
+<li>When you have lost track of what you changed.</li>
+</ul>
+<p>Without macros, the <code>changes</code> column on the main sheet counts each row's edits, and
+<a href="#find--show">Changed ops</a> shows only those rows.</p>
+</section>
+
+<section id="changes--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Click <span class="ui">List changes</span>. The <span class="ui">Changes</span> sheet opens.</li>
+<li>Read down the list. Each line is one cell: <code>dumped</code> is the old value, <code>now</code> the new.</li>
+<li>Click a blue parameter name to go to that cell on the main sheet.</li>
+<li>Run it again any time &ndash; it makes a fresh list each time.</li>
+</ol>
+<figure class="shot" data-img="sheet-changes.png" data-kind="sheet" data-need="The Changes sheet with three changes.">
+<!-- img --><a class="zoom" href="images/sheet-changes.png" title="Open the picture full size"><img src="images/sheet-changes.png" alt="The Changes sheet with three changes." width="1119" height="174" loading="lazy"></a><!-- /img -->
+<figcaption>The Changes sheet: click a parameter to jump to it.</figcaption>
+</figure>
+</section>
+
+<section id="changes--example">
+<h3>Worked example</h3>
+<p>After raising the bore feeds (ops 7 and 8), the Changes sheet reads:</p>
+<div class="table-scroll"><table>
+<thead><tr><th>op_idn</th><th>type</th><th>comment</th><th>parameter</th><th class="num">dumped</th><th class="num">now</th></tr></thead>
+<tbody>
+<tr><td>7</td><td>ROUGH</td><td>Rough Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+<tr><td>8</td><td>FINISH</td><td>Finish Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num edited">0.012</td></tr>
+</tbody>
+</table></div>
+<p>Worked-out columns (times, flips, MRR) are not listed &ndash; only what you changed.</p>
+</section>
+
+<section id="changes--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><q>No changes from the dump.</q></dt>
+<dd>The sheet is as dumped (or every edit was put back).</dd>
+</dl>
+</section>
+
+<section id="changes--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-report">Change report</a> &ndash; the printable version, with the savings</li>
+<li><a href="#page-load">Load the changes</a></li>
+<li><a href="#undo--back">Back to the dump</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-report">
+<h2 class="page-title">Change report</h2>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Undo and review</b> &rsaquo; <b>Change report</b></p>
+
+<section id="report--what">
+<h3>What this is for</h3>
+<p>A one-page report of what you changed and what it saves: cycle time per part and per batch, insert flips, and insert
+cost &ndash; before and after. Every change is listed, with a <span class="ui">Why</span> column for you to type the
+reason. Print it or save it as a PDF for the job folder, your lead, or the next programmer.</p>
+</section>
+
+<section id="report--when">
+<h3>When to use it</h3>
+<ul>
+<li>Before you load: to get a change signed off.</li>
+<li>After you load: to keep a record of what changed and why.</li>
+</ul>
+</section>
+
+<section id="report--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Type the batch quantity on the <a href="#page-summary">Summary</a> and the insert costs on the
+<a href="#tools-page--inserts">Tools page</a> first &ndash; the report uses them.</li>
+<li>Click <span class="ui">Change report</span>. The <span class="ui">Change report</span> sheet opens.</li>
+<li>Read the totals at the top: before, after, and the difference.</li>
+<li>Type a short reason in the <span class="ui">Why</span> column for each change (&ldquo;insert maker says 0.012 OK&rdquo;).</li>
+<li>Print it: <span class="ui">File</span> &rsaquo; <span class="ui">Print</span> (or <kbd>Ctrl</kbd>+<kbd>P</kbd>). Pick
+<span class="ui">Microsoft Print to PDF</span> to make a PDF.</li>
+</ol>
+<!-- CHECK: the Change report sheet's layout and headings once it is finished. -->
+<figure class="shot todo" data-img="sheet-report.png" data-kind="window" data-need="The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one."><strong>Picture coming: sheet-report.png</strong>The Change report sheet: totals before / after (cycle time per part and per batch, flips, insert cost), the list of changes with the Why column filled in for one. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Change report, ready to print.</figcaption>
+</figure>
+</section>
+
+<section id="report--example">
+<h3>Worked example</h3>
+<p>Oil Spool Head, bore feeds raised to 0.012, batch of 20 parts:</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">After</th><th class="num">Saved</th></tr></thead>
+<tbody>
+<tr><td>Cycle time per part</td><td class="num">12:46:38</td><td class="num">12:26:50</td><td class="num better">0:19:49</td></tr>
+<tr><td>Cycle time per batch (20)</td><td class="num">about 255:33</td><td class="num">about 248:57</td><td class="num better">about 6:36</td></tr>
+<tr><td>Insert flips per part</td><td class="num">89</td><td class="num">89</td><td class="num">0</td></tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead><tr><th>Op</th><th>Parameter</th><th class="num">Before</th><th class="num">After</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>7 Rough Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Insert box says 0.008-0.016</td></tr>
+<tr><td>8 Finish Bore ID</td><td>feed</td><td class="num">0.01</td><td class="num">0.012</td><td class="edited">Same tool; finish checked on first part</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="report--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-changes">List changes</a></li>
+<li><a href="#page-scenarios">Scenarios</a></li>
+<li><a href="#page-summary">Summary page</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-estimate">
+<h2 class="page-title">The cycle time estimate</h2>
+
+<section id="estimate--what">
+<h3>What this is for</h3>
+<p>Each op row has <code>cycle_time</code> (Mastercam's own time, as dumped) and <code>est_cycle_time</code> (the
+<strong>live</strong> estimate). They start the same. When you change the feed, speed, CSS/RPM, max RPM or per rev /
+per min on a row, the estimate moves at once &ndash; and so do the Summary's totals. This page says how it works and
+where it can be wrong.</p>
+</section>
+
+<section id="estimate--when">
+<h3>When to use it</h3>
+<p>Whenever you judge a change by its time &ndash; and before you trust a big saving.</p>
+</section>
+
+<section id="estimate--steps">
+<h3>Steps</h3>
+<p>How the estimate is worked out:</p>
+<ol class="steps">
+<li>At the dump, the tool walks each op's toolpath, move by move: how long each cutting move is, and at what diameter.</li>
+<li>For each move it works out the time: <strong>per minute</strong>: length &divide; feed. <strong>Per rev</strong>:
+length &divide; (feed &times; RPM). With <a href="#words--w-css">CSS</a>, the RPM at that diameter is
+SFM &times; 3.82 &divide; diameter &ndash; but never more than the op's <a href="#words--w-max-rpm">max RPM</a>.</li>
+<li>These sums are written into the sheet as formulas tied to the row's own cells. Change a cell and the formula follows.</li>
+<li>Everything else &ndash; rapids, tool changes, dwells &ndash; is kept as it was. It does not change with feed or speed.</li>
+</ol>
+<div class="warn"><p><strong>What it cannot know until you regenerate:</strong> a new depth of cut, stepover, stock to
+leave or number of passes changes the toolpath itself. The estimate does not move for those. Load, regenerate, and dump
+again to see their time.</p></div>
+<p>On real parts, the estimate matches Mastercam's own cycle time to within seconds per op.</p>
+</section>
+
+<section id="estimate--example">
+<h3>Worked example</h3>
+<p>Op 7, Rough Bore ID: 1:44:00 in all, of which 1:43:28 is cutting. The feed goes from 0.010 to 0.012 per rev.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">After</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code></td><td class="num">0.010</td><td class="num edited">0.012</td></tr>
+<tr><td>Cutting time</td><td class="num">1:43:28</td><td class="num moved">1:26:13 (&times; 0.010 &divide; 0.012)</td></tr>
+<tr><td>Everything else</td><td class="num">0:00:32</td><td class="num">0:00:32</td></tr>
+<tr><td><code>est_cycle_time</code></td><td class="num">1:44:00</td><td class="num moved">1:26:45</td></tr>
+<tr><td><code>time_change</code></td><td class="num">+0:00:00</td><td class="num moved better">-0:17:15</td></tr>
+</tbody>
+</table></div>
+<p><strong>Where max RPM bites.</strong> Facing with CSS at 200 SFM and a max of 3500 RPM: at 1&Prime; diameter the
+spindle turns 764 RPM; near the center, at 0.2&Prime;, it would need 3820 RPM but stops at 3500. Raising the SFM speeds
+up the outside of the face, not the middle. The estimate knows this, move by move.</p>
+<figure class="shot" data-img="sheet-estimate.png" data-kind="sheet" data-need="The main sheet: ops 7 and 8 with feed 0.012, cycle_time unchanged, est_cycle_time and time_change moved (blue).">
+<!-- img --><a class="zoom" href="images/sheet-estimate.png" title="Open the picture full size"><img src="images/sheet-estimate.png" alt="The main sheet: ops 7 and 8 with feed 0.012, cycle_time unchanged, est_cycle_time and time_change moved (blue)." width="1518" height="348" loading="lazy"></a><!-- /img -->
+<figcaption>(1) The new feed. (2) Mastercam's time, as dumped. (3) The live estimate.</figcaption>
+</figure>
+</section>
+
+<section id="estimate--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><code>est_cycle_time</code> is blank</dt>
+<dd>The op had no toolpath to walk when dumped (it needed regenerating), or it is a kind with no moves (manual entry).</dd>
+<dt><code>needs_regen</code> says <code>yes</code></dt>
+<dd>The toolpath is out of date, so its times are too. Regenerate and dump again.</dd>
+<dt>The estimate did not move when I changed a depth</dt>
+<dd>Right &ndash; see the box above. Depths change the toolpath; regenerate to see the new time.</dd>
+</dl>
+</section>
+
+<section id="estimate--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-summary">Summary page</a></li>
+<li><a href="#page-target-time">Hit a target time</a></li>
+<li><a href="#page-calculator">Speed &amp; feed</a></li>
+<li><a href="#words--w-estimate">Estimate</a> in the word list</li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-flips">
+<h2 class="page-title">How insert flips are counted</h2>
+
+<section id="flips--what">
+<h3>What this is for</h3>
+<p>An <a href="#words--w-flip">insert flip</a> is a fresh cutting edge: the operator rotates, flips or changes the
+insert. Flips per part tell you how many inserts a part uses &ndash; and what they cost. This page explains where the
+numbers in the flip columns come from, so you can trust them (or know when not to).</p>
+</section>
+
+<section id="flips--when">
+<h3>When to use it</h3>
+<p>When the flips on the sheet look too high or too low, or before you change <code>insp_time</code> or an inspection comment.</p>
+</section>
+
+<section id="flips--steps">
+<h3>Steps</h3>
+<p>The tool counts flips in three steps, for every op:</p>
+<ol class="steps">
+<li><strong>Stops with a comment.</strong> Mastercam's <span class="ui">Tool inspection</span> settings stop the machine
+(every so much cutting time, distance, or number of cuts). Each stop has a comment. If the comment says
+<code>ROTATE</code>, <code>FLIP</code>, <code>CHANGE</code> or <code>INDEX</code>, the stop is a flip. Other stops
+(<code>CHECK INSERT</code>) are just a look. These are read from the toolpath as it is &ndash; column <code>flips</code>
+&ndash; and follow your edits live in <code>flips_est</code>.</li>
+<li><strong>Stops with no comment</strong> (the op's inspection comment switch, <code>insp_comment_on</code>, is off).
+They leave nothing in the toolpath, so the tool works them out with an
+<strong>edge clock</strong>: it adds up the tool's cutting time, and every time the edge has cut its
+<code>edge_limit</code>, that is one flip. <code>edge_limit</code> is the op's <code>insp_time</code>, or, if the op has
+none, the tool's <span class="ui">Edge life</span> on the Tools page (8:00 to start). The clock carries over from one op
+of the tool to the next. Column <code>flips_uncommented</code>.</li>
+<li><strong>Add them up.</strong> <code>flips_part</code> = <code>flips_est</code> + <code>flips_uncommented</code>,
+in whole flips. The Tools page adds each tool's ops (counting the copies a transform makes); the inserts
+table divides by the edges per insert.</li>
+</ol>
+<figure>
+<svg class="diagram" viewBox="0 0 760 250" role="img" aria-labelledby="flip-t flip-d">
+<title id="flips--flip-t">One tool, two ops: the edge clock and Mastercam's own timer</title>
+<desc id="flips--flip-d">Tool T5 cuts 5 minutes in op A, then 7 minutes in op B, with an edge time of 8:00. The edge clock runs on across both ops and counts one flip at 8 minutes, 3 minutes into op B; the second edge then cuts the last 4 minutes. Mastercam's own timer starts again at op B, so neither op reaches 8:00 and Mastercam puts no stop in the toolpath.</desc>
+<g font-size="16" fill="#1b1f24">
+<text x="20" y="22" font-weight="700">Edge clock (stops with no comment) &ndash; carries on from op to op</text>
+<rect x="40" y="34" width="250" height="34" fill="#dbe7ff" stroke="#1d4ed8"/>
+<rect x="290" y="34" width="350" height="34" fill="#e7f5e9" stroke="#1e7b34"/>
+<text x="165" y="56" text-anchor="middle">op A: 5:00</text>
+<text x="465" y="56" text-anchor="middle">op B: 7:00</text>
+<rect x="40" y="72" width="400" height="12" fill="#1d4ed8"/>
+<rect x="440" y="72" width="200" height="12" fill="#c2185b"/>
+<text x="240" y="102" text-anchor="middle" fill="#1d4ed8">edge 1 cuts 8:00</text>
+<text x="540" y="102" text-anchor="middle" fill="#c2185b">edge 2 cuts 4:00</text>
+<line x1="440" y1="30" x2="440" y2="122" stroke="#c2185b" stroke-width="3"/>
+<text x="446" y="122" fill="#c2185b" font-weight="700">1 flip at 8:00</text>
+
+<text x="20" y="146" font-weight="700">Mastercam's own timer (stops with a comment) &ndash; starts again each op</text>
+<rect x="40" y="158" width="250" height="34" fill="#dbe7ff" stroke="#1d4ed8"/>
+<rect x="290" y="158" width="350" height="34" fill="#e7f5e9" stroke="#1e7b34"/>
+<text x="165" y="180" text-anchor="middle">op A: 0 to 5:00</text>
+<text x="465" y="180" text-anchor="middle">op B: 0 to 7:00</text>
+<text x="40" y="218">Neither op reaches 8:00, so there is no stop &ndash; 0 flips in the toolpath.</text>
+<g fill="#4a525c" font-size="14">
+<text x="40" y="242">0</text><text x="282" y="242">5:00</text><text x="428" y="242">8:00</text><text x="626" y="242">12:00</text>
+</g>
+</g>
+</svg>
+<figcaption>Why the two counts can differ: the edge keeps wearing from op to op, but Mastercam's timer starts again.</figcaption>
+</figure>
+</section>
+
+<section id="flips--example">
+<h3>Worked example</h3>
+<p>Tool T5 runs two ops: A cuts 5:00, B cuts 7:00. Its ops stop for inspection with <strong>no comment</strong>; the
+tool's edge life is 8:00.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">op A</th><th class="num">op B</th><th class="num">Tool T5</th></tr></thead>
+<tbody>
+<tr><td>Cutting time</td><td class="num">5:00</td><td class="num">7:00</td><td class="num">12:00</td></tr>
+<tr><td><code>edge_after</code> (edge clock leaving the op)</td><td class="num">5:00</td><td class="num">4:00</td><td></td></tr>
+<tr><td><code>flips_uncommented</code></td><td class="num">0</td><td class="num">1</td><td class="num">1 flip per part</td></tr>
+</tbody>
+</table></div>
+<p>Now say op B's feed goes up 40%. Its cutting time drops to 5:00, the clock reaches only 10:00 &ndash; and still one
+flip. Up 70%: 4:07, the clock ends at 9:07, still one flip. The flips only drop when the whole tool cuts less than one
+edge life.</p>
+<p>If the stops <strong>had</strong> a comment like <code>ROTATE INSERT</code>, Mastercam's own timer would decide: it
+starts again in op B, neither op reaches 8:00, so there would be 0 flips. That is why
+<a href="#page-text">the comment you pick</a> matters.</p>
+</section>
+
+<section id="flips--messages">
+<h3>What the messages mean</h3>
+<dl class="messages">
+<dt><code>flips_why</code> says <q>time 8 + end 1</q></dt>
+<dd>8 flips came from the time setting and 1 from the stop at the end of the op.</dd>
+<dt><code>flip_longest</code> is much longer than <code>insp_time</code></dt>
+<dd>The op stops only between cuts, so a long pass runs past the setting before it can stop. See
+<code>insp_between_cuts</code> in the <a href="#page-words">word list</a>.</dd>
+</dl>
+</section>
+
+<section id="flips--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-inspection">Inspection &amp; inserts</a> &ndash; use every edge evenly</li>
+<li><a href="#page-tools-page">Tools page</a></li>
+<li><a href="#words--w-edge-life">Edge life</a>, <a href="#words--w-insp-time">insp_time</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-words">
+<h2 class="page-title">Word list</h2>
+
+<section id="words--what">
+<h3>What this is for</h3>
+<p>Plain meanings for the words in this manual and on the sheet. The first part is general words. The second part is
+every <a href="#words--columns">column</a>, by the name it has on the sheet (row 2 of <span class="ui">Lathe params</span>).</p>
+</section>
+
+<section id="words--when">
+<h3>When to use it</h3>
+<p>When a word or a column name is new to you. On the sheet itself, hover over a column name for the same help.</p>
+</section>
+
+<section id="words--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Press <kbd>Ctrl</kbd>+<kbd>F</kbd> in your browser and type the word or the column name, e.g. <code>max_ss</code>.</li>
+<li>Or click a letter below to jump to it.</li>
+<li>Follow the <span class="ui">See also</span> links for the bigger picture.</li>
+</ol>
+<ul class="letters">
+<li><a href="#words--l-a">A</a></li><li><a href="#words--l-b">B</a></li><li><a href="#words--l-c">C</a></li><li><a href="#words--l-d">D</a></li>
+<li><a href="#words--l-e">E</a></li><li><a href="#words--l-f">F</a></li><li><a href="#words--l-g">G</a></li><li><a href="#words--l-i">I</a></li>
+<li><a href="#words--l-l">L</a></li><li><a href="#words--l-m">M</a></li><li><a href="#words--l-n">N</a></li><li><a href="#words--l-o">O</a></li>
+<li><a href="#words--l-p">P</a></li><li><a href="#words--l-r">R</a></li><li><a href="#words--l-s">S</a></li><li><a href="#words--l-t">T</a></li>
+<li><a href="#words--l-u">U</a></li><li><a href="#words--l-w">W</a></li><li><a href="#words--l-y">Y</a></li><li><a href="#words--columns">Columns</a></li>
+</ul>
+</section>
+
+<section id="words--example">
+<h3>Worked example</h3>
+<p>Row 2 of the sheet says <code>feed_mode</code> and the cell says <code>per rev</code>. Look up <code>feed_mode</code> in
+the columns below: <q>per rev (IPR / mm per rev) or per min (IPM / mm per min) for feed</q>. Then
+<a href="#words--w-per-rev">per rev / per min</a> above it tells you what that means at the machine.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>On the sheet</th><th>In plain words</th></tr></thead>
+<tbody>
+<tr><td><code>feed</code> 0.012, <code>feed_mode</code> per rev</td><td>The tool moves 0.012&Prime; for every turn of the spindle (G95 F.012).</td></tr>
+<tr><td><code>speed</code> 200, <code>speed_mode</code> CSS</td><td>200 feet per minute at the cutting edge; the RPM changes with the diameter (G96 S200).</td></tr>
+<tr><td><code>max_ss</code> 3500</td><td>The spindle never goes above 3500 RPM, however small the diameter (G50 S3500).</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="words--general">
+<h3>General words</h3>
+<dl class="words">
+<dt id="words--l-a"><span id="words--w-add-in">Add-in</span></dt>
+<dd>A program that plugs into Mastercam and adds commands to it. This tool is one.</dd>
+<dt id="words--w-air-cutting">Air cutting (<code>air_pct</code>)</dt>
+<dd>Time the tool spends feeding but touching nothing &ndash; usually a pass that starts too far out, or stock that is not there any more. Cutting air costs time and nothing else.</dd>
+
+<dt id="words--l-b"><span id="words--w-batch">Batch</span></dt>
+<dd>How many parts you run in one go. Type it on the <a href="#page-summary">Summary</a> to get time and insert cost per batch.</dd>
+<dt id="words--w-blue">Blue cell</dt>
+<dd>A worked-out number (time, flips, MRR) that moved because of your edits. You did not type it.</dd>
+
+<dt id="words--l-c"><span id="words--w-cell">Cell, row, column</span></dt>
+<dd>A cell is one box of the spreadsheet. A row goes across (one op); a column goes down (one setting). Columns have letters at the top (A, B, C); rows have numbers on the left.</dd>
+<dt id="words--w-chip-thinning">Chip thinning, chip thickness</dt>
+<dd>With a round insert, or an insert with a lead angle, the chip is thinner than the feed: <strong>real chip = feed &times; sin(entering angle)</strong>. A chip that is too thin rubs instead of cutting and wears the insert. To get the chip you want, program a higher feed. See <a href="#calculator--chip">Speed &amp; feed</a>.</dd>
+<dt id="words--w-column-group">Column group</dt>
+<dd>A set of columns under one name in row 1 (Feeds and speeds, Coolant ...). Groups fold away with the small <span class="ui">+</span> / <span class="ui">-</span> above the columns. See <a href="#page-sheet">The main sheet</a>.</dd>
+<dt id="words--w-coolant">Coolant: Off, Flood, Mist, Thru-tool</dt>
+<dd>Flood: a stream over the cut. Mist: a fine spray. Thru-tool: through the tool or the holder, at the edge. Machines are set up one of two ways: one coolant setting per op (<code>coolant</code>, also called V9 style), or coolants turned on <em>before</em>, <em>with</em> or <em>after</em> the move, by the machine's own names (<code>coolant_before</code>, <code>coolant_with</code>, <code>coolant_after</code>, also called X style). See <a href="#page-coolant">Coolant</a>.</dd>
+<dt id="words--w-css">CSS (constant surface speed)</dt>
+<dd>The spindle speeds up as the tool moves toward the center, so the edge always sees the same <a href="#words--w-sfm">surface speed</a>. G96 on most controls. The opposite is fixed <a href="#words--w-rpm">RPM</a> (G97). Always set a <a href="#words--w-max-rpm">max RPM</a> with CSS.</dd>
+<dt id="words--w-ctrl-z">Ctrl+Z</dt>
+<dd>Undo. Hold <kbd>Ctrl</kbd> and press <kbd>Z</kbd>. See <a href="#page-undo">Undo</a>.</dd>
+<dt id="words--w-cut-time">Cutting time (<code>cut_seconds_est</code>)</dt>
+<dd>The part of the cycle time spent feeding (cutting or air cutting). Rapids and tool changes are not in it.</dd>
+<dt id="words--w-cycle-time">Cycle time</dt>
+<dd>How long the op (or the whole part) takes. <code>cycle_time</code> is Mastercam's own figure, as dumped.</dd>
+
+<dt id="words--l-d"><span id="words--w-depth-of-cut">Depth of cut (<code>step</code>, DOC)</span></dt>
+<dd>How deep each roughing pass cuts. On a lathe, usually per side (radius). A finish op's <code>step</code> is the stepover between finish passes.</dd>
+<dt id="words--w-dropdown">Dropdown</dt>
+<dd>A cell with a small arrow on its right when you click it. Click the arrow and pick from the list.</dd>
+<dt id="words--w-dump">Dump</dt>
+<dd>Writing the part's ops out to an Excel workbook. See <a href="#page-dump">Dump to Excel</a>.</dd>
+<dt id="words--w-dynamic">Dynamic (dynamic rough, dynamic mill)</dt>
+<dd>Toolpaths that keep the tool's engagement even, with a small stepover and a high feed. Their feed and stepover go together &ndash; see <a href="#words--w-chip-thinning">chip thinning</a>.</dd>
+
+<dt id="words--l-e"><span id="words--w-edge">Edge</span></dt>
+<dd>One cutting corner of an insert. A CNMG has 4 usable edges (2 on each side); a VCMT has 2; a round insert has many.</dd>
+<dt id="words--w-edge-life">Edge life</dt>
+<dd>How much cutting time one edge lasts before it should be turned. The Tools page's <span class="ui">Edge life (fallback)</span> is used for ops that stop for inspection but set no <code>insp_time</code> of their own. Typed as minutes:seconds (<code>8:00</code>).</dd>
+<dt id="words--w-entering-angle">Entering angle, lead angle</dt>
+<dd>The angle between the cutting edge and the direction of feed. A 90&deg; entering angle (0&deg; lead) makes a chip as thick as the feed. A 45&deg; entering angle makes it about 0.7 of the feed. Makers give one or the other &ndash; entering angle = 90&deg; &minus; lead angle.</dd>
+<dt id="words--w-estimate">Estimate (<code>est_cycle_time</code>)</dt>
+<dd>The live cycle time: it starts equal to Mastercam's and moves with your feed and speed edits. See <a href="#page-estimate">The cycle time estimate</a>.</dd>
+
+<dt id="words--l-f"><span id="words--w-feed">Feed</span></dt>
+<dd>How fast the tool moves while cutting: <a href="#words--w-per-rev">per rev or per minute</a>. On the sheet, the number is <code>feed</code> (always positive) and the unit is <code>feed_mode</code>.</dd>
+<dt id="words--w-flip">Flip (insert flip)</dt>
+<dd>Turning, flipping or changing the insert to a fresh edge. The tool counts a tool inspection stop as a flip when its comment says ROTATE, FLIP, CHANGE or INDEX &ndash; and works out stops with no comment from the edge life. See <a href="#page-flips">How insert flips are counted</a>.</dd>
+
+<dt id="words--l-g"><span id="words--w-grey">Grey cell</span></dt>
+<dd>A cell you cannot type in: read-only, or a setting that is not part of that kind of op.</dd>
+
+<dt id="words--l-i"><span id="words--w-insert">Insert</span></dt>
+<dd>The replaceable carbide (or other) cutting tip clamped in the holder. The Tools page names each one by shape and nose radius, like <code>C 80&deg; r0.031</code> (an 80&deg; diamond, 0.031&Prime; nose radius).</dd>
+<dt id="words--w-insert-size">Insert size (IC)</dt>
+<dd>The size of an insert's inscribed circle &ndash; for a round insert, its diameter. Chip thinning on round inserts needs it.</dd>
+<dt id="words--w-inspection-comment">Inspection comment (<code>insp_comment</code>)</dt>
+<dd>The message that comes out at a tool inspection stop, for the operator: <code>ROTATE INSERT</code>, <code>CHECK INSERT</code> ... Its words decide whether the stop counts as a flip.</dd>
+<dt id="words--w-insp-time">Tool inspection, <code>insp_time</code></dt>
+<dd>Mastercam can stop the machine during an op so the operator can look at or turn the insert: every so much cutting time (<code>insp_time</code>, minutes:seconds), distance, or number of cuts, and at the end. These settings are the <span class="ui">Tool inspection</span> column group.</dd>
+
+<dt id="words--l-l"><span id="words--w-load">Load</span></dt>
+<dd>Putting the edited values from the workbook back into the part. See <a href="#page-load">Load the changes</a>.</dd>
+
+<dt id="words--l-m"><span id="words--w-macro">Macro</span></dt>
+<dd>A small program inside the workbook. With macros (an <code>.xlsm</code> file) you get the <span class="ui">Parameter Table</span> tab on Excel's ribbon. Without them (<code>.xlsx</code>) the workbook still works and still loads.</dd>
+<dt id="words--w-manual-entry">Manual entry</dt>
+<dd>An op that puts your own text into the NC program, as a comment or as code. Its text is <code>manual_text</code>.</dd>
+<dt id="words--w-max-rpm">Max RPM (<code>max_ss</code>)</dt>
+<dd>The highest spindle speed the op may use. With <a href="#words--w-css">CSS</a>, the RPM climbs as the diameter shrinks; max RPM stops it there (G50 S on many lathes). Too high near the center is a safety risk; too low slows small diameters.</dd>
+<dt id="words--w-mixed">Mixed</dt>
+<dd>In a window that works on several ops: the ops do not all have the same value. Whatever you apply replaces them all.</dd>
+<dt id="words--w-mrr">MRR, material removed</dt>
+<dd>Metal removal rate: how much material is cut per minute (in&sup3;/min or cm&sup3;/min). <code>mrr</code> is the theory while cutting (12 &times; SFM &times; feed per rev &times; depth for turning). <code>mrr_avg</code> is the real one over the whole op, including air and rapids. <code>removed</code> is the total the op takes off &ndash; fixed by the toolpath.</dd>
+
+<dt id="words--l-n"><span id="words--w-nci">NCI</span></dt>
+<dd>Mastercam's own record of a toolpath's moves, before the post turns it into G-code. The tool reads it for times, lengths and stops.</dd>
+
+<dt id="words--l-o"><span id="words--w-op">Op (operation)</span></dt>
+<dd>One toolpath in Mastercam's Operation Manager: a rough, a finish, a groove, a drill ... Each op is one row of the sheet.</dd>
+<dt id="words--w-op-number">Op number (<code>op_idn</code>)</dt>
+<dd>The op's ID number in Mastercam. It is how the load finds the right op &ndash; never change it.</dd>
+<dt id="words--w-operation-manager">Operation Manager</dt>
+<dd>The list of ops in Mastercam (the Toolpaths tab). The sheet keeps its order.</dd>
+
+<dt id="words--l-p"><span id="words--w-per-rev">Per rev / per min (IPR, IPM)</span></dt>
+<dd><strong>Per rev</strong>: how far the tool moves for each turn of the spindle (inches per rev, IPR, or mm per rev; G95 / G99). <strong>Per min</strong>: how far it moves in a minute (IPM or mm/min; G94 / G98). Per min = per rev &times; RPM. Lathes mostly use per rev; live tools use per min.</dd>
+<dt id="words--w-percent">Percent: +10%, -10%</dt>
+<dd><code>+10%</code> means 10% more than now: 0.010 becomes 0.011. <code>-10%</code> means 10% less: 0.010 becomes 0.009. <!-- CHECK: the percent wording in the finished Scale and Hit a target time windows. --></dd>
+<dt id="words--w-post">Post</dt>
+<dd>The post processor: it turns Mastercam's toolpaths into G-code for your machine.</dd>
+<dt id="words--w-primeturning">PrimeTurning</dt>
+<dd>Sandvik's turning method that cuts in both directions with a small entering angle and high feeds, using A-type and B-type inserts. Its ops keep their own feeds and speeds (<code>pt_rough_speed</code>, <code>pt_rough_feed_axial</code> ...) &ndash; the plain <code>feed</code> and <code>speed</code> columns do not drive them.</dd>
+<dt id="words--w-ptconfig">.ptconfig file</dt>
+<dd>A small file next to the part (<code>&lt;part&gt;.ptconfig</code>) that keeps what you typed on the Tools page and the Summary: insert names, edges, cost, parts per edge, edge life, batch quantity. The next dump starts from it. Delete it to start over.</dd>
+
+<dt id="words--l-r"><span id="words--w-radius-diameter">Radius and diameter</span></dt>
+<dd>The X travel columns (<code>travel_x_min</code>, <code>travel_x_max</code>) are a radius &ndash; double them for the diameter. The tool works speeds at the diameter.</dd>
+<dt id="words--w-regenerate">Regenerate</dt>
+<dd>Making Mastercam work out an op's toolpath again after its settings changed. After a load, the changed ops are marked dirty (needing regeneration). Until you regenerate, the NC code and the times are the old ones.</dd>
+<dt id="words--w-ribbon">Ribbon</dt>
+<dd>The band of buttons across the top of Excel (or Mastercam), in tabs. The tool adds a <span class="ui">Parameter Table</span> tab to Excel's.</dd>
+<dt id="words--w-rpm">RPM</dt>
+<dd>Revolutions per minute: how fast the spindle turns. With CSS the RPM changes with the diameter; with fixed RPM (G97) it does not.</dd>
+
+<dt id="words--l-s"><span id="words--w-scenario">Scenario</span></dt>
+<dd>A set of edits saved under a name inside the workbook, to restore or compare later. See <a href="#page-scenarios">Scenarios</a>.</dd>
+<dt id="words--w-sfm">SFM (surface speed, m/min)</dt>
+<dd>Surface feet per minute: how fast the material passes the cutting edge. RPM = SFM &times; 3.82 &divide; diameter in inches. Metric: m/min, and RPM = m/min &times; 318.3 &divide; diameter in mm. Insert boxes give a range of SFM for each material.</dd>
+<dt id="words--w-status-bar">Status bar</dt>
+<dd>The thin bar along the very bottom of the Excel window. The tool writes short messages there (&ldquo;3 cell(s) set ...&rdquo;).</dd>
+<dt id="words--w-stepover">Stepover</dt>
+<dd>How far the tool moves over between passes, side to side. For dynamic toolpaths, often given as a percent of the tool (<code>stepover_percent</code>).</dd>
+<dt id="words--w-stock-to-leave">Stock to leave</dt>
+<dd>Material a rough leaves on for the finish pass, in X (<code>stock_x</code>, usually per side) and Z (<code>stock_z</code>).</dd>
+
+<dt id="words--l-t"><span id="words--w-tool-number">Tool number (T12)</span></dt>
+<dd>The turret or pocket number of the tool. In <span class="ui">Find op</span>, type <code>T12</code> to find tool 12's ops.</dd>
+<dt id="words--w-toolpath">Toolpath</dt>
+<dd>The moves an op makes. Mastercam works it out from the op's settings (see <a href="#words--w-regenerate">regenerate</a>).</dd>
+<dt id="words--w-tooltip">Tooltip</dt>
+<dd>The little note that appears when you hover the mouse over something, or click a cell. Every column name and cell on the sheet has one.</dd>
+<dt id="words--w-transform">Transform</dt>
+<dd>An op that copies other ops' toolpaths (mirror, rotate, translate). The sheet shows transforms read-only; their copies count in the part's time and flips.</dd>
+
+<dt id="words--l-u"><span id="words--w-usual-edge-time">Usual edge time</span></dt>
+<dd>What one edge of an insert normally lasts in your shop. You type it on the Tools page; the <a href="#page-check">Program check</a> warns about tools that run an edge much longer. <!-- CHECK: name and place of this column once merged. --></dd>
+
+<dt id="words--l-w"><span id="words--w-workbook">Workbook, sheet</span></dt>
+<dd>A workbook is one Excel file. A sheet is one page of it, chosen by the tabs along the bottom (Summary, Lathe params, Tools).</dd>
+
+<dt id="words--l-y"><span id="words--w-yellow">Yellow cell</span></dt>
+<dd>A cell you changed: it differs from the dump. It goes white again if you put the dumped value back.</dd>
+</dl>
+</section>
+
+<section id="words--columns">
+<h3>Columns on the sheet</h3>
+<!-- columns -->
+<p class="note">This part is made from the sheet's own tooltips (the text you see when you hover a column name), so it always matches your sheet. Hover a cell on the sheet to see the same words.</p>
+<h4 id="words--c-identity-and-context">Identity and context</h4>
+<dl class="words">
+<dt id="words--col-changes"><span class="col">changes</span></dt>
+<dd>How many cells in this row differ from the dump. Edited cells are highlighted.</dd>
+<dt id="words--col-comment"><span class="col">comment</span></dt>
+<dd>The operation&#x27;s comment, as the Operation Manager shows it. Edit it here and it loads back (up to 119 characters).</dd>
+<dt id="words--col-group_name"><span class="col">group_name</span></dt>
+<dd>The toolpath group the operation is in.</dd>
+<dt id="words--col-needs_regen"><span class="col">needs_regen</span></dt>
+<dd>yes = the toolpath is out of date; regenerate before posting. Stats are stale until then. <span class="also">See also: <a href="#words--w-regenerate">regenerate</a>.</span></dd>
+<dt id="words--col-op_idn"><span class="col">op_idn</span></dt>
+<dd>The operation&#x27;s ID - how a load finds its row&#x27;s operation. Do not change.</dd>
+<dt id="words--col-tool"><span class="col">tool</span></dt>
+<dd>Tool number.</dd>
+<dt id="words--col-tool_name"><span class="col">tool_name</span></dt>
+<dd>The tool&#x27;s description.</dd>
+<dt id="words--col-tool_radius"><span class="col">tool_radius</span></dt>
+<dd>The tool radius the percent columns are a percent of (dynamic rough).</dd>
+<dt id="words--col-type"><span class="col">type</span></dt>
+<dd>The kind of operation - ROUGH, FINISH, FACE, GROOVE, DRILL, MANUAL, DYNAMIC MILL and so on.</dd>
+<dt id="words--col-units"><span class="col">units</span></dt>
+<dd>in or mm - the units every length on this row is in.</dd>
+</dl>
+<h4 id="words--c-toolpath-stats">Toolpath stats</h4>
+<dl class="words">
+<dt id="words--col-back_feed"><span class="col">back_feed</span></dt>
+<dd>Dynamic mill back feed - the feed of the repositioning moves (per minute).</dd>
+<dt id="words--col-cut_length"><span class="col">cut_length</span></dt>
+<dd>Total length of the feed moves (lines and arcs) in the toolpath.</dd>
+<dt id="words--col-cycle_time"><span class="col">cycle_time</span></dt>
+<dd>Mastercam&#x27;s estimated cycle time for this operation, h:mm:ss (matches the Operation Manager to within seconds).</dd>
+<dt id="words--col-cycle_time_raw"><span class="col">cycle_time_raw</span></dt>
+<dd>The cycle time in seconds, as Mastercam returned it.</dd>
+<dt id="words--col-dcut_fin_n"><span class="col">dcut_fin_n</span></dt>
+<dd>Mill depth cuts: number of finish cuts.</dd>
+<dt id="words--col-dcut_finish"><span class="col">dcut_finish</span></dt>
+<dd>Mill depth cuts: finish step.</dd>
+<dt id="words--col-dcut_rough"><span class="col">dcut_rough</span></dt>
+<dd>Mill depth cuts: max rough step.</dd>
+<dt id="words--col-est_cycle_time"><span class="col">est_cycle_time</span></dt>
+<dd>LIVE estimate: Mastercam&#x27;s cycle time, moved by your feed / speed / CSS / max_ss edits on this row. Equals cycle_time until you edit. <span class="also">See also: <a href="#words--w-estimate">estimate</a>.</span></dd>
+<dt id="words--col-est_seconds"><span class="col">est_seconds</span></dt>
+<dd>The live estimate in seconds (the formula behind est_cycle_time).</dd>
+<dt id="words--col-feed_groups"><span class="col">feed_groups</span></dt>
+<dd>Feed-move length at each feed rate, longest first - a dynamic mill&#x27;s back feed is its own entry.</dd>
+<dt id="words--col-fr_override"><span class="col">fr_override</span></dt>
+<dd>Contour feed rate override, used when fr_override_on is 1.</dd>
+<dt id="words--col-mcut_fin_n"><span class="col">mcut_fin_n</span></dt>
+<dd>Mill multi passes: number of finish passes.</dd>
+<dt id="words--col-mcut_rough_n"><span class="col">mcut_rough_n</span></dt>
+<dd>Mill multi passes: number of rough passes.</dd>
+<dt id="words--col-rapid_length"><span class="col">rapid_length</span></dt>
+<dd>Total length of the rapid moves WITHIN the operation - backplot also counts the moves to and from it, so its figure is larger.</dd>
+<dt id="words--col-ss_override"><span class="col">ss_override</span></dt>
+<dd>Contour spindle speed override, used when ss_override_on is 1.</dd>
+<dt id="words--col-time_change"><span class="col">time_change</span></dt>
+<dd>How much the live estimate differs from Mastercam&#x27;s cycle time.</dd>
+<dt id="words--col-travel_x_max"><span class="col">travel_x_max</span></dt>
+<dd>Largest X the toolpath reaches - a RADIUS (double it for diameter).</dd>
+<dt id="words--col-travel_x_min"><span class="col">travel_x_min</span></dt>
+<dd>Smallest X the toolpath reaches - a RADIUS (double it for diameter).</dd>
+<dt id="words--col-travel_z_max"><span class="col">travel_z_max</span></dt>
+<dd>Largest Z the toolpath reaches, in the tool plane.</dd>
+<dt id="words--col-travel_z_min"><span class="col">travel_z_min</span></dt>
+<dd>Smallest Z the toolpath reaches, in the tool plane.</dd>
+</dl>
+<h4 id="words--c-feeds-and-speeds">Feeds and speeds</h4>
+<dl class="words">
+<dt id="words--col-feed"><span class="col">feed</span></dt>
+<dd>Cutting feed rate - always positive here. Per rev or per minute is set in feed_mode. <span class="also">See also: <a href="#words--w-per-rev">per rev</a>.</span></dd>
+<dt id="words--col-feed_mode"><span class="col">feed_mode</span></dt>
+<dd>per rev (IPR / mm per rev) or per min (IPM / mm per min) for feed. <span class="also">See also: <a href="#words--w-per-rev">per rev</a>.</span></dd>
+<dt id="words--col-max_ss"><span class="col">max_ss</span></dt>
+<dd>Maximum spindle speed (RPM) - the cap when running CSS. <span class="also">See also: <a href="#words--w-max-rpm">max rpm</a>.</span></dd>
+<dt id="words--col-plunge"><span class="col">plunge</span></dt>
+<dd>Plunge feed rate - per rev or per minute is set in plunge_mode.</dd>
+<dt id="words--col-plunge_mode"><span class="col">plunge_mode</span></dt>
+<dd>per rev or per min for plunge. <span class="also">See also: <a href="#words--w-per-rev">per rev</a>.</span></dd>
+<dt id="words--col-plunge_surf_fin"><span class="col">plunge_surf_fin</span></dt>
+<dd>1 = plunge holds a surface finish value instead of a feed rate.</dd>
+<dt id="words--col-retract"><span class="col">retract</span></dt>
+<dd>Retract feed rate - per rev or per minute is set in retract_mode.</dd>
+<dt id="words--col-retract_mode"><span class="col">retract_mode</span></dt>
+<dd>per rev or per min for retract. <span class="also">See also: <a href="#words--w-per-rev">per rev</a>.</span></dd>
+<dt id="words--col-speed"><span class="col">speed</span></dt>
+<dd>Spindle speed - surface speed when speed_mode is CSS, RPM when it is RPM. <span class="also">See also: <a href="#words--w-sfm">sfm</a>.</span></dd>
+<dt id="words--col-speed_mode"><span class="col">speed_mode</span></dt>
+<dd>CSS = constant surface speed (speed is SFM or m/min); RPM = fixed spindle speed. <span class="also">See also: <a href="#words--w-css">css</a>.</span></dd>
+<dt id="words--col-spindle_dir"><span class="col">spindle_dir</span></dt>
+<dd>CW (M03) or CCW (M04).</dd>
+<dt id="words--col-surf_fin_feed"><span class="col">surf_fin_feed</span></dt>
+<dd>1 = feed holds a surface finish value instead of a feed rate.</dd>
+</dl>
+<h4 id="words--c-depth-of-cut">Depth of cut</h4>
+<dl class="words">
+<dt id="words--col-min_step"><span class="col">min_step</span></dt>
+<dd>Smallest depth of cut the rough will take.</dd>
+<dt id="words--col-n_cuts"><span class="col">n_cuts</span></dt>
+<dd>Number of finish passes.</dd>
+<dt id="words--col-peck1"><span class="col">peck1</span></dt>
+<dd>Drill: first peck depth.</dd>
+<dt id="words--col-peck2"><span class="col">peck2</span></dt>
+<dd>Drill: subsequent peck depth.</dd>
+<dt id="words--col-step"><span class="col">step</span></dt>
+<dd>Rough: depth of cut per pass. Finish: stepover between finish passes. <span class="also">See also: <a href="#words--w-depth-of-cut">depth of cut</a>.</span></dd>
+<dt id="words--col-stepover"><span class="col">stepover</span></dt>
+<dd>Dynamic rough stepover. Change this and stepover_percent follows. <span class="also">See also: <a href="#words--w-stepover">stepover</a>.</span></dd>
+<dt id="words--col-stepover_percent"><span class="col">stepover_percent</span></dt>
+<dd>Stepover as a percent of tool radius - calculated from stepover. Typing here replaces the formula.</dd>
+</dl>
+<h4 id="words--c-stock-to-leave">Stock to leave</h4>
+<dl class="words">
+<dt id="words--col-fin_stock_x"><span class="col">fin_stock_x</span></dt>
+<dd>Semi-finish passes: stock to leave in X.</dd>
+<dt id="words--col-fin_stock_z"><span class="col">fin_stock_z</span></dt>
+<dd>Semi-finish passes: stock to leave in Z.</dd>
+<dt id="words--col-stock_x"><span class="col">stock_x</span></dt>
+<dd>Stock to leave in X. <span class="also">See also: <a href="#words--w-stock-to-leave">stock to leave</a>.</span></dd>
+<dt id="words--col-stock_z"><span class="col">stock_z</span></dt>
+<dd>Stock to leave in Z. <span class="also">See also: <a href="#words--w-stock-to-leave">stock to leave</a>.</span></dd>
+</dl>
+<h4 id="words--c-coolant">Coolant</h4>
+<dl class="words">
+<dt id="words--col-canned_text_raw"><span class="col">canned_text_raw</span></dt>
+<dd>The operation&#x27;s canned text and coolant codes, raw.</dd>
+<dt id="words--col-coolant"><span class="col">coolant</span></dt>
+<dd>V9 coolant - the one coolant setting on a machine set up for V9 coolant: Off, Flood, Mist or Thru-tool. <span class="also">See also: <a href="#words--w-coolant">coolant</a>.</span></dd>
+<dt id="words--col-coolant_after"><span class="col">coolant_after</span></dt>
+<dd>Coolant turned on AFTER the move - pick from this machine&#x27;s coolants, or none.</dd>
+<dt id="words--col-coolant_before"><span class="col">coolant_before</span></dt>
+<dd>Coolant turned on BEFORE the move - pick from this machine&#x27;s coolants, or none. <span class="also">See also: <a href="#words--w-coolant">coolant</a>.</span></dd>
+<dt id="words--col-coolant_text"><span class="col">coolant_text</span></dt>
+<dd>The V9 coolant field in words.</dd>
+<dt id="words--col-coolant_with"><span class="col">coolant_with</span></dt>
+<dd>Coolant turned on WITH the move - pick from this machine&#x27;s coolants, or none.</dd>
+</dl>
+<h4 id="words--c-prime-turning-s-own-feeds-and-speeds">Prime turning&#x27;s own feeds and speeds</h4>
+<dl class="words">
+<dt id="words--col-finish_feed"><span class="col">finish_feed</span></dt>
+<dd>Finish-pass feed rate, used when use_finish_feed is 1.</dd>
+<dt id="words--col-finish_ss"><span class="col">finish_ss</span></dt>
+<dd>Finish-pass spindle speed, used when use_finish_ss is 1.</dd>
+<dt id="words--col-finish_step"><span class="col">finish_step</span></dt>
+<dd>Finish pass cut amount.</dd>
+<dt id="words--col-pt_fin_feed_axial"><span class="col">pt_fin_feed_axial</span></dt>
+<dd>Prime turning FINISH feed along Z; unit in pt_fin_axial_type.</dd>
+<dt id="words--col-pt_fin_feed_radial"><span class="col">pt_fin_feed_radial</span></dt>
+<dd>Prime turning FINISH feed along X; unit in pt_fin_radial_type.</dd>
+<dt id="words--col-pt_fin_speed"><span class="col">pt_fin_speed</span></dt>
+<dd>Prime turning FINISH spindle speed - CSS when pt_fin_css is 1, else RPM.</dd>
+<dt id="words--col-pt_rough_css"><span class="col">pt_rough_css</span></dt>
+<dd>1 = prime turning rough speed is CSS.</dd>
+<dt id="words--col-pt_rough_feed_axial"><span class="col">pt_rough_feed_axial</span></dt>
+<dd>Prime turning ROUGH feed along Z; unit in pt_rough_axial_type.</dd>
+<dt id="words--col-pt_rough_feed_from"><span class="col">pt_rough_feed_from</span></dt>
+<dd>user defined = the feeds as typed; chip thickness = Mastercam works them out from pt_rough_chip.</dd>
+<dt id="words--col-pt_rough_feed_radial"><span class="col">pt_rough_feed_radial</span></dt>
+<dd>Prime turning ROUGH feed along X; unit in pt_rough_radial_type.</dd>
+<dt id="words--col-pt_rough_speed"><span class="col">pt_rough_speed</span></dt>
+<dd>Prime turning ROUGH spindle speed - CSS (SFM / m/min) when pt_rough_css is 1, else RPM. <span class="also">See also: <a href="#words--w-primeturning">primeturning</a>.</span></dd>
+<dt id="words--col-pt_strategy"><span class="col">pt_strategy</span></dt>
+<dd>Prime turning roughing strategy.</dd>
+<dt id="words--col-rough_step"><span class="col">rough_step</span></dt>
+<dd>Face: rough stepover. Groove / plunge rough: step across the groove.</dd>
+<dt id="words--col-rough_step_by"><span class="col">rough_step_by</span></dt>
+<dd>Groove rough step from: 0 number of steps, 1 step amount, 2 percent of tool width.</dd>
+</dl>
+<h4 id="words--c-toolpath-specific">Toolpath-specific</h4>
+<dl class="words">
+<dt id="words--col-cycle"><span class="col">cycle</span></dt>
+<dd>Drill cycle number.</dd>
+<dt id="words--col-direction"><span class="col">direction</span></dt>
+<dd>Cut direction: 0 OD, 1 ID, 2 face, 3 back. Shown, never written.</dd>
+<dt id="words--col-do_finish"><span class="col">do_finish</span></dt>
+<dd>1 = take semi-finish passes.</dd>
+<dt id="words--col-entry_amt"><span class="col">entry_amt</span></dt>
+<dd>Rough: entry amount.</dd>
+<dt id="words--col-exit_amt"><span class="col">exit_amt</span></dt>
+<dd>Rough: exit amount.</dd>
+<dt id="words--col-fin_n_cuts"><span class="col">fin_n_cuts</span></dt>
+<dd>Number of semi-finish passes.</dd>
+<dt id="words--col-fin_step"><span class="col">fin_step</span></dt>
+<dd>Semi-finish stepover.</dd>
+<dt id="words--col-linear_tol"><span class="col">linear_tol</span></dt>
+<dd>Tolerance for turning spline geometry into lines. Only matters on spline chains.</dd>
+<dt id="words--col-manual_gcode"><span class="col">manual_gcode</span></dt>
+<dd>Manual entry output: 1005 = as a comment, 1006 = as code.</dd>
+<dt id="words--col-manual_save"><span class="col">manual_save</span></dt>
+<dd>How the manual entry is saved. Shown, never written.</dd>
+<dt id="words--col-manual_source"><span class="col">manual_source</span></dt>
+<dd>Where the manual entry text comes from. Shown, never written.</dd>
+<dt id="words--col-manual_text"><span class="col">manual_text</span></dt>
+<dd>The manual entry&#x27;s text (up to 3111 characters). Alt+Enter for a new line; with macros, double-click for a bigger editor.</dd>
+<dt id="words--col-nonCuttingRegionAngle"><span class="col">nonCuttingRegionAngle</span></dt>
+<dd>Dynamic rough non-cutting region angle, degrees.</dd>
+<dt id="words--col-overlap"><span class="col">overlap</span></dt>
+<dd>Rough: overlap amount between passes.</dd>
+<dt id="words--col-radius"><span class="col">radius</span></dt>
+<dd>Dynamic rough toolpath radius. Change this and radius_percent follows.</dd>
+<dt id="words--col-radius_percent"><span class="col">radius_percent</span></dt>
+<dd>Toolpath radius as a percent of tool radius - calculated from radius. Typing here replaces the formula.</dd>
+<dt id="words--col-rough_angle"><span class="col">rough_angle</span></dt>
+<dd>Rough: cut angle, in RADIANS.</dd>
+<dt id="words--col-zigzag"><span class="col">zigzag</span></dt>
+<dd>0 = one way, 1 = zigzag.</dd>
+</dl>
+<h4 id="words--c-home-planes-filter">Home, planes, filter</h4>
+<dl class="words">
+<dt id="words--col-clearance_pln"><span class="col">clearance_pln</span></dt>
+<dd>Clearance plane value.</dd>
+<dt id="words--col-feed_pln"><span class="col">feed_pln</span></dt>
+<dd>Feed plane value.</dd>
+<dt id="words--col-filter_on"><span class="col">filter_on</span></dt>
+<dd>1 = arc filter / tolerance on: runs of short moves become arcs and longer lines.</dd>
+<dt id="words--col-filter_reduce_type"><span class="col">filter_reduce_type</span></dt>
+<dd>0 = neither, 1 = reduce line tolerance, 2 = reduce arc tolerance.</dd>
+<dt id="words--col-filter_tol"><span class="col">filter_tol</span></dt>
+<dd>Arc filter tolerance.</dd>
+<dt id="words--col-home_mode"><span class="col">home_mode</span></dt>
+<dd>Home position: 0 from machine, 1 user defined, 2 from tool.</dd>
+<dt id="words--col-retract_pln"><span class="col">retract_pln</span></dt>
+<dd>Retract plane value.</dd>
+</dl>
+<h4 id="words--c-where-it-sits">Where it sits</h4>
+<dl class="words">
+<dt id="words--col-group_id"><span class="col">group_id</span></dt>
+<dd>Toolpath group ID. Shown, never written.</dd>
+<dt id="words--col-tplane_id"><span class="col">tplane_id</span></dt>
+<dd>Tool plane ID. Shown, never written.</dd>
+<dt id="words--col-wcs_id"><span class="col">wcs_id</span></dt>
+<dd>Work coordinate system ID. Shown, never written.</dd>
+</dl>
+<h4 id="words--c-tool-inspection-and-insert-flips">Tool inspection and insert flips</h4>
+<dl class="words">
+<dt id="words--col-air_pct"><span class="col">air_pct</span></dt>
+<dd>Share of the op&#x27;s feed time cutting nothing (stock simulation). <span class="also">See also: <a href="#words--w-air-cutting">air cutting</a>.</span></dd>
+<dt id="words--col-cut_dia"><span class="col">cut_dia</span></dt>
+<dd>Mean cutting diameter over the feed moves (from the NCI) - where an RPM op&#x27;s surface speed, and CSS&#x27;s max_ss cap, are taken. A drill: the tool diameter. <span class="also">See also: <a href="#words--w-sfm">sfm</a>.</span></dd>
+<dt id="words--col-cut_seconds_est"><span class="col">cut_seconds_est</span></dt>
+<dd>Feed time in seconds, LIVE - the cutting part of the estimate; the Tools page sums it per tool.</dd>
+<dt id="words--col-edge_after"><span class="col">edge_after</span></dt>
+<dd>Cut time (seconds) the tool&#x27;s edge has done since its last flip, leaving this op - the next op of the same tool carries on from it.</dd>
+<dt id="words--col-edge_limit"><span class="col">edge_limit</span></dt>
+<dd>Cut time (seconds) an edge takes before a comment-less stop counts as a flip: the op&#x27;s insp_time when filled in, else the tool&#x27;s edge life on the Tools page (8:00). <span class="also">See also: <a href="#words--w-edge-life">edge life</a>.</span></dd>
+<dt id="words--col-flip_longest"><span class="col">flip_longest</span></dt>
+<dd>The most feed time between flips (or from the start / to the end) - the longest any edge cuts.</dd>
+<dt id="words--col-flips"><span class="col">flips</span></dt>
+<dd>Insert flips in the toolpath as it is: inspection stops whose comment changes the insert (CHANGE/ROTATE INSERT). <span class="also">See also: <a href="#words--w-flip">flip</a>.</span></dd>
+<dt id="words--col-flips_est"><span class="col">flips_est</span></dt>
+<dd>Insert flips per part, LIVE: follows feeds, speeds and the inspection settings. Equal to flips until something changes. <span class="also">See also: <a href="#words--w-flip">flip</a>.</span></dd>
+<dt id="words--col-flips_part"><span class="col">flips_part</span></dt>
+<dd>All the flips of the op per part, LIVE: commented (flips_est) + inferred (flips_uncommented). The Tools page sums it per tool. <span class="also">See also: <a href="#words--w-flip">flip</a>.</span></dd>
+<dt id="words--col-flips_uncommented"><span class="col">flips_uncommented</span></dt>
+<dd>Flips from stops with NO comment, LIVE - inferred from the settings (they leave nothing in the NCI): one each time the edge has cut edge_limit, carrying short ops&#x27; time over to the tool&#x27;s next op.</dd>
+<dt id="words--col-flips_why"><span class="col">flips_why</span></dt>
+<dd>Why each flip happened: time, distance, cuts (number of cuts, first cut, each depth) or end of the operation.</dd>
+<dt id="words--col-insp_at_end"><span class="col">insp_at_end</span></dt>
+<dd>Tool inspection stop at the end of the operation.</dd>
+<dt id="words--col-insp_between_cuts"><span class="col">insp_between_cuts</span></dt>
+<dd>1 = stop only between cuts (the real interval runs over the setting); 0 = stop mid-cut.</dd>
+<dt id="words--col-insp_dist"><span class="col">insp_dist</span></dt>
+<dd>Tool inspection: cut length between stops.</dd>
+<dt id="words--col-insp_min_cut"><span class="col">insp_min_cut</span></dt>
+<dd>Mid-cut stops: a pass with less than this left is finished first.</dd>
+<dt id="words--col-insp_mode"><span class="col">insp_mode</span></dt>
+<dd>How stops are placed: between cuts only, or mid-cut (finishing a pass that is nearly done).</dd>
+<dt id="words--col-insp_time"><span class="col">insp_time</span></dt>
+<dd>Tool inspection: feed time between stops, as minutes:seconds (9:00) - or seconds (540). <span class="also">See also: <a href="#words--w-insp-time">insp time</a>.</span></dd>
+<dt id="words--col-mrr"><span class="col">mrr</span></dt>
+<dd>Metal removal rate while cutting, LIVE, in3/min (cm3/min metric). Turning: 12 x SFM x feed/rev x depth; drill: pi D^2/4 x feed/min; mill: ae x ap x feed/min (see mrr_basis). Follows speed, feed and depth edits. <span class="also">See also: <a href="#words--w-mrr">mrr</a>.</span></dd>
+<dt id="words--col-mrr_avg"><span class="col">mrr_avg</span></dt>
+<dd>Actual MRR over the whole operation, LIVE: removed / op time - rapids, leads and air cuts included. Follows feed and speed edits through the estimate. <span class="also">See also: <a href="#words--w-mrr">mrr</a>.</span></dd>
+<dt id="words--col-mrr_basis"><span class="col">mrr_basis</span></dt>
+<dd>What mrr is worked from: the depth-of-cut column, the diameter, and whether max_ss caps the speed. A mill op: its ae (contour: full tool width unless multi passes - an upper bound; dynamic: stepover) and ap.</dd>
+<dt id="words--col-mrr_engaged"><span class="col">mrr_engaged</span></dt>
+<dd>Actual MRR while in metal, LIVE: removed / (cut time less its air share). Set it beside mrr (theoretical) - a big gap says the depth or engagement is not what the parameters suggest. <span class="also">See also: <a href="#words--w-mrr">mrr</a>.</span></dd>
+<dt id="words--col-removed"><span class="col">removed</span></dt>
+<dd>Material the op removes (in3, cm3 metric) - fixed by its toolpath, so feed and speed edits do not change it (a depth edit does only once the op is regenerated). From a 2D stock simulation where it covers the op, else mrr x cut time - see removed_from. <span class="also">See also: <a href="#words--w-mrr">mrr</a>.</span></dd>
+<dt id="words--col-removed_check"><span class="col">removed_check</span></dt>
+<dd>The stock simulation set against Mastercam&#x27;s own stock boundaries: &#x27;agrees&#x27;, or both figures when they differ by more than 20% - usually a tool whose outline in Mastercam is not its real insert.</dd>
+<dt id="words--col-removed_from"><span class="col">removed_from</span></dt>
+<dd>Where removed comes from: the stock simulation (the toolpath swept through the stock), or an estimate (mrr x cut time, which counts air as cutting). Drill cycles, mill moves and ops after a stock flip are not simulated.</dd>
+<dt id="words--col-xf_copies"><span class="col">xf_copies</span></dt>
+<dd>A transform: how many copies of its source operations its toolpath holds (measured). A source: how many more times transforms cut it - the Tools page counts its tool time and flips that many more times.</dd>
+<dt id="words--col-xf_detail"><span class="col">xf_detail</span></dt>
+<dd>The transform in words: its kind and numbers (steps, angle or distance, about where).</dd>
+<dt id="words--col-xf_instances"><span class="col">xf_instances</span></dt>
+<dd>Copies the transform makes, as its dialog counts them: rotate - its steps; rectangular array - X steps x Y steps; mirror - 1.</dd>
+<dt id="words--col-xf_make_ops"><span class="col">xf_make_ops</span></dt>
+<dd>1 = the transform makes new operations (and geometry); 0 = it transforms the toolpath only.</dd>
+<dt id="words--col-xf_source_geom"><span class="col">xf_source_geom</span></dt>
+<dd>1 = transforms the source operations&#x27; geometry; 0 = their NCI.</dd>
+<dt id="words--col-xf_sources"><span class="col">xf_sources</span></dt>
+<dd>The op_idn of each operation the transform copies, as Mastercam lists them.</dd>
+<dt id="words--col-xf_type"><span class="col">xf_type</span></dt>
+<dd>Transform kind: mirror, rotate or translate. Transforms are shown, never written.</dd>
+</dl>
+<!-- /columns -->
+<h4 id="words--c-tools-page">Tools page columns</h4>
+<dl class="words">
+<dt id="words--t-insert"><span class="col">Insert</span></dt><dd>The insert the tool carries, worked out from its shape. Type over it if it is wrong; tools with the same name count as one insert.</dd>
+<dt id="words--t-flips"><span class="col">Flips / part</span></dt><dd>The tool's insert flips per part, from all its ops (live).</dd>
+<dt id="words--t-cut-time"><span class="col">Cut time / part</span></dt><dd>The tool's cutting time per part (live).</dd>
+<dt id="words--t-longest"><span class="col">Longest between flips</span></dt><dd>The most cutting time any edge of this tool does between flips.</dd>
+<dt id="words--t-inspection"><span class="col">Inspection</span></dt><dd>What the tool's ops stop on, in words (&ldquo;every 8:00 of cutting, at end&rdquo;).</dd>
+<dt id="words--t-edge-life"><span class="col">Edge life (fallback)</span></dt><dd>Cut time one edge lasts, for ops that stop for inspection but set no <code>insp_time</code>. See <a href="#words--w-edge-life">edge life</a>.</dd>
+<dt id="words--t-edges"><span class="col">Edges per insert</span></dt><dd>How many cutting edges one insert has (inserts table).</dd>
+<dt id="words--t-inserts"><span class="col">Inserts / part</span></dt><dd>Flips per part &divide; edges per insert, in whole inserts (a fraction for an insert that outlasts a part).</dd>
+<dt id="words--t-cost"><span class="col">Cost per insert</span>, <span class="col">Insert cost / part</span></dt><dd>Type what one insert costs; the cost per part follows.</dd>
+<dt id="words--t-parts-per-edge"><span class="col">Parts per edge</span></dt><dd>For an insert that lasts more than one part: how many parts one edge makes.</dd>
+</dl>
+</section>
+
+<section id="words--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-sheet">The main sheet</a></li>
+<li><a href="#page-tools-page">Tools page</a></li>
+<li><a href="#page-flips">How insert flips are counted</a></li>
+<li><a href="#page-estimate">The cycle time estimate</a></li>
+</ul>
+</section>
+</section>
+<section class="print-page" id="page-troubleshooting">
+<h2 class="page-title">Troubleshooting</h2>
+
+<section id="troubleshooting--what">
+<h3>What this is for</h3>
+<p>Something did not work, or a message came up. Find it below. Each topic page also has its own
+&ldquo;What the messages mean&rdquo;.</p>
+</section>
+
+<section id="troubleshooting--when">
+<h3>When to use it</h3>
+<p>When the tool does not do what you expect &ndash; before you give up on a change.</p>
+</section>
+
+<section id="troubleshooting--steps">
+<h3>Steps</h3>
+<ol class="steps">
+<li>Read the message word for word. Type a few of its words into the search box at the top of this page.</li>
+<li>Look for it in the list below.</li>
+<li>Nothing went into the part yet? Then nothing is lost: Excel edits stay in the workbook until you load.</li>
+<li>Something went into the part and it is wrong? Run <a href="#page-undo-load">Lathe params - undo last load</a>.</li>
+</ol>
+</section>
+
+<section id="troubleshooting--example">
+<h3>Worked example</h3>
+<p><strong>Problem:</strong> the workbook opened, but there is no <span class="ui">Parameter Table</span> tab on Excel's ribbon.</p>
+<div class="table-scroll"><table>
+<thead><tr><th>Check</th><th>What you see</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>The file name ends in</td><td><code>.xlsx</code></td><td>It was dumped without macros. Dump again with
+<span class="ui">Include macros</span> ticked (you get an <code>.xlsm</code>).</td></tr>
+<tr><td>A yellow bar under the ribbon</td><td><q>Macros have been disabled</q></td><td>Click <span class="ui">Enable Content</span>.</td></tr>
+<tr><td>A red bar</td><td><q>Microsoft has blocked macros ...</q></td><td>The file came from email or the internet. Close it,
+right-click the file, <span class="ui">Properties</span>, tick <span class="ui">Unblock</span>, OK, open it again.</td></tr>
+<tr><td>A yellow bar</td><td><q>Protected View</q></td><td>Click <span class="ui">Enable Editing</span>.</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="troubleshooting--messages">
+<h3>Problems and messages</h3>
+<h4 id="troubleshooting--in-mastercam">In Mastercam</h4>
+<dl class="messages">
+<dt>The commands are not in Mastercam at all</dt>
+<dd>See <a href="#page-install">Install</a>: both <code>ParamTable.ft</code> and the <code>ParamTable</code> folder must be
+in the <code>Add-Ins</code> folder, and Mastercam must be restarted.</dd>
+<dt><q>Save the part first ...</q></dt>
+<dd>Save the part (File, Save). The dump and load work beside the saved part file.</dd>
+<dt><q>The dump failed unexpectedly. Nothing was changed in the part.</q></dt>
+<dd>Something in the part upset the tool. Try dumping fewer ops to find which one, and tell whoever looks after the tool.</dd>
+<dt><q>The load failed unexpectedly. Check ParamTable.log ...</q></dt>
+<dd>The load stopped part way. <code>ParamTable.log</code> beside the part lists which ops were written. Run
+<a href="#page-undo-load">undo last load</a> to put them back.</dd>
+<dt><q>... could not be opened (is it still open in Excel?)</q></dt>
+<dd>Save in Excel first. If it still fails, close the workbook in Excel and load again.</dd>
+<dt>The load found no changes</dt>
+<dd>The workbook was not saved after the edits, or you picked an older file. Save, and pick the right file (the load starts
+on the one you dumped last).</dd>
+<dt>Refused rows in the load preview</dt>
+<dd>See <a href="#load--messages">Load: what the messages mean</a>.</dd>
+<dt>The NC code still has the old feed</dt>
+<dd>The changed ops need regenerating (they are marked dirty). Regenerate, then post again.</dd>
+</dl>
+<h4 id="troubleshooting--in-excel">In Excel</h4>
+<dl class="messages">
+<dt>No Parameter Table tab</dt>
+<dd>See the worked example above.</dd>
+<dt>A cell will not take what I type</dt>
+<dd>The value is outside what the setting takes, or the cell is grey (read-only, or not for this kind of op). The message
+says which. See <a href="#sheet--rules">The main sheet</a>.</dd>
+<dt>The cycle time did not change when I changed a depth</dt>
+<dd>Depths change the toolpath itself; the estimate can only follow feeds and speeds. See
+<a href="#page-estimate">How the estimate works</a>.</dd>
+<dt>Times or flips are blank, or <code>needs_regen</code> says yes</dt>
+<dd>The op needed regenerating when it was dumped. Regenerate in Mastercam and dump again.</dd>
+<dt>Flips per part look wrong</dt>
+<dd>See <a href="#page-flips">How insert flips are counted</a>. Check the inspection comment and the edge life on the Tools page.</dd>
+<dt>Insert cost is blank</dt>
+<dd>Type the edges and the cost per insert in the <a href="#tools-page--inserts">inserts table</a>.</dd>
+<dt><q>Select cells on the 'Lathe params' sheet first.</q></dt>
+<dd>Click the <span class="ui">Lathe params</span> tab and select cells in the op rows.</dd>
+<dt><q>Something went wrong: ...</q></dt>
+<dd>A ribbon command hit an error. Press <span class="ui">Undo</span> on the ribbon to take back anything it did, save
+your work, and tell whoever looks after the tool what the message said.</dd>
+<dt><q>The user manual is not installed ...</q></dt>
+<dd>The <code>help</code> folder is not beside the add-in. Copy the whole <code>ParamTable</code> folder from the zip again.</dd>
+<dt>I lost my edits</dt>
+<dd>Only if the workbook was closed without saving. Edits you saved are in the file; a saved
+<a href="#page-scenarios">scenario</a> is too.</dd>
+</dl>
+</section>
+
+<section id="troubleshooting--related">
+<h3>Related</h3>
+<ul>
+<li><a href="#page-install">Install the add-in</a></li>
+<li><a href="#page-load">Load the changes</a></li>
+<li><a href="#page-undo">Undo</a> and <a href="#page-undo-load">Undo a load</a></li>
+<li><a href="#page-words">Word list</a></li>
+</ul>
+</section>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet.</footer>
+</body>
+</html>

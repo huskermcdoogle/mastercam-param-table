@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspection &amp; inserts - Parameter Table Tool manual</title>
+<meta name="description" content="Flips per part for each tool, how much of each edge is used, and an edge time that uses every edge evenly.">
+<meta name="keywords" content="inspection inserts insert flips per part edge time edge life insp_time tool life even out flips fewer inserts insert cost wasted edge last edge used suggested">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html" aria-current="page">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Inspection &amp; inserts</h1>
+<p class="where">Ribbon: <b>Parameter Table</b> tab &rsaquo; <b>Selected ops</b> &rsaquo; <b>Inspection &amp; inserts</b></p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>Shows, for each tool, how often it stops to turn its insert and how much of each edge gets used. Often the last edge
+of a part is thrown away half used. The window works out an <strong>edge time</strong> (<code>insp_time</code>) that
+splits the tool's cutting evenly over its edges &ndash; fewer flips, no wasted edge &ndash; and writes it to every op of
+the tool.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<ul>
+<li>Insert cost per part is high (see the <a href="summary.html">Summary</a>).</li>
+<li>A tool flips one more time per part than it needs to.</li>
+<li>After you changed feeds or speeds &ndash; the cutting time changed, so the best edge time did too.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li><strong>Select the ops</strong> of the tools to look at (any cell in their rows), then click
+<span class="ui">Inspection &amp; inserts</span>.</li>
+<li><strong>Read one row per tool:</strong> flips per part; the edge time now; how much of the last edge is used; and the
+suggested edge time.</li>
+<li><strong>Pick the tools</strong> to change and check the suggested edge time is one your insert can really do.
+A longer edge time means each edge cuts longer.</li>
+<li>Click <span class="ui">Apply</span>. The edge time goes into <code>insp_time</code> on every op of that tool (yellow).
+The flips per part on the sheet and the Summary follow.</li>
+</ol>
+<div class="note"><p><strong>&ldquo;Change it in Mastercam.&rdquo;</strong> Some tools stop for another reason &ndash; after a
+number of cuts, at each depth, by distance, or at stops in the toolpath itself. A new edge time does not move those stops.
+The window says so; change the op's <span class="ui">Tool inspection</span> settings in Mastercam instead.</p></div>
+<!-- CHECK: the columns of the finished window (flips per part, edge time now, last edge used, suggested edge time), and when it says "change it in Mastercam". -->
+<figure class="shot todo" data-img="win-inspection.png" data-kind="window" data-need="The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked.">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked."><strong>Picture coming: win-inspection.png</strong>The Inspection &amp; inserts window: one row per tool with flips per part, edge time now, last edge used %, suggested edge time; one tool ticked. <em>(made by tools/make_help_images.ps1 once this part of the macros is finished)</em></div><!-- /img -->
+<figcaption>The Inspection &amp; inserts window.</figcaption>
+</figure>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<p>A tool cuts 25:00 per part. Its edge time is 8:00, so it stops at 8:00, 16:00 and 24:00 &ndash; 3 flips &ndash; and
+the fourth edge cuts only 1:00 before the part is done.</p>
+<div class="table-scroll"><table>
+<thead><tr><th></th><th class="num">Before</th><th class="num">After Apply</th></tr></thead>
+<tbody>
+<tr><td>Edge time (<code>insp_time</code>)</td><td class="num">8:00</td><td class="num edited">8:20</td></tr>
+<tr><td>Flips per part</td><td class="num">3</td><td class="num moved better">2</td></tr>
+<tr><td>Edges used per part</td><td class="num">4 (the last only 13%)</td><td class="num moved">3 (each 100%)</td></tr>
+<tr><td>Inserts per 100 parts (4-edge insert)</td><td class="num">100</td><td class="num moved better">75</td></tr>
+</tbody>
+</table></div>
+<p>8:20 is only 4% longer per edge than 8:00 &ndash; usually fine. If the suggested time is much longer than what the
+insert lasts, do not use it; look at <a href="target-time.html">feeds</a> or a tougher grade instead.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt><q>change it in Mastercam</q></dt>
+<dd>The tool's flips do not come from an edge time. See the note above.</dd>
+<dt>A tool shows 0 flips</dt>
+<dd>Its ops do not stop for inspection, or the stops are not insert flips (their comment does not say ROTATE, FLIP,
+CHANGE or INDEX). See <a href="flips.html">How insert flips are counted</a>.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="flips.html">How insert flips are counted</a></li>
+<li><a href="tools-page.html">Tools page</a> (edges and cost per insert)</li>
+<li><a href="text.html">Comments &amp; text</a> (inspection comments)</li>
+<li><a href="words.html#w-edge-life">Edge life</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

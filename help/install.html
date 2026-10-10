@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install the add-in - Parameter Table Tool manual</title>
+<meta name="description" content="Copy two things into Mastercam's Add-Ins folder, then put the commands on your ribbon.">
+<meta name="keywords" content="install setup add-in addin download zip Add-Ins folder customize ribbon quick access toolbar enable macros enable content">
+<link rel="stylesheet" href="style.css">
+<script src="search.js" defer></script>
+<script src="help.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<header class="top">
+<a class="home" href="index.html">Parameter Table Tool <span>User manual</span></a>
+<form class="search-mini" role="search" action="index.html"><input type="search" name="q" placeholder="Search the manual" aria-label="Search the manual"><div class="drop" hidden><ul class="results"></ul></div></form>
+<button class="menu-btn" type="button" aria-expanded="false">Menu</button>
+</header>
+<div class="wrap">
+<!-- nav -->
+<nav class="side" aria-label="Manual pages">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Home and search</a></li>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="install.html" aria-current="page">Install the add-in</a></li>
+</ul>
+<h2>In Mastercam</h2>
+<ul>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="load.html">Load the changes</a></li>
+<li><a href="undo-load.html">Undo a load</a></li>
+</ul>
+<h2>The workbook</h2>
+<ul>
+<li><a href="workbook.html">What is in the workbook</a></li>
+<li><a href="summary.html">Summary page</a></li>
+<li><a href="sheet.html">The main sheet</a></li>
+<li><a href="tools-page.html">Tools page</a></li>
+</ul>
+<h2>Ribbon: Find</h2>
+<ul>
+<li><a href="find.html">Find an op</a></li>
+<li><a href="slowest.html">Slowest ops</a></li>
+</ul>
+<h2>Ribbon: Edit cells</h2>
+<ul>
+<li><a href="set.html">Set</a></li>
+<li><a href="scale.html">Scale %</a></li>
+<li><a href="copy.html">Copy from op</a></li>
+</ul>
+<h2>Ribbon: Selected ops</h2>
+<ul>
+<li><a href="text.html">Comments &amp; text</a></li>
+<li><a href="coolant.html">Coolant</a></li>
+<li><a href="calculator.html">Speed &amp; feed</a></li>
+<li><a href="inspection.html">Inspection &amp; inserts</a></li>
+</ul>
+<h2>Ribbon: Improve</h2>
+<ul>
+<li><a href="target-time.html">Hit a target time</a></li>
+<li><a href="check.html">Program check</a></li>
+<li><a href="scenarios.html">Scenarios</a></li>
+</ul>
+<h2>Ribbon: Undo and review</h2>
+<ul>
+<li><a href="undo.html">Undo</a></li>
+<li><a href="changes.html">List changes</a></li>
+<li><a href="report.html">Change report</a></li>
+</ul>
+<h2>How it works</h2>
+<ul>
+<li><a href="estimate.html">The cycle time estimate</a></li>
+<li><a href="flips.html">How insert flips are counted</a></li>
+</ul>
+<h2>Help</h2>
+<ul>
+<li><a href="words.html">Word list</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+<li><a href="print.html">Print the whole manual</a></li>
+</ul>
+</nav>
+<!-- /nav -->
+<main id="main">
+<p class="crumb"><a href="index.html">&larr; Home and search</a></p>
+<h1>Install the add-in</h1>
+<p class="lead">A file copy. No installer, no admin rights.</p>
+
+<section id="what">
+<h2>What this is for</h2>
+<p>The tool is a Mastercam 2026 <a href="words.html#w-add-in">add-in</a>. Installing it puts four commands into Mastercam:
+<span class="ui">Lathe params - dump to Excel</span>, <span class="ui">Lathe params - load</span>,
+<span class="ui">Lathe params - undo last load</span> and <span class="ui">Parameter Table - user manual</span>.
+This manual comes with it.</p>
+</section>
+
+<section id="when">
+<h2>When to use it</h2>
+<p>Once per computer, and again when a new version comes out. Ask your CAD/CAM lead or IT if you are not
+allowed to add programs &ndash; some shops want to look at add-ins first.</p>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<ol class="steps">
+<li>Download the release <span class="ui">.zip</span> file and unzip it (right-click it, <span class="ui">Extract All</span>).
+Inside are <code>ParamTable.ft</code> and a folder called <code>ParamTable</code>.</li>
+<li><strong>Close Mastercam.</strong> It only looks for add-ins when it starts.</li>
+<li>Open the folder <code>Documents\My Mastercam 2026\Mastercam\Add-Ins</code>.</li>
+<li>Copy <code>ParamTable.ft</code> <strong>and</strong> the <code>ParamTable</code> folder into it. You need both.</li>
+<li>Start Mastercam.</li>
+<li>Put the commands where you can reach them: right-click the ribbon, pick
+<span class="ui">Customize the Ribbon</span> (or <span class="ui">Customize Quick Access Toolbar</span>),
+find the category <span class="ui">Parameter Table Tool</span>, and add the four commands.
+<!-- CHECK: the exact menu names for customizing the ribbon / QAT in Mastercam 2026 --></li>
+</ol>
+<figure class="shot todo" data-img="mc-customize.png" data-kind="mastercam" data-need="Mastercam's Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button).">
+<!-- img --><div class="todo-box" role="img" aria-label="Picture not ready yet: Mastercam&#x27;s Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button)."><strong>Picture coming: mc-customize.png</strong>Mastercam&#x27;s Customize window with the category Parameter Table Tool picked and its four commands listed (1 the category, 2 the commands, 3 the Add button). <em>(a screenshot from Mastercam - to be added)</em></div><!-- /img -->
+<figcaption>(1) The category. (2) Its four commands. (3) Add them to a ribbon tab or the Quick Access Toolbar.</figcaption>
+</figure>
+<div class="note"><p><strong>Macros in Excel.</strong> If you tick <span class="ui">Include macros</span> when you dump,
+Excel may show a yellow bar: <q>Macros have been disabled</q>. Click <span class="ui">Enable Content</span> on that bar
+to get the <span class="ui">Parameter Table</span> tab. The workbook works without macros too &ndash; you just do not
+get the extra tools.</p></div>
+</section>
+
+<section id="example">
+<h2>Worked example</h2>
+<div class="table-scroll"><table>
+<caption>The Add-Ins folder before and after</caption>
+<thead><tr><th>Before</th><th>After</th></tr></thead>
+<tbody>
+<tr><td>(other add-ins, if any)</td><td>(other add-ins, if any)</td></tr>
+<tr><td></td><td class="edited"><code>ParamTable.ft</code></td></tr>
+<tr><td></td><td class="edited"><code>ParamTable\ParamTable.dll</code></td></tr>
+<tr><td></td><td class="edited"><code>ParamTable\help\</code> (this manual)</td></tr>
+<tr><td></td><td class="edited"><code>ParamTable\SHA256SUMS.txt</code>, <code>BUILD-INFO.txt</code>, <code>LICENSE.txt</code></td></tr>
+</tbody>
+</table></div>
+<p>After Mastercam starts, the Customize list shows the category <span class="ui">Parameter Table Tool</span> with four
+commands.</p>
+</section>
+
+<section id="messages">
+<h2>What the messages mean</h2>
+<dl class="messages">
+<dt>The commands are not in the Customize list.</dt>
+<dd>Mastercam was open when you copied, or <code>ParamTable.ft</code> is not in the <code>Add-Ins</code> folder itself
+(it must not be inside the <code>ParamTable</code> folder). Fix it and restart Mastercam.</dd>
+<dt><q>The user manual is not installed.</q></dt>
+<dd>The <code>help</code> folder is missing from <code>Add-Ins\ParamTable</code>. Copy the whole
+<code>ParamTable</code> folder again from the zip.</dd>
+</dl>
+</section>
+
+<section id="related">
+<h2>Related</h2>
+<ul>
+<li><a href="start.html">Getting started</a></li>
+<li><a href="dump.html">Dump to Excel</a></li>
+<li><a href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+</section>
+</main>
+</div>
+<footer>Parameter Table Tool &ndash; user manual. Works with no internet. <a href="print.html">Print the whole manual</a></footer>
+</body>
+</html>

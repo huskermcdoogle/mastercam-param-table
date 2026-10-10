@@ -15,6 +15,7 @@
     Layout, matching the FUNC_DLL line in ParamTable.ft:
         <UserDir>Add-Ins\ParamTable.ft
         <UserDir>Add-Ins\ParamTable\ParamTable.dll
+        <UserDir>Add-Ins\ParamTable\help\        the user manual (index.html ...)
 #>
 
 [CmdletBinding()]
@@ -58,6 +59,19 @@ if (-not (Test-Path -LiteralPath $sub)) {
 Copy-Item -LiteralPath $ft  -Destination (Join-Path $addins "ParamTable.ft") -Force
 Copy-Item -LiteralPath $dll -Destination (Join-Path $sub "ParamTable.dll") -Force
 
+# The user manual beside the DLL (ParamTable\help): Mastercam's "Parameter Table - user
+# manual", the Summary's link, the ribbon's User manual and every window's ? open it.
+# The old copy goes first, so a page that was removed does not linger.
+$helpSrc = Join-Path $Root "help"
+if (Test-Path -LiteralPath $helpSrc) {
+    $helpDst = Join-Path $sub "help"
+    if (Test-Path -LiteralPath $helpDst) { Remove-Item -LiteralPath $helpDst -Recurse -Force }
+    Copy-Item -LiteralPath $helpSrc -Destination $helpDst -Recurse
+    # The list of pictures still to make is for the repo, not for users.
+    Get-ChildItem -LiteralPath $helpDst -Recurse -Filter "NEEDED.txt" | Remove-Item -Force
+    Write-Host ("user manual          -> {0} ({1} files)" -f $helpDst, @(Get-ChildItem -LiteralPath $helpDst -Recurse -File).Count)
+}
+
 # The copy succeeding is not proof the right bytes arrived: two builds of the
 # same size an hour apart look identical in a log line.
 $built    = Get-Item $dll
@@ -70,4 +84,4 @@ if ($built.Length -ne $deployed.Length) {
 Write-Host ("deployed {0:N0} bytes -> {1}" -f $deployed.Length, $sub)
 Write-Host ("function table       -> {0}" -f (Join-Path $addins "ParamTable.ft"))
 Write-Host ""
-Write-Host "Start Mastercam. The two functions appear under Customize > 'Parameter Table Tool'."
+Write-Host "Start Mastercam. The four functions appear under Customize > 'Parameter Table Tool'."
