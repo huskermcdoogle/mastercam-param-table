@@ -16,10 +16,125 @@
 #include "Settings.h"
 #include "Util.h"
 
+#include "Ribbon.h"
+
 #include <shellapi.h>
+
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <set>
+#include <sstream>
+
+namespace
+	{
+	/// ParamTable-ribbon.log beside the DLL: what the startup did about the ribbon -
+	/// Mastercam documents neither when an add-in hears from it nor the ribbon XML it
+	/// takes, so this is how a real start says. Kept short: started again past 64 KB.
+	void RibbonLog (const std::wstring &line)
+		{
+		const std::wstring folder = Settings::AddinFolder ();
+		if (folder.empty ())
+			return;
+		const std::filesystem::path file (folder + L"ParamTable-ribbon.log");
+		std::error_code ec;
+		const bool big = std::filesystem::exists (file, ec) && std::filesystem::file_size (file, ec) > 64 * 1024;
+		std::ofstream f (file, big ? std::ios::trunc : std::ios::app);
+		SYSTEMTIME t;
+		GetLocalTime (&t);
+		wchar_t stamp[32];
+		swprintf_s (stamp, L"%02u:%02u:%02u  ", t.wHour, t.wMinute, t.wSecond);
+		const std::wstring w = stamp + line + L"\n";
+		const int n = WideCharToMultiByte (CP_UTF8, 0, w.c_str (), static_cast<int> (w.size ()), nullptr, 0, nullptr, nullptr);
+		std::string u (static_cast<size_t> (n), '\0');
+		WideCharToMultiByte (CP_UTF8, 0, w.c_str (), static_cast<int> (w.size ()), u.data (), n, nullptr, nullptr);
+		f << u;
+		}
+
+	/// Every workspace file in Mastercam's CONFIG folder, read whole - where the tabs a
+	/// person made with Customize are kept.
+	std::string Workspaces ()
+		{
+		wchar_t dir[MAX_PATH] = {};
+		DWORD size = sizeof (dir);
+		if (RegGetValueW (HKEY_CURRENT_USER, L"SOFTWARE\\CNC Software\\Mastercam 2026", L"UserDir", RRF_RT_REG_SZ,
+						  nullptr, dir, &size) != ERROR_SUCCESS)
+			return std::string ();
+		std::string all;
+		std::error_code ec;
+		for (const auto &e : std::filesystem::directory_iterator (std::filesystem::path (dir) / L"CONFIG", ec))
+			if (_wcsicmp (e.path ().extension ().c_str (), L".Workspace") == 0)
+				{
+				std::ifstream f (e.path (), std::ios::binary);
+				std::ostringstream s;
+				s << f.rdbuf ();
+				all += s.str ();
+				}
+		return all;
+		}
+
+	/// The add-in's tab on the ribbon, once a session - unless its commands are on a
+	/// tab already (one made with Customize keeps its place, no second copy).
+	void AddRibbonTab (const wchar_t *when)
+		{
+		static bool done = false;
+		if (done)
+			return;
+		done = true;
+		std::vector<Ribbon::Button> buttons = {
+			{ L"LatheParamsDumpEntry", 0, L"Dump to Excel", L"Write the part's operation parameters to an Excel workbook to edit." },
+			{ L"LatheParamsLoadEntry", 0, L"Load from Excel", L"Load an edited workbook back into the operations - every change shown first." },
+			{ L"LatheParamsUndoEntry", 0, L"Undo last load", L"Put back the values the last load changed." },
+			{ L"ParamTableHelpEntry", 0, L"User manual", L"Open the user manual: how every tool works, with examples." } };
+		std::vector<unsigned> ids;
+		std::wstring said = std::wstring (L"ribbon (") + when + L"): command ids";
+		const Cnc::IFunctionTableManagerPtr ft = Cnc::GetFunctionTableManager ();
+		for (Ribbon::Button &b : buttons)
+			{
+			b.id = ft ? ft->GetCommandIdByName (Ribbon::kApplication, b.function.c_str ()) : 0;
+			ids.push_back (b.id);
+			said += L" " + b.function + L"=" + std::to_wstring (b.id);
+			}
+		RibbonLog (said);
+		if (std::find (ids.begin (), ids.end (), 0u) != ids.end ())
+			{
+			RibbonLog (L"ribbon: a command has no id - the function table is not loaded yet; no tab");
+			return;
+			}
+		if (Ribbon::OnRibbonAlready (Workspaces (), ids))
+			{
+			RibbonLog (L"ribbon: the commands are on a tab of your own already (Customize) - no second tab");
+			return;
+			}
+		// A marker while the tab is offered: a start that finds it left over is one after
+		// an offer that never came back (Mastercam went down with it) - so it is not
+		// offered again, and Mastercam starts. Delete the marker to try again.
+		const std::filesystem::path marker (Settings::AddinFolder () + L"ParamTable-ribbon.trying");
+		std::error_code ec;
+		if (std::filesystem::exists (marker, ec))
+			{
+			RibbonLog (L"ribbon: the last offer never finished - not offered again (delete ParamTable-ribbon.trying to retry)");
+			return;
+			}
+		std::ofstream (marker) << "offering the ribbon tab\n";
+		for (int shape = 0; shape < Ribbon::kShapes; ++shape)
+			{
+			RibbonLog (L"ribbon: offering shape " + std::to_wstring (shape));
+			const bool ok = InsertThirdPartyRibbonTabs (Ribbon::TabXml (buttons, shape).c_str ());
+			RibbonLog (L"ribbon: shape " + std::to_wstring (shape) + (ok ? L" taken" : L" refused"));
+			if (ok)
+				break;
+			if (shape == Ribbon::kShapes - 1)
+				RibbonLog (L"ribbon: no shape taken - add the commands with Customize instead");
+			}
+		std::filesystem::remove (marker, ec);
+		}
+	}
 
 extern "C" __declspec(dllexport) int m_open (int not_used)
 	{
+	// Loaded at a start - and again for each command (they unload it when done).
+	RibbonLog (L"m_open: Mastercam loaded the add-in");
 	return MC_NOERROR;
 	}
 
@@ -28,8 +143,24 @@ extern "C" __declspec(dllexport) int m_close (int not_used)
 	return MC_NOERROR;
 	}
 
+/// Mastercam's events. Ready (MCEVENT_READY) is when the ribbon can take a tab.
+/// Each kind of event is logged once, so a start shows what an add-in hears.
 extern "C" __declspec(dllexport) int m_notify (int notify_code)
 	{
+	static std::set<int> heard;
+	if (heard.size () < 40 && heard.insert (notify_code).second)
+		RibbonLog (L"m_notify: event " + std::to_wstring (notify_code));
+	if (notify_code == MCEVENT_READY)
+		{
+		try
+			{
+			AddRibbonTab (L"ready");
+			}
+		catch (...)
+			{
+			RibbonLog (L"ribbon: failed");
+			}
+		}
 	return MC_NOERROR;
 	}
 

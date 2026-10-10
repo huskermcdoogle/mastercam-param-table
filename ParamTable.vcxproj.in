@@ -173,12 +173,16 @@
     <ClCompile Include="src\Pick.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Ribbon.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\ParamTable.h" />
     <ClInclude Include="src\MastercamSdk.h" />
+    <ClInclude Include="src\Ribbon.h" />
     <ClInclude Include="src\Dump.h" />
     <ClInclude Include="src\Coolant.h" />
     <ClInclude Include="src\Preview.h" />
